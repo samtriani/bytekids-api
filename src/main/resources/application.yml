@@ -1,0 +1,66 @@
+server:
+  port: ${PORT:8080}
+  address: 0.0.0.0
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: bytekids-academy-api
+
+  jackson:
+    time-zone: ${TZ:America/Mexico_City}
+    default-property-inclusion: non_null
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${BK_DB_URL:jdbc:postgresql://ep-rough-hall-amvk9ba1.c-5.us-east-1.aws.neon.tech/neondb}
+    username: ${BK_DB_USER:neondb_owner}
+    password: ${BK_DB_PASSWORD:npg_V4KENtHuOzm5}
+    hikari:
+      minimum-idle: ${POOL_MINIMUM_IDLE:2}
+      maximum-pool-size: ${POOL_MAX_SIZE:10}
+      connection-timeout: ${POOL_CONNECTION_TIMEOUT:30000}
+      idle-timeout: ${POOL_IDLE_TIMEOUT:600000}
+      max-lifetime: ${POOL_LIFETIME:1800000}
+      pool-name: ByteKidsPool
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        format_sql: true
+
+app:
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
+  jwt:
+    secret: ${JWT_SECRET:bytekids-academy-super-secret-key-2026-must-be-32chars-min}
+    expiration-ms: ${JWT_EXPIRATION_MS:604800000}   # 7 días
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  packages-to-scan: mx.bytekids.academy.controller
