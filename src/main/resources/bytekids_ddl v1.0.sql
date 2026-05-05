@@ -97,6 +97,8 @@ CREATE TABLE users (
   role          user_role    NOT NULL,
   initials      VARCHAR(5),
   avatar_url    TEXT,
+  age     SMALLINT,
+  address TEXT,
   is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()

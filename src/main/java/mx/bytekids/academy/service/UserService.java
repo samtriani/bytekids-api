@@ -56,6 +56,8 @@ public class UserService {
                 .role(request.getRole())
                 .initials(request.getInitials())
                 .avatarUrl(request.getAvatarUrl())
+                .age(request.getAge())
+                .address(request.getAddress())
                 .build();
         return UserResponse.from(userRepository.save(user));
     }
@@ -72,6 +74,8 @@ public class UserService {
         user.setRole(request.getRole());
         user.setInitials(request.getInitials());
         user.setAvatarUrl(request.getAvatarUrl());
+        user.setAge(request.getAge());
+        user.setAddress(request.getAddress());
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         }

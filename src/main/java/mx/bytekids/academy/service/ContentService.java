@@ -13,7 +13,9 @@ import mx.bytekids.academy.repository.ContentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -104,6 +106,18 @@ public class ContentService {
                 .assignedBy(assignedBy).dueDate(req.getDueDate())
                 .build();
         return assignmentRepository.save(assignment);
+    }
+
+    public List<ContentResponse> findForStudent(UUID studentId) {
+        User student = userService.findById(studentId);
+        Set<UUID> seen = new HashSet<>();
+        return assignmentRepository.findAllAssignmentsForStudent(student)
+                .stream()
+                .map(ContentAssignment::getContent)
+                .filter(c -> Boolean.TRUE.equals(c.getIsPublished()) && Boolean.TRUE.equals(c.getIsActive()))
+                .filter(c -> seen.add(c.getId()))
+                .map(ContentResponse::from)
+                .toList();
     }
 
     @Transactional
