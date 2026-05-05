@@ -17,6 +17,8 @@ public class UserResponse {
     private String initials;
     private String avatarUrl;
     private Boolean isActive;
+    private Short age;
+    private String address;
     private OffsetDateTime createdAt;
 
     public static UserResponse from(User u) {
@@ -24,7 +26,8 @@ public class UserResponse {
                 .id(u.getId()).username(u.getUsername())
                 .displayName(u.getDisplayName()).role(u.getRole())
                 .initials(u.getInitials()).avatarUrl(u.getAvatarUrl())
-                .isActive(u.getIsActive()).createdAt(u.getCreatedAt())
+                .isActive(u.getIsActive()).age(u.getAge()).address(u.getAddress())
+                .createdAt(u.getCreatedAt())
                 .build();
     }
 }

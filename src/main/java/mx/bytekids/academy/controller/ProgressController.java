@@ -96,4 +96,12 @@ public class ProgressController {
     public ResponseEntity<ApiResponse<List<DailyActivity>>> studentActivity(@PathVariable UUID studentId) {
         return ResponseEntity.ok(ApiResponse.ok(progressService.getWeekActivity(studentId)));
     }
+
+    @GetMapping("/leaderboard")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Top alumnos por XP")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> leaderboard(
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(ApiResponse.ok(progressService.getLeaderboard(limit)));
+    }
 }

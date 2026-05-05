@@ -6,6 +6,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,7 +20,7 @@ public class Classroom {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 200)
     private String name;
 
     @Column(name = "grade_level", nullable = false)
@@ -37,6 +39,13 @@ public class Classroom {
     @Column(name = "school_year", nullable = false, length = 9)
     @Builder.Default
     private String schoolYear = "2025-2026";
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "classroom_subjects",
+        joinColumns        = @JoinColumn(name = "classroom_id"),
+        inverseJoinColumns = @JoinColumn(name = "subject_id"))
+    @Builder.Default
+    private List<Subject> subjects = new ArrayList<>();
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default

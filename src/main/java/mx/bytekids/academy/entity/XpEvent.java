@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import mx.bytekids.academy.entity.enums.XpReason;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -25,6 +27,7 @@ public class XpEvent {
     private Short amount;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     private XpReason reason;
 

@@ -40,6 +40,14 @@ public class ContentController {
         return ResponseEntity.ok(ApiResponse.ok(contentService.findByType(type)));
     }
 
+    @GetMapping("/feed")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Operation(summary = "Contenido asignado al alumno autenticado (sus salones + asignaciones directas)")
+    public ResponseEntity<ApiResponse<List<ContentResponse>>> studentFeed() {
+        var student = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok(contentService.findForStudent(student.getId())));
+    }
+
     @GetMapping("/my")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @Operation(summary = "Contenido creado por el maestro autenticado")

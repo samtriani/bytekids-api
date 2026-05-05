@@ -34,10 +34,12 @@ public class AchievementDefinition {
     private Short xpReward = 0;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     private AchievementCategory category;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     @Builder.Default
     private RarityLevel rarity = RarityLevel.comun;

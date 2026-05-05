@@ -4,11 +4,15 @@ import lombok.RequiredArgsConstructor;
 import mx.bytekids.academy.entity.*;
 import mx.bytekids.academy.entity.enums.XpReason;
 import mx.bytekids.academy.repository.*;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -108,5 +112,21 @@ public class ProgressService {
         activity.setMissionsCompleted((short) (activity.getMissionsCompleted() + missionsIncrement));
         activity.setXpEarned((short) (activity.getXpEarned() + xpIncrement));
         dailyActivityRepository.save(activity);
+    }
+
+    public List<Map<String, Object>> getLeaderboard(int limit) {
+        List<Object[]> rows = xpEventRepository.findTopStudents(PageRequest.of(0, limit));
+        List<Map<String, Object>> result = new ArrayList<>();
+        int rank = 1;
+        for (Object[] row : rows) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("studentId", row[0]);
+            entry.put("displayName", row[1]);
+            entry.put("initials", row[2] != null ? row[2] : "");
+            entry.put("totalXp", ((Number) row[3]).intValue());
+            entry.put("rank", rank++);
+            result.add(entry);
+        }
+        return result;
     }
 }

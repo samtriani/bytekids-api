@@ -8,6 +8,7 @@ import mx.bytekids.academy.dto.classroom.ClassroomRequest;
 import mx.bytekids.academy.dto.classroom.ClassroomResponse;
 import mx.bytekids.academy.dto.common.ApiResponse;
 import mx.bytekids.academy.dto.user.UserResponse;
+import mx.bytekids.academy.entity.Subject;
 import mx.bytekids.academy.security.SecurityUtils;
 import mx.bytekids.academy.service.ClassroomService;
 import mx.bytekids.academy.service.UserService;
@@ -99,5 +100,12 @@ public class ClassroomController {
     @Operation(summary = "Salones en los que está inscrito un alumno")
     public ResponseEntity<ApiResponse<List<ClassroomResponse>>> classroomsByStudent(@PathVariable UUID studentId) {
         return ResponseEntity.ok(ApiResponse.ok(classroomService.findByStudent(studentId)));
+    }
+
+    @GetMapping("/{id}/subjects")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR','TEACHER')")
+    @Operation(summary = "Materias asignadas a un salón")
+    public ResponseEntity<ApiResponse<List<Subject>>> subjects(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.ok(classroomService.getSubjects(id)));
     }
 }

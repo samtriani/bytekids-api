@@ -40,6 +40,12 @@ public class User {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column
+    private Short age;
+
+    @Column(columnDefinition = "TEXT")
+    private String address;
+
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;

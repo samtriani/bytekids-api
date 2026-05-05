@@ -23,4 +23,6 @@ public class UserRequest {
 
     private String initials;
     private String avatarUrl;
+    private Short age;
+    private String address;
 }
