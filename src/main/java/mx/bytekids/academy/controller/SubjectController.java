@@ -48,4 +48,12 @@ public class SubjectController {
     public ResponseEntity<ApiResponse<Subject>> update(@PathVariable UUID id, @RequestBody Subject subject) {
         return ResponseEntity.ok(ApiResponse.ok(subjectService.update(id, subject)));
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Dar de baja materia (baja lógica)")
+    public ResponseEntity<ApiResponse<Void>> deactivate(@PathVariable UUID id) {
+        subjectService.deactivate(id);
+        return ResponseEntity.ok(ApiResponse.ok("Materia dada de baja", null));
+    }
 }

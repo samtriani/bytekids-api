@@ -31,6 +31,7 @@ public class SubjectService {
         if (subjectRepository.existsByName(subject.getName())) {
             throw new BusinessException("La materia '" + subject.getName() + "' ya existe");
         }
+        if (subject.getIsActive() == null) subject.setIsActive(true);
         return subjectRepository.save(subject);
     }
 
@@ -42,5 +43,12 @@ public class SubjectService {
         subject.setColor(updated.getColor());
         subject.setDescription(updated.getDescription());
         return subjectRepository.save(subject);
+    }
+
+    @Transactional
+    public void deactivate(UUID id) {
+        Subject subject = findById(id);
+        subject.setIsActive(false);
+        subjectRepository.save(subject);
     }
 }

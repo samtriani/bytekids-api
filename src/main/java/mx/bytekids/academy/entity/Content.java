@@ -28,6 +28,7 @@ public class Content {
     private String description;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     private ContentType type;
 
@@ -44,6 +45,7 @@ public class Content {
     private Short xpReward = 50;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     @Builder.Default
     private DifficultyLevel difficulty = DifficultyLevel.medio;

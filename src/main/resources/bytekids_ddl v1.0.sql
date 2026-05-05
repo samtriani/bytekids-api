@@ -124,11 +124,17 @@ CREATE TABLE subjects (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+
+CREATE TABLE IF NOT EXISTS classroom_subjects (
+    classroom_id UUID NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+    subject_id   UUID NOT NULL REFERENCES subjects(id)   ON DELETE CASCADE,
+    PRIMARY KEY (classroom_id, subject_id)
+);
 -- -------------------------------------------------------
 
 CREATE TABLE classrooms (
   id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        VARCHAR(20) NOT NULL,             -- '4°A'
+  name        VARCHAR(200) NOT NULL,             -- '4°A'
   grade_level SMALLINT    NOT NULL,             -- 4
   section     VARCHAR(5)  NOT NULL,             -- 'A'
   description TEXT,

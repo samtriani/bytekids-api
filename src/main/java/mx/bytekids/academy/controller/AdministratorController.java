@@ -13,6 +13,7 @@ import mx.bytekids.academy.dto.user.UserRequest;
 import mx.bytekids.academy.dto.user.UserResponse;
 import mx.bytekids.academy.entity.Subject;
 import mx.bytekids.academy.service.AdministratorService;
+import mx.bytekids.academy.service.ClassroomService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ import java.util.UUID;
 public class AdministratorController {
 
     private final AdministratorService administratorService;
+    private final ClassroomService classroomService;
 
     @PostMapping("/users")
     @Operation(summary = "Dar de alta usuarios")
@@ -85,5 +87,21 @@ public class AdministratorController {
     public ResponseEntity<ApiResponse<Void>> deactivateClassroom(@PathVariable UUID classroomId) {
         administratorService.deactivateClassroom(classroomId);
         return ResponseEntity.ok(ApiResponse.ok("Salón dado de baja", null));
+    }
+
+    @PostMapping("/classrooms/{classroomId}/subjects/{subjectId}")
+    @Operation(summary = "Asignar materia a salón")
+    public ResponseEntity<ApiResponse<Void>> addSubject(
+            @PathVariable UUID classroomId, @PathVariable UUID subjectId) {
+        classroomService.addSubject(classroomId, subjectId);
+        return ResponseEntity.ok(ApiResponse.ok("Materia asignada", null));
+    }
+
+    @DeleteMapping("/classrooms/{classroomId}/subjects/{subjectId}")
+    @Operation(summary = "Quitar materia de salón")
+    public ResponseEntity<ApiResponse<Void>> removeSubject(
+            @PathVariable UUID classroomId, @PathVariable UUID subjectId) {
+        classroomService.removeSubject(classroomId, subjectId);
+        return ResponseEntity.ok(ApiResponse.ok("Materia removida", null));
     }
 }

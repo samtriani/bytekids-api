@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import mx.bytekids.academy.entity.enums.QuestionType;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -25,6 +27,7 @@ public class QuizQuestion {
     private String questionText;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "question_type", nullable = false)
     @Builder.Default
     private QuestionType questionType = QuestionType.opcion_multiple;

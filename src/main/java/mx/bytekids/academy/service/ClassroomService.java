@@ -6,17 +6,20 @@ import mx.bytekids.academy.dto.classroom.ClassroomResponse;
 import mx.bytekids.academy.dto.user.UserResponse;
 import mx.bytekids.academy.entity.Classroom;
 import mx.bytekids.academy.entity.ClassroomEnrollment;
+import mx.bytekids.academy.entity.Subject;
 import mx.bytekids.academy.entity.User;
 import mx.bytekids.academy.entity.enums.UserRole;
 import mx.bytekids.academy.exception.BusinessException;
 import mx.bytekids.academy.exception.ResourceNotFoundException;
 import mx.bytekids.academy.repository.ClassroomEnrollmentRepository;
 import mx.bytekids.academy.repository.ClassroomRepository;
+import mx.bytekids.academy.repository.SubjectRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class ClassroomService {
 
     private final ClassroomRepository classroomRepository;
     private final ClassroomEnrollmentRepository enrollmentRepository;
+    private final SubjectRepository subjectRepository;
     private final UserService userService;
 
     public Classroom findById(UUID id) {
@@ -156,6 +160,35 @@ public class ClassroomService {
                 .stream()
                 .map(e -> ClassroomResponse.from(e.getClassroom()))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Subject> getSubjects(UUID classroomId) {
+        Classroom classroom = findById(classroomId);
+        classroom.getSubjects().size(); // init lazy collection
+        return classroom.getSubjects();
+    }
+
+    @Transactional
+    public List<Subject> addSubject(UUID classroomId, UUID subjectId) {
+        Classroom classroom = findById(classroomId);
+        classroom.getSubjects().size();
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Materia", subjectId));
+        boolean exists = classroom.getSubjects().stream().anyMatch(s -> s.getId().equals(subjectId));
+        if (!exists) {
+            classroom.getSubjects().add(subject);
+            classroomRepository.save(classroom);
+        }
+        return classroom.getSubjects();
+    }
+
+    @Transactional
+    public void removeSubject(UUID classroomId, UUID subjectId) {
+        Classroom classroom = findById(classroomId);
+        classroom.getSubjects().size();
+        classroom.getSubjects().removeIf(s -> s.getId().equals(subjectId));
+        classroomRepository.save(classroom);
     }
 
     private void validateTeacher(User teacher) {
