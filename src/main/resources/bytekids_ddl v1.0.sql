@@ -498,6 +498,24 @@ CREATE INDEX idx_ai_messages_conv ON ai_messages(conversation_id);
 
 
 -- ============================================================
+--  Relación clase horario
+-- ============================================================
+
+CREATE TABLE class_schedules (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    classroom_id UUID NOT NULL REFERENCES classrooms(id),
+    subject_id   UUID NOT NULL REFERENCES subjects(id),
+    teacher_id   UUID NOT NULL REFERENCES users(id),
+    day_of_week  VARCHAR(10) NOT NULL
+                   CHECK (day_of_week IN ('lunes','martes','miercoles','jueves','viernes','sabado')),
+    start_time   TIME NOT NULL,
+    end_time     TIME NOT NULL,
+    is_active    BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT chk_schedule_time_order CHECK (end_time > start_time)
+);
+
+-- ============================================================
 --  SEED: Materias iniciales
 -- ============================================================
 
