@@ -5,7 +5,7 @@
 --    direccion.general -> Admin123#
 --    prof.yamileth -> Maestro123#
 --    axel.partida -> Alumno123#
---    jose.partida -> Padre123#
+--    monze.gutierrez -> Padre123#
 -- ============================================================
 
 INSERT INTO users (id, username, password_hash, display_name, role, initials, is_active)
@@ -26,6 +26,6 @@ VALUES
    '$2a$10$VkMqv9e7Pp3/qvG9gqrvGOOvil0VY1yE5OjiE1DDcuPpeiAq5zHO2',
    'Axel Partida', 'student', 'AP', true),
 
-  (gen_random_uuid(), 'jose.partida',
+  (gen_random_uuid(), 'monze.gutierrez',
    '$2a$10$U8wYbwUK4FiYA774NzOgsOnRxL5tvpP9b4XQp/orfeQ5deEIA7Xzu',
-   'Jose Partida', 'parent', 'JP', true);
+   'Monze Gutierrez', 'parent', 'MG', true);

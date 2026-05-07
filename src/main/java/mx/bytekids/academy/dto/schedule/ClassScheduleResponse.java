@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import mx.bytekids.academy.entity.ClassSchedule;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -20,6 +21,8 @@ public class ClassScheduleResponse {
     private String dayOfWeek;
     private LocalTime startTime;
     private LocalTime endTime;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     public static ClassScheduleResponse from(ClassSchedule s) {
         return ClassScheduleResponse.builder()
@@ -34,6 +37,8 @@ public class ClassScheduleResponse {
                 .dayOfWeek(s.getDayOfWeek())
                 .startTime(s.getStartTime())
                 .endTime(s.getEndTime())
+                .startDate(s.getStartDate())
+                .endDate(s.getEndDate())
                 .build();
     }
 }
