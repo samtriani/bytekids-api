@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -26,4 +27,10 @@ public class ClassScheduleRequest {
 
     @NotNull(message = "La hora de fin es requerida")
     private LocalTime endTime;
+
+    @NotNull(message = "La fecha de inicio es requerida")
+    private LocalDate startDate;
+
+    @NotNull(message = "La fecha de fin es requerida")
+    private LocalDate endDate;
 }

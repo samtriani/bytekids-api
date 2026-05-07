@@ -24,7 +24,7 @@ public class ClassScheduleController {
     private final ClassScheduleService scheduleService;
 
     @GetMapping("/classroom/{classroomId}")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR','TEACHER','STUDENT')")
     @Operation(summary = "Horario de un salón")
     public ResponseEntity<ApiResponse<List<ClassScheduleResponse>>> byClassroom(
             @PathVariable UUID classroomId) {
@@ -32,7 +32,7 @@ public class ClassScheduleController {
     }
 
     @GetMapping("/teacher/{teacherId}")
-    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR','TEACHER','STUDENT')")
     @Operation(summary = "Horario de un maestro")
     public ResponseEntity<ApiResponse<List<ClassScheduleResponse>>> byTeacher(
             @PathVariable UUID teacherId) {

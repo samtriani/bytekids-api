@@ -22,11 +22,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SubmissionService {
 
-    private final SubmissionRepository submissionRepository;
+    private final SubmissionRepository     submissionRepository;
     private final ContentAssignmentRepository assignmentRepository;
-    private final ContentService contentService;
-    private final UserService userService;
-    private final ProgressService progressService;
+    private final ContentService           contentService;
+    private final UserService              userService;
+    private final ProgressService          progressService;
+    private final AchievementCheckerService achievementChecker;
 
     public Submission findById(UUID id) {
         return submissionRepository.findById(id)
@@ -87,14 +88,14 @@ public class SubmissionService {
         submission.setReviewedBy(reviewer);
 
         if (req.getStatus() == SubmissionStatus.aprobado) {
+            UUID studentId = submission.getStudent().getId();
             short xp = submission.getContent().getXpReward();
-            progressService.awardXp(submission.getStudent().getId(), xp,
+            progressService.awardXp(studentId, xp,
                     XpReason.mision_completada, submission.getId(), "submission", reviewerId);
             progressService.updateSubjectProgress(
-                    submission.getStudent().getId(),
-                    submission.getContent().getSubject().getId(), xp);
-            progressService.recordDailyActivity(
-                    submission.getStudent().getId(), LocalDate.now(), 1, xp);
+                    studentId, submission.getContent().getSubject().getId(), xp);
+            progressService.recordDailyActivity(studentId, LocalDate.now(), 1, xp);
+            achievementChecker.checkAndAward(studentId);
         }
 
         return SubmissionResponse.from(submissionRepository.save(submission));

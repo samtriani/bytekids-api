@@ -154,6 +154,8 @@ CREATE TRIGGER trg_classrooms_updated_at
   BEFORE UPDATE ON classrooms
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+
+ALTER TABLE classrooms DROP CONSTRAINT IF EXISTS classrooms_grade_level_section_school_year_key;
 -- -------------------------------------------------------
 
 -- Inscripción de alumno a salón
@@ -510,6 +512,8 @@ CREATE TABLE class_schedules (
                    CHECK (day_of_week IN ('lunes','martes','miercoles','jueves','viernes','sabado')),
     start_time   TIME NOT NULL,
     end_time     TIME NOT NULL,
+    start_date DATE,
+    end_date   DATE,
     is_active    BOOLEAN NOT NULL DEFAULT TRUE,
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT chk_schedule_time_order CHECK (end_time > start_time)

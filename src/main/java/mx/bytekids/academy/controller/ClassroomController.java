@@ -9,6 +9,7 @@ import mx.bytekids.academy.dto.classroom.ClassroomResponse;
 import mx.bytekids.academy.dto.common.ApiResponse;
 import mx.bytekids.academy.dto.user.UserResponse;
 import mx.bytekids.academy.entity.Subject;
+import mx.bytekids.academy.entity.enums.UserRole;
 import mx.bytekids.academy.security.SecurityUtils;
 import mx.bytekids.academy.service.ClassroomService;
 import mx.bytekids.academy.service.UserService;
@@ -50,11 +51,14 @@ public class ClassroomController {
     }
 
     @GetMapping("/my")
-    @PreAuthorize("hasRole('TEACHER')")
-    @Operation(summary = "Mis salones")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @Operation(summary = "Mis salones (maestro → por asignación, alumno → por inscripción)")
     public ResponseEntity<ApiResponse<List<ClassroomResponse>>> myClassrooms() {
-        var teacher = userService.findByUsername(SecurityUtils.currentUsername());
-        return ResponseEntity.ok(ApiResponse.ok(classroomService.findByTeacher(teacher.getId())));
+        var user = userService.findByUsername(SecurityUtils.currentUsername());
+        List<ClassroomResponse> result = user.getRole() == UserRole.student
+                ? classroomService.findByStudent(user.getId())
+                : classroomService.findByTeacher(user.getId());
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @PostMapping

@@ -52,46 +52,55 @@ public class ClassScheduleService {
         if (!req.getEndTime().isAfter(req.getStartTime())) {
             throw new BusinessException("La hora de fin debe ser posterior a la hora de inicio");
         }
+        if (!req.getEndDate().isAfter(req.getStartDate())) {
+            throw new BusinessException("La fecha de fin debe ser posterior a la fecha de inicio");
+        }
 
         Classroom classroom = classroomService.findById(req.getClassroomId());
         Subject subject     = subjectService.findById(req.getSubjectId());
         User teacher        = userService.findById(req.getTeacherId());
 
-        // Validar conflicto de maestro
+        // Validar conflicto de maestro (mismo día, hora solapada Y rango de fechas solapado)
         long teacherConflicts = scheduleRepository.countTeacherConflicts(
-                teacher, day, req.getStartTime(), req.getEndTime());
+                teacher, day, req.getStartTime(), req.getEndTime(),
+                req.getStartDate(), req.getEndDate());
         if (teacherConflicts > 0) {
             throw new BusinessException(
                     "El maestro " + teacher.getDisplayName() +
                     " ya tiene una clase el " + day +
-                    " de " + req.getStartTime() + " a " + req.getEndTime());
+                    " de " + req.getStartTime() + " a " + req.getEndTime() +
+                    " en ese periodo de fechas");
         }
 
         // Validar conflicto de salón
         long classroomConflicts = scheduleRepository.countClassroomConflicts(
-                classroom, day, req.getStartTime(), req.getEndTime());
+                classroom, day, req.getStartTime(), req.getEndTime(),
+                req.getStartDate(), req.getEndDate());
         if (classroomConflicts > 0) {
             throw new BusinessException(
                     "El salón " + classroom.getName() +
                     " ya tiene una clase el " + day +
-                    " de " + req.getStartTime() + " a " + req.getEndTime());
+                    " de " + req.getStartTime() + " a " + req.getEndTime() +
+                    " en ese periodo de fechas");
         }
 
         // Validar conflicto de alumnos: algún alumno inscrito tiene otra clase al mismo tiempo
         long studentConflicts = scheduleRepository.countStudentConflicts(
-                classroom, day, req.getStartTime(), req.getEndTime());
+                classroom, day, req.getStartTime(), req.getEndTime(),
+                req.getStartDate(), req.getEndDate());
         if (studentConflicts > 0) {
             throw new BusinessException(
                     "Uno o más alumnos del salón " + classroom.getName() +
                     " ya tienen clase en otro salón el " + day +
                     " de " + req.getStartTime() + " a " + req.getEndTime() +
-                    ". Un alumno no puede estar en dos lugares al mismo tiempo.");
+                    " en ese periodo. Un alumno no puede estar en dos lugares al mismo tiempo.");
         }
 
         ClassSchedule schedule = ClassSchedule.builder()
                 .classroom(classroom).subject(subject).teacher(teacher)
                 .dayOfWeek(day)
                 .startTime(req.getStartTime()).endTime(req.getEndTime())
+                .startDate(req.getStartDate()).endDate(req.getEndDate())
                 .build();
 
         return ClassScheduleResponse.from(scheduleRepository.save(schedule));
