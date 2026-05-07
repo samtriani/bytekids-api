@@ -75,4 +75,55 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, UU
                                @Param("endTime")   LocalTime endTime,
                                @Param("startDate") LocalDate startDate,
                                @Param("endDate")   LocalDate endDate);
+
+    // ── Mismas 3 queries excluyendo el propio registro al editar ─────────────
+
+    @Query("""
+        SELECT COUNT(s) FROM ClassSchedule s
+        WHERE s.teacher = :teacher AND s.dayOfWeek = :dayOfWeek AND s.isActive = true
+          AND s.startTime < :endTime AND s.endTime > :startTime
+          AND s.startDate < :endDate AND s.endDate > :startDate
+          AND s.id != :excludeId
+        """)
+    long countTeacherConflictsExcluding(@Param("teacher")    User teacher,
+                                        @Param("dayOfWeek")  String dayOfWeek,
+                                        @Param("startTime")  LocalTime startTime,
+                                        @Param("endTime")    LocalTime endTime,
+                                        @Param("startDate")  LocalDate startDate,
+                                        @Param("endDate")    LocalDate endDate,
+                                        @Param("excludeId")  UUID excludeId);
+
+    @Query("""
+        SELECT COUNT(s) FROM ClassSchedule s
+        WHERE s.classroom = :classroom AND s.dayOfWeek = :dayOfWeek AND s.isActive = true
+          AND s.startTime < :endTime AND s.endTime > :startTime
+          AND s.startDate < :endDate AND s.endDate > :startDate
+          AND s.id != :excludeId
+        """)
+    long countClassroomConflictsExcluding(@Param("classroom") Classroom classroom,
+                                          @Param("dayOfWeek") String dayOfWeek,
+                                          @Param("startTime") LocalTime startTime,
+                                          @Param("endTime")   LocalTime endTime,
+                                          @Param("startDate") LocalDate startDate,
+                                          @Param("endDate")   LocalDate endDate,
+                                          @Param("excludeId") UUID excludeId);
+
+    @Query("""
+        SELECT COUNT(DISTINCT s)
+        FROM ClassSchedule s
+        JOIN ClassroomEnrollment e1 ON e1.classroom = s.classroom AND e1.isActive = true
+        JOIN ClassroomEnrollment e2 ON e2.student   = e1.student  AND e2.isActive = true
+        WHERE e2.classroom = :classroom AND s.classroom != :classroom
+          AND s.dayOfWeek = :dayOfWeek AND s.isActive = true
+          AND s.startTime < :endTime AND s.endTime > :startTime
+          AND s.startDate < :endDate AND s.endDate > :startDate
+          AND s.id != :excludeId
+        """)
+    long countStudentConflictsExcluding(@Param("classroom") Classroom classroom,
+                                        @Param("dayOfWeek") String dayOfWeek,
+                                        @Param("startTime") LocalTime startTime,
+                                        @Param("endTime")   LocalTime endTime,
+                                        @Param("startDate") LocalDate startDate,
+                                        @Param("endDate")   LocalDate endDate,
+                                        @Param("excludeId") UUID excludeId);
 }

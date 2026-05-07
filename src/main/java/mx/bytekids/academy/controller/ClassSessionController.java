@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -54,5 +55,26 @@ public class ClassSessionController {
     @Operation(summary = "Participantes activos en la sesión de hoy")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> attendance(@PathVariable UUID scheduleId) {
         return ResponseEntity.ok(ApiResponse.ok(sessionService.getAttendance(scheduleId)));
+    }
+
+    @PostMapping("/schedule/{scheduleId}/mission")
+    @PreAuthorize("hasRole('TEACHER')")
+    @Operation(summary = "Maestro lanza la misión del día")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> launchMission(
+            @PathVariable UUID scheduleId,
+            @RequestParam UUID contentId) {
+        var teacher = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok("Misión lanzada",
+                sessionService.launchMission(scheduleId, contentId, teacher.getId())));
+    }
+
+    @GetMapping("/schedule/{scheduleId}/mission")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @Operation(summary = "Obtener misión activa de la sesión")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMission(@PathVariable UUID scheduleId) {
+        Optional<Map<String, Object>> mission = sessionService.getCurrentMission(scheduleId);
+        return mission
+                .map(m -> ResponseEntity.ok(ApiResponse.ok(m)))
+                .orElse(ResponseEntity.ok(ApiResponse.ok(null)));
     }
 }

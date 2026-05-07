@@ -1,13 +1,10 @@
 package mx.bytekids.academy.service;
 
 import lombok.RequiredArgsConstructor;
-import mx.bytekids.academy.entity.ClassSchedule;
-import mx.bytekids.academy.entity.ClassSession;
-import mx.bytekids.academy.entity.User;
+import mx.bytekids.academy.entity.*;
 import mx.bytekids.academy.exception.BusinessException;
 import mx.bytekids.academy.exception.ResourceNotFoundException;
-import mx.bytekids.academy.repository.ClassScheduleRepository;
-import mx.bytekids.academy.repository.ClassSessionRepository;
+import mx.bytekids.academy.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,18 +12,18 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ClassSessionService {
 
-    private final ClassSessionRepository sessionRepo;
-    private final ClassScheduleRepository scheduleRepo;
-    private final UserService userService;
+    private final ClassSessionRepository        sessionRepo;
+    private final ClassScheduleRepository       scheduleRepo;
+    private final ClassSessionMissionRepository missionRepo;
+    private final ContentService                contentService;
+    private final UserService                   userService;
 
     private static final Map<DayOfWeek, String> DAY_MAP = Map.of(
             DayOfWeek.MONDAY,    "lunes",
@@ -119,6 +116,51 @@ public class ClassSessionService {
 
     public boolean isActive(UUID scheduleId) {
         return isActive(findSchedule(scheduleId));
+    }
+
+    // ── Misión del día ────────────────────────────────────────────────────────
+
+    @Transactional
+    public Map<String, Object> launchMission(UUID scheduleId, UUID contentId, UUID teacherId) {
+        ClassSchedule schedule = findSchedule(scheduleId);
+        Content content = contentService.findById(contentId);
+        User teacher = userService.findById(teacherId);
+
+        ClassSessionMission mission = missionRepo
+                .findByScheduleAndSessionDate(schedule, LocalDate.now())
+                .orElse(ClassSessionMission.builder()
+                        .schedule(schedule)
+                        .sessionDate(LocalDate.now())
+                        .launchedBy(teacher)
+                        .build());
+
+        mission.setContent(content);
+        mission.setLaunchedBy(teacher);
+        missionRepo.save(mission);
+
+        return buildMissionResponse(mission);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Map<String, Object>> getCurrentMission(UUID scheduleId) {
+        ClassSchedule schedule = findSchedule(scheduleId);
+        return missionRepo.findByScheduleAndSessionDate(schedule, LocalDate.now())
+                .map(this::buildMissionResponse);
+    }
+
+    private Map<String, Object> buildMissionResponse(ClassSessionMission m) {
+        Map<String, Object> r = new HashMap<>();
+        r.put("contentId",    m.getContent().getId());
+        r.put("title",        m.getContent().getTitle());
+        r.put("type",         m.getContent().getType().name());
+        r.put("difficulty",   m.getContent().getDifficulty() != null ? m.getContent().getDifficulty().name() : "normal");
+        r.put("xpReward",     m.getContent().getXpReward());
+        r.put("subjectName",  m.getContent().getSubject() != null ? m.getContent().getSubject().getName() : "");
+        r.put("subjectIcon",  m.getContent().getSubject() != null && m.getContent().getSubject().getIcon() != null
+                ? m.getContent().getSubject().getIcon() : "📚");
+        r.put("launchedAt",   m.getLaunchedAt() != null ? m.getLaunchedAt().toString() : "");
+        r.put("launchedBy",   m.getLaunchedBy().getDisplayName());
+        return r;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
