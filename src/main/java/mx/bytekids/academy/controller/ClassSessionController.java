@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,6 +67,27 @@ public class ClassSessionController {
         var teacher = userService.findByUsername(SecurityUtils.currentUsername());
         return ResponseEntity.ok(ApiResponse.ok("Misión lanzada",
                 sessionService.launchMission(scheduleId, contentId, teacher.getId())));
+    }
+
+    @PostMapping("/schedule/{scheduleId}/chat")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @Operation(summary = "Enviar mensaje al chat del aula")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> sendChat(
+            @PathVariable UUID scheduleId,
+            @RequestParam String content) {
+        var user = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok(sessionService.sendChatMessage(scheduleId, user.getId(), content)));
+    }
+
+    @GetMapping("/schedule/{scheduleId}/chat")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @Operation(summary = "Mensajes del chat del aula de hoy")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getChat(
+            @PathVariable UUID scheduleId,
+            @RequestParam(required = false) String since) {
+        OffsetDateTime sinceTime = since != null && !since.isBlank()
+                ? OffsetDateTime.parse(since) : null;
+        return ResponseEntity.ok(ApiResponse.ok(sessionService.getChatMessages(scheduleId, sinceTime)));
     }
 
     @GetMapping("/schedule/{scheduleId}/mission")

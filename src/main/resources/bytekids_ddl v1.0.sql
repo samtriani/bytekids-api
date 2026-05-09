@@ -546,6 +546,22 @@ CREATE TABLE IF NOT EXISTS class_session_missions (
     UNIQUE (schedule_id, session_date)
 );
 
+-- ============================================================
+--  Mensajes en clases
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS class_session_messages (
+    id           UUID        NOT NULL DEFAULT gen_random_uuid(),
+    schedule_id  UUID        NOT NULL REFERENCES class_schedules(id),
+    session_date DATE        NOT NULL,
+    sender_id    UUID        NOT NULL REFERENCES users(id),
+    content      TEXT        NOT NULL,
+    sent_at      TIMESTAMPTZ DEFAULT now(),
+    PRIMARY KEY (id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_session_msgs
+    ON class_session_messages(schedule_id, session_date, sent_at);
 
 -- ============================================================
 --  SEED: Materias iniciales

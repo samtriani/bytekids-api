@@ -88,12 +88,14 @@ public class SubmissionService {
         submission.setReviewedBy(reviewer);
 
         if (req.getStatus() == SubmissionStatus.aprobado) {
-            UUID studentId = submission.getStudent().getId();
-            short xp = submission.getContent().getXpReward();
+            UUID studentId  = submission.getStudent().getId();
+            short xp        = submission.getContent().getXpReward();
+            UUID subjectId  = submission.getContent().getSubject() != null
+                    ? submission.getContent().getSubject().getId() : null;
+
             progressService.awardXp(studentId, xp,
                     XpReason.mision_completada, submission.getId(), "submission", reviewerId);
-            progressService.updateSubjectProgress(
-                    studentId, submission.getContent().getSubject().getId(), xp);
+            progressService.updateSubjectProgress(studentId, subjectId, xp);
             progressService.recordDailyActivity(studentId, LocalDate.now(), 1, xp);
             achievementChecker.checkAndAward(studentId);
         }

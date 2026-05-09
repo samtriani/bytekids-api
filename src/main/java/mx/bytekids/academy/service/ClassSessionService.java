@@ -12,6 +12,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ public class ClassSessionService {
     private final ClassSessionRepository        sessionRepo;
     private final ClassScheduleRepository       scheduleRepo;
     private final ClassSessionMissionRepository missionRepo;
+    private final ClassSessionMessageRepository messageRepo;
     private final ContentService                contentService;
     private final UserService                   userService;
 
@@ -160,6 +162,42 @@ public class ClassSessionService {
                 ? m.getContent().getSubject().getIcon() : "📚");
         r.put("launchedAt",   m.getLaunchedAt() != null ? m.getLaunchedAt().toString() : "");
         r.put("launchedBy",   m.getLaunchedBy().getDisplayName());
+        return r;
+    }
+
+    // ── Chat del aula ─────────────────────────────────────────────────────────
+
+    @Transactional
+    public Map<String, Object> sendChatMessage(UUID scheduleId, UUID senderId, String content) {
+        ClassSchedule schedule = findSchedule(scheduleId);
+        User sender = userService.findById(senderId);
+        ClassSessionMessage msg = ClassSessionMessage.builder()
+                .schedule(schedule).sessionDate(LocalDate.now())
+                .sender(sender).content(content.trim())
+                .build();
+        return toMsgMap(messageRepo.save(msg));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getChatMessages(UUID scheduleId, OffsetDateTime since) {
+        ClassSchedule schedule = findSchedule(scheduleId);
+        List<ClassSessionMessage> msgs = since != null
+                ? messageRepo.findByScheduleAndSessionDateAndSentAtAfterOrderBySentAtAsc(
+                        schedule, LocalDate.now(), since)
+                : messageRepo.findByScheduleAndSessionDateOrderBySentAtAsc(
+                        schedule, LocalDate.now());
+        return msgs.stream().map(this::toMsgMap).collect(Collectors.toList());
+    }
+
+    private Map<String, Object> toMsgMap(ClassSessionMessage m) {
+        Map<String, Object> r = new HashMap<>();
+        r.put("id",          m.getId());
+        r.put("content",     m.getContent());
+        r.put("senderId",    m.getSender().getId());
+        r.put("senderName",  m.getSender().getDisplayName());
+        r.put("senderInit",  m.getSender().getInitials() != null ? m.getSender().getInitials() : "?");
+        r.put("senderRole",  m.getSender().getRole().name());
+        r.put("sentAt",      m.getSentAt() != null ? m.getSentAt().toString() : "");
         return r;
     }
 

@@ -8,6 +8,7 @@ import mx.bytekids.academy.entity.*;
 import mx.bytekids.academy.entity.enums.ContentType;
 import mx.bytekids.academy.exception.BusinessException;
 import mx.bytekids.academy.exception.ResourceNotFoundException;
+import mx.bytekids.academy.repository.ClassroomRepository;
 import mx.bytekids.academy.repository.ContentAssignmentRepository;
 import mx.bytekids.academy.repository.ContentRepository;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ContentService {
 
-    private final ContentRepository contentRepository;
-    private final ContentAssignmentRepository assignmentRepository;
-    private final SubjectService subjectService;
-    private final UserService userService;
-    private final ClassroomService classroomService;
+    private final ContentRepository           contentRepository;
+    private final ContentAssignmentRepository  assignmentRepository;
+    private final SubjectService               subjectService;
+    private final UserService                  userService;
+    private final ClassroomService             classroomService;
+    private final ClassroomRepository          classroomRepository;
 
     public Content findById(UUID id) {
         return contentRepository.findById(id)
@@ -62,8 +64,19 @@ public class ContentService {
                 .estimatedMinutes(req.getEstimatedMinutes())
                 .contentBody(req.getContentBody())
                 .orderIndex(req.getOrderIndex())
+                .isPublished(true)   // auto-publicar al crear
                 .build();
-        return ContentResponse.from(contentRepository.save(content));
+
+        Content saved = contentRepository.save(content);
+
+        // Auto-asignar a todos los salones activos del maestro
+        classroomRepository.findByTeacherAndIsActiveTrue(creator).forEach(classroom ->
+            assignmentRepository.save(ContentAssignment.builder()
+                    .content(saved).classroom(classroom)
+                    .assignedBy(creator).build())
+        );
+
+        return ContentResponse.from(saved);
     }
 
     @Transactional

@@ -13,6 +13,7 @@ public class SubmissionResponse {
     private UUID id;
     private UUID studentId;
     private String studentName;
+    private String studentInitials;
     private UUID contentId;
     private String contentTitle;
     private String codeSubmitted;
@@ -28,6 +29,7 @@ public class SubmissionResponse {
                 .id(s.getId())
                 .studentId(s.getStudent().getId())
                 .studentName(s.getStudent().getDisplayName())
+                .studentInitials(s.getStudent().getInitials())
                 .contentId(s.getContent().getId())
                 .contentTitle(s.getContent().getTitle())
                 .codeSubmitted(s.getCodeSubmitted())
