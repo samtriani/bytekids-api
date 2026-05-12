@@ -39,4 +39,8 @@ public class ClassSession {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
+
+    @Column(name = "video_active", nullable = false)
+    @Builder.Default
+    private Boolean videoActive = false;
 }

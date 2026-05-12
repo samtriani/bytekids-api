@@ -530,6 +530,7 @@ CREATE TABLE IF NOT EXISTS class_sessions (
     session_date    DATE         NOT NULL,
     joined_at       TIMESTAMPTZ  DEFAULT now(),
     left_at         TIMESTAMPTZ,
+    video_active    BOOLEAN NOT NULL DEFAULT false,
     is_active       BOOLEAN      NOT NULL DEFAULT true,
     PRIMARY KEY (id),
     UNIQUE (schedule_id, participant_id, session_date)

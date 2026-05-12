@@ -90,6 +90,18 @@ public class ClassSessionService {
     }
 
     @Transactional
+    public boolean toggleVideo(UUID scheduleId, UUID userId) {
+        ClassSchedule schedule = findSchedule(scheduleId);
+        User user = userService.findById(userId);
+        ClassSession session = sessionRepo
+                .findByScheduleAndParticipantAndSessionDate(schedule, user, LocalDate.now())
+                .orElseThrow(() -> new BusinessException("No estás en sesión activa."));
+        session.setVideoActive(!Boolean.TRUE.equals(session.getVideoActive()));
+        sessionRepo.save(session);
+        return Boolean.TRUE.equals(session.getVideoActive());
+    }
+
+    @Transactional
     public void leave(UUID scheduleId, UUID userId) {
         ClassSchedule schedule = findSchedule(scheduleId);
         User user = userService.findById(userId);
@@ -102,18 +114,30 @@ public class ClassSessionService {
                 });
     }
 
-    public List<Map<String, Object>> getAttendance(UUID scheduleId) {
+    public Map<String, Object> getAttendance(UUID scheduleId) {
         ClassSchedule schedule = findSchedule(scheduleId);
-        return sessionRepo.findByScheduleAndSessionDateAndIsActiveTrue(schedule, LocalDate.now())
-                .stream()
-                .map(s -> Map.<String, Object>of(
-                        "userId",      s.getParticipant().getId(),
-                        "displayName", s.getParticipant().getDisplayName(),
-                        "initials",    s.getParticipant().getInitials() != null ? s.getParticipant().getInitials() : "?",
-                        "role",        s.getParticipant().getRole().name(),
-                        "joinedAt",    s.getJoinedAt().toString()
-                ))
+        List<ClassSession> sessions = sessionRepo.findByScheduleAndSessionDateAndIsActiveTrue(schedule, LocalDate.now());
+
+        boolean teacherVideoActive = sessions.stream()
+                .anyMatch(s -> "teacher".equals(s.getParticipant().getRole().name())
+                        && Boolean.TRUE.equals(s.getVideoActive()));
+
+        List<Map<String, Object>> participants = sessions.stream()
+                .map(s -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("userId",      s.getParticipant().getId());
+                    m.put("displayName", s.getParticipant().getDisplayName());
+                    m.put("initials",    s.getParticipant().getInitials() != null ? s.getParticipant().getInitials() : "?");
+                    m.put("role",        s.getParticipant().getRole().name());
+                    m.put("joinedAt",    s.getJoinedAt().toString());
+                    return m;
+                })
                 .collect(Collectors.toList());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("participants",       participants);
+        result.put("teacherVideoActive", teacherVideoActive);
+        return result;
     }
 
     public boolean isActive(UUID scheduleId) {

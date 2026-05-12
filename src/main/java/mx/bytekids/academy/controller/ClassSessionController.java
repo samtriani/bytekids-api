@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import mx.bytekids.academy.dto.common.ApiResponse;
 import mx.bytekids.academy.security.SecurityUtils;
 import mx.bytekids.academy.service.ClassSessionService;
+import mx.bytekids.academy.service.JaasTokenService;
 import mx.bytekids.academy.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +25,8 @@ import java.util.UUID;
 public class ClassSessionController {
 
     private final ClassSessionService sessionService;
-    private final UserService userService;
+    private final JaasTokenService    jaasTokenService;
+    private final UserService         userService;
 
     @GetMapping("/schedule/{scheduleId}/status")
     @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR','TEACHER','STUDENT')")
@@ -53,9 +55,29 @@ public class ClassSessionController {
 
     @GetMapping("/schedule/{scheduleId}/attendance")
     @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
-    @Operation(summary = "Participantes activos en la sesión de hoy")
-    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> attendance(@PathVariable UUID scheduleId) {
+    @Operation(summary = "Participantes activos + estado de video del maestro")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> attendance(@PathVariable UUID scheduleId) {
         return ResponseEntity.ok(ApiResponse.ok(sessionService.getAttendance(scheduleId)));
+    }
+
+    @GetMapping("/schedule/{scheduleId}/jaas-token")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @Operation(summary = "JWT firmado para JaaS (Jitsi as a Service)")
+    public ResponseEntity<ApiResponse<String>> jaasToken(@PathVariable UUID scheduleId) {
+        var user  = userService.findByUsername(SecurityUtils.currentUsername());
+        var appId = "vpaas-magic-cookie-7825138c95d24c7cb6f660d4a535d186";
+        var room  = appId + "/ByteKids-" + scheduleId.toString().replace("-", "");
+        var token = jaasTokenService.generateToken(user, room);
+        return ResponseEntity.ok(ApiResponse.ok(token));
+    }
+
+    @PostMapping("/schedule/{scheduleId}/video")
+    @PreAuthorize("hasRole('TEACHER')")
+    @Operation(summary = "Maestro activa/desactiva videollamada")
+    public ResponseEntity<ApiResponse<Boolean>> toggleVideo(@PathVariable UUID scheduleId) {
+        var user = userService.findByUsername(SecurityUtils.currentUsername());
+        boolean active = sessionService.toggleVideo(scheduleId, user.getId());
+        return ResponseEntity.ok(ApiResponse.ok(active ? "Videollamada iniciada" : "Videollamada finalizada", active));
     }
 
     @PostMapping("/schedule/{scheduleId}/mission")
