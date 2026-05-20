@@ -65,8 +65,8 @@ public class ClassSessionController {
     @Operation(summary = "JWT firmado para JaaS (Jitsi as a Service)")
     public ResponseEntity<ApiResponse<String>> jaasToken(@PathVariable UUID scheduleId) {
         var user  = userService.findByUsername(SecurityUtils.currentUsername());
-        var appId = "vpaas-magic-cookie-7825138c95d24c7cb6f660d4a535d186";
-        var room  = appId + "/ByteKids-" + scheduleId.toString().replace("-", "");
+        // JaaS JWT: 'room' claim = short room name only (NO appId prefix)
+        var room  = "ByteKids-" + scheduleId.toString().replace("-", "");
         var token = jaasTokenService.generateToken(user, room);
         return ResponseEntity.ok(ApiResponse.ok(token));
     }

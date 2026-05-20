@@ -210,6 +210,7 @@ CREATE TABLE content (
   order_index       SMALLINT,        -- posición en el currículo de la materia
   is_published      BOOLEAN          NOT NULL DEFAULT FALSE,
   is_active         BOOLEAN          NOT NULL DEFAULT TRUE,
+  due_date TIMESTAMPTZ,
   created_at        TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ      NOT NULL DEFAULT NOW()
 );

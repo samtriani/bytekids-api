@@ -53,13 +53,12 @@ public class JaasTokenService {
                 || user.getRole() == UserRole.director
                 || user.getRole() == UserRole.admin;
 
-        Map<String, Object> userContext = Map.of(
-                "moderator", String.valueOf(isModerator),
-                "name",      user.getDisplayName(),
-                "id",        user.getId().toString(),
-                "avatar",    "",
-                "email",     user.getUsername() + "@bytekids.mx"
-        );
+        Map<String, Object> userContext = new java.util.HashMap<>();
+        userContext.put("moderator", isModerator);          // boolean, NOT String
+        userContext.put("name",      user.getDisplayName());
+        userContext.put("id",        user.getId().toString());
+        userContext.put("avatar",    "");
+        userContext.put("email",     user.getUsername() + "@bytekids.mx");
 
         Map<String, Object> features = Map.of(
                 "livestreaming",      "false",

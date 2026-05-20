@@ -13,6 +13,7 @@ import mx.bytekids.academy.repository.ClassScheduleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -24,6 +25,9 @@ public class ClassScheduleService {
     private static final Set<String> VALID_DAYS =
             Set.of("lunes", "martes", "miercoles", "jueves", "viernes", "sabado");
 
+    private static final List<String> DAY_ORDER =
+            List.of("lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo");
+
     private final ClassScheduleRepository scheduleRepository;
     private final ClassroomService classroomService;
     private final SubjectService subjectService;
@@ -33,14 +37,18 @@ public class ClassScheduleService {
         Classroom classroom = classroomService.findById(classroomId);
         return scheduleRepository
                 .findByClassroomAndIsActiveTrueOrderByDayOfWeekAscStartTimeAsc(classroom)
-                .stream().map(ClassScheduleResponse::from).toList();
+                .stream()
+                .sorted(Comparator.comparingInt(s -> DAY_ORDER.indexOf(s.getDayOfWeek())))
+                .map(ClassScheduleResponse::from).toList();
     }
 
     public List<ClassScheduleResponse> findByTeacher(UUID teacherId) {
         User teacher = userService.findById(teacherId);
         return scheduleRepository
                 .findByTeacherAndIsActiveTrueOrderByDayOfWeekAscStartTimeAsc(teacher)
-                .stream().map(ClassScheduleResponse::from).toList();
+                .stream()
+                .sorted(Comparator.comparingInt(s -> DAY_ORDER.indexOf(s.getDayOfWeek())))
+                .map(ClassScheduleResponse::from).toList();
     }
 
     @Transactional

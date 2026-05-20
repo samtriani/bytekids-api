@@ -18,6 +18,7 @@ public class ContentResponse {
     private UUID subjectId;
     private String subjectName;
     private String subjectIcon;
+    private String subjectColor;
     private UUID createdById;
     private String createdByName;
     private Short xpReward;
@@ -27,6 +28,7 @@ public class ContentResponse {
     private Short orderIndex;
     private Boolean isPublished;
     private OffsetDateTime createdAt;
+    private OffsetDateTime dueDate;
 
     public static ContentResponse from(Content c) {
         return ContentResponse.builder()
@@ -35,12 +37,14 @@ public class ContentResponse {
                 .subjectId(c.getSubject() != null ? c.getSubject().getId() : null)
                 .subjectName(c.getSubject() != null ? c.getSubject().getName() : null)
                 .subjectIcon(c.getSubject() != null ? c.getSubject().getIcon() : null)
+                .subjectColor(c.getSubject() != null ? c.getSubject().getColor() : null)
                 .createdById(c.getCreatedBy().getId())
                 .createdByName(c.getCreatedBy().getDisplayName())
                 .xpReward(c.getXpReward()).difficulty(c.getDifficulty())
                 .estimatedMinutes(c.getEstimatedMinutes()).contentBody(c.getContentBody())
                 .orderIndex(c.getOrderIndex()).isPublished(c.getIsPublished())
                 .createdAt(c.getCreatedAt())
+                .dueDate(c.getDueDate())
                 .build();
     }
 }

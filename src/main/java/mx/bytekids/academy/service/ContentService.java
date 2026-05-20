@@ -64,6 +64,7 @@ public class ContentService {
                 .estimatedMinutes(req.getEstimatedMinutes())
                 .contentBody(req.getContentBody())
                 .orderIndex(req.getOrderIndex())
+                .dueDate(req.getDueDate())
                 .isPublished(true)   // auto-publicar al crear
                 .build();
 
@@ -90,6 +91,7 @@ public class ContentService {
         content.setEstimatedMinutes(req.getEstimatedMinutes());
         content.setContentBody(req.getContentBody());
         content.setOrderIndex(req.getOrderIndex());
+        content.setDueDate(req.getDueDate());
         return ContentResponse.from(contentRepository.save(content));
     }
 
