@@ -45,6 +45,10 @@ app:
   jwt:
     secret: ${JWT_SECRET:bytekids-academy-super-secret-key-2026-must-be-32chars-min}
     expiration-ms: ${JWT_EXPIRATION_MS:604800000}   # 7 días
+  jaas:
+    app-id: ${JAAS_APP_ID:vpaas-magic-cookie-7825138c95d24c7cb6f660d4a535d186}
+    key-id: ${JAAS_KEY_ID:8a0eae}
+    private-key-path: ${JAAS_KEY_PATH:jitsi/Key 12_5_2026, 16_35_25.pk}
 
 management:
   endpoints:

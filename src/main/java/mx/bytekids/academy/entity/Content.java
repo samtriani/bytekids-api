@@ -76,4 +76,7 @@ public class Content {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    @Column(name = "due_date")
+    private OffsetDateTime dueDate;
 }

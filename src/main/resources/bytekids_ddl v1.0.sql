@@ -210,6 +210,7 @@ CREATE TABLE content (
   order_index       SMALLINT,        -- posición en el currículo de la materia
   is_published      BOOLEAN          NOT NULL DEFAULT FALSE,
   is_active         BOOLEAN          NOT NULL DEFAULT TRUE,
+  due_date TIMESTAMPTZ,
   created_at        TIMESTAMPTZ      NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ      NOT NULL DEFAULT NOW()
 );
@@ -518,6 +519,51 @@ CREATE TABLE class_schedules (
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT chk_schedule_time_order CHECK (end_time > start_time)
 );
+
+-- ============================================================
+--  Relación clase sesion
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS class_sessions (
+    id              UUID         NOT NULL DEFAULT gen_random_uuid(),
+    schedule_id     UUID         NOT NULL REFERENCES class_schedules(id),
+    participant_id  UUID         NOT NULL REFERENCES users(id),
+    session_date    DATE         NOT NULL,
+    joined_at       TIMESTAMPTZ  DEFAULT now(),
+    left_at         TIMESTAMPTZ,
+    video_active    BOOLEAN NOT NULL DEFAULT false,
+    is_active       BOOLEAN      NOT NULL DEFAULT true,
+    PRIMARY KEY (id),
+    UNIQUE (schedule_id, participant_id, session_date)
+);
+
+CREATE TABLE IF NOT EXISTS class_session_missions (
+    id           UUID         NOT NULL DEFAULT gen_random_uuid(),
+    schedule_id  UUID         NOT NULL REFERENCES class_schedules(id),
+    session_date DATE         NOT NULL,
+    content_id   UUID         NOT NULL REFERENCES content(id),
+    launched_by  UUID         NOT NULL REFERENCES users(id),
+    launched_at  TIMESTAMPTZ  DEFAULT now(),
+    PRIMARY KEY (id),
+    UNIQUE (schedule_id, session_date)
+);
+
+-- ============================================================
+--  Mensajes en clases
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS class_session_messages (
+    id           UUID        NOT NULL DEFAULT gen_random_uuid(),
+    schedule_id  UUID        NOT NULL REFERENCES class_schedules(id),
+    session_date DATE        NOT NULL,
+    sender_id    UUID        NOT NULL REFERENCES users(id),
+    content      TEXT        NOT NULL,
+    sent_at      TIMESTAMPTZ DEFAULT now(),
+    PRIMARY KEY (id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_session_msgs
+    ON class_session_messages(schedule_id, session_date, sent_at);
 
 -- ============================================================
 --  SEED: Materias iniciales

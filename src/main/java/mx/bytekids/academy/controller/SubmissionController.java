@@ -74,4 +74,11 @@ public class SubmissionController {
         return ResponseEntity.ok(ApiResponse.ok("Entrega calificada",
                 submissionService.review(id, req, teacher.getId())));
     }
+
+    @GetMapping("/gradebook/classroom/{classroomId}")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @Operation(summary = "Libreta de calificaciones por salón")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> gradebook(@PathVariable UUID classroomId) {
+        return ResponseEntity.ok(ApiResponse.ok(submissionService.getGradebook(classroomId)));
+    }
 }

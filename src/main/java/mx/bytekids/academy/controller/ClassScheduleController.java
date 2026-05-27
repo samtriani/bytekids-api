@@ -48,6 +48,15 @@ public class ClassScheduleController {
                 .body(ApiResponse.ok("Horario creado", scheduleService.create(req)));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Editar horario con validación de conflictos")
+    public ResponseEntity<ApiResponse<ClassScheduleResponse>> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody ClassScheduleRequest req) {
+        return ResponseEntity.ok(ApiResponse.ok("Horario actualizado", scheduleService.update(id, req)));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Eliminar entrada de horario")
