@@ -54,14 +54,25 @@ public class ClassSessionController {
     }
 
     @GetMapping("/schedule/{scheduleId}/attendance")
-    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN')")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN','DIRECTOR')")
     @Operation(summary = "Participantes activos + estado de video del maestro")
     public ResponseEntity<ApiResponse<Map<String, Object>>> attendance(@PathVariable UUID scheduleId) {
         return ResponseEntity.ok(ApiResponse.ok(sessionService.getAttendance(scheduleId)));
     }
 
+    @GetMapping("/live")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
+    @Operation(summary = "Clases con videollamada activa en este momento (supervisión)")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> live() {
+        return ResponseEntity.ok(ApiResponse.ok(sessionService.getLiveSessions()));
+    }
+
+    /**
+     * ADMIN y DIRECTOR obtienen el token pero NO llaman a join(): entran como
+     * observadores y no se registran en la asistencia de la clase.
+     */
     @GetMapping("/schedule/{scheduleId}/jaas-token")
-    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN','DIRECTOR')")
     @Operation(summary = "JWT firmado para JaaS (Jitsi as a Service)")
     public ResponseEntity<ApiResponse<String>> jaasToken(@PathVariable UUID scheduleId) {
         var user  = userService.findByUsername(SecurityUtils.currentUsername());
@@ -102,7 +113,7 @@ public class ClassSessionController {
     }
 
     @GetMapping("/schedule/{scheduleId}/chat")
-    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN','DIRECTOR')")
     @Operation(summary = "Mensajes del chat del aula de hoy")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getChat(
             @PathVariable UUID scheduleId,
@@ -113,7 +124,7 @@ public class ClassSessionController {
     }
 
     @GetMapping("/schedule/{scheduleId}/mission")
-    @PreAuthorize("hasAnyRole('TEACHER','STUDENT')")
+    @PreAuthorize("hasAnyRole('TEACHER','STUDENT','ADMIN','DIRECTOR')")
     @Operation(summary = "Obtener misión activa de la sesión")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getMission(@PathVariable UUID scheduleId) {
         Optional<Map<String, Object>> mission = sessionService.getCurrentMission(scheduleId);

@@ -144,6 +144,48 @@ public class ClassSessionService {
         return isActive(findSchedule(scheduleId));
     }
 
+    // ── Supervisión: clases transmitiendo ahora ───────────────────────────────
+
+    /** Clases con videollamada encendida ahora. El video lo prende el maestro. */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getLiveSessions() {
+        LocalDate today = LocalDate.now();
+
+        return sessionRepo.findBySessionDateAndIsActiveTrueAndVideoActiveTrue(today).stream()
+                .filter(s -> "teacher".equals(s.getParticipant().getRole().name()))
+                .map(teacherSession -> {
+                    ClassSchedule schedule = teacherSession.getSchedule();
+                    List<ClassSession> present =
+                            sessionRepo.findByScheduleAndSessionDateAndIsActiveTrue(schedule, today);
+
+                    long studentCount = present.stream()
+                            .filter(p -> "student".equals(p.getParticipant().getRole().name()))
+                            .count();
+
+                    long secondsLeft = Math.max(0,
+                            schedule.getEndTime().toSecondOfDay() - LocalTime.now().toSecondOfDay());
+
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("scheduleId",     schedule.getId());
+                    m.put("subjectName",    schedule.getSubject().getName());
+                    m.put("subjectIcon",    schedule.getSubject().getIcon() != null
+                            ? schedule.getSubject().getIcon() : "📚");
+                    m.put("classroomId",    schedule.getClassroom().getId());
+                    m.put("classroomName",  schedule.getClassroom().getName());
+                    m.put("teacherName",    schedule.getTeacher().getDisplayName());
+                    m.put("teacherId",      schedule.getTeacher().getId());
+                    m.put("startTime",      schedule.getStartTime().toString());
+                    m.put("endTime",        schedule.getEndTime().toString());
+                    m.put("startedAt",      teacherSession.getJoinedAt().toString());
+                    m.put("studentCount",   studentCount);
+                    m.put("secondsLeft",    secondsLeft);
+                    m.put("withinSchedule", isActive(schedule));
+                    return m;
+                })
+                .sorted(Comparator.comparing(m -> (String) m.get("startTime")))
+                .collect(Collectors.toList());
+    }
+
     // ── Misión del día ────────────────────────────────────────────────────────
 
     @Transactional
