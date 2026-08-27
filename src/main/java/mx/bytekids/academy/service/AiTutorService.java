@@ -62,7 +62,10 @@ public class AiTutorService {
         try {
             return callLlm(messages);
         } catch (Exception e) {
-            log.error("ByteBot error: {}", e.getMessage());
+            // Incluye modelo y URL: un 404 aqui casi siempre significa que el
+            // proveedor dio de baja el modelo, y sin este dato no se distingue
+            // de una llave invalida o de un problema de red.
+            log.error("ByteBot error [modelo={} url={}]: {}", aiModel, aiBaseUrl, e.getMessage());
             return "¡Ups! Estoy teniendo problemas técnicos. Intenta de nuevo en un momento 🔧";
         }
     }
@@ -211,7 +214,27 @@ public class AiTutorService {
         if (responseBody == null) throw new IllegalStateException("LLM returned null response");
 
         List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
-        Map<String, String> msg = (Map<String, String>) choices.get(0).get("message");
-        return msg.get("content").trim();
+        if (choices == null || choices.isEmpty()) {
+            throw new IllegalStateException("LLM no devolvio choices: " + responseBody);
+        }
+
+        Map<String, Object> choice = choices.get(0);
+        Map<String, Object> msg    = (Map<String, Object>) choice.get("message");
+        Object content = msg == null ? null : msg.get("content");
+        String text = content == null ? "" : content.toString().trim();
+
+        if (text.isEmpty()) {
+            // Los modelos de razonamiento (openai/gpt-oss-*) escriben su cadena de
+            // pensamiento en 'reasoning' y dejan 'content' vacio si se acaban los
+            // max_tokens antes de responder. Sin esto el usuario ve una burbuja en
+            // blanco sin ningun error en el log.
+            throw new IllegalStateException(
+                    "El modelo '" + aiModel + "' devolvio contenido vacio"
+                    + " (finish_reason=" + choice.get("finish_reason") + ")."
+                    + (msg != null && msg.get("reasoning") != null
+                       ? " Parece un modelo de razonamiento: subir max_tokens o usar un modelo de chat."
+                       : ""));
+        }
+        return text;
     }
 }
