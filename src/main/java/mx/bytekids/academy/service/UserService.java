@@ -19,8 +19,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserRepository   userRepository;
+    private final PasswordEncoder  passwordEncoder;
+    private final OwnershipService ownershipService;
 
     public User findByUsername(String username) {
         return userRepository.findByUsernameAndIsActiveTrue(username)
@@ -42,6 +43,7 @@ public class UserService {
 
     @Transactional
     public UserResponse create(UserRequest request) {
+        ownershipService.requireOwnerToCreate(request.getRole());
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new BusinessException("La contraseña es requerida para crear un usuario");
         }
@@ -65,6 +67,7 @@ public class UserService {
     @Transactional
     public UserResponse update(UUID id, UserRequest request) {
         User user = findById(id);
+        ownershipService.requireOwnerToModify(user, request.getRole());
         String normalizedUsername = request.getUsername().trim().toLowerCase();
         if (!user.getUsername().equals(normalizedUsername) && userRepository.existsByUsername(normalizedUsername)) {
             throw new BusinessException("El usuario '" + normalizedUsername + "' ya existe");
@@ -85,6 +88,7 @@ public class UserService {
     @Transactional
     public void deactivate(UUID id) {
         User user = findById(id);
+        ownershipService.requireOwnerToModify(user, user.getRole());
         user.setIsActive(false);
         userRepository.save(user);
     }

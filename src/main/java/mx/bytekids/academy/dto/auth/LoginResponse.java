@@ -13,4 +13,6 @@ public class LoginResponse {
     private String username;
     private String displayName;
     private String role;
+    /** true si puede crear/modificar cuentas de coordinador y director. */
+    private boolean owner;
 }

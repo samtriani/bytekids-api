@@ -42,6 +42,11 @@ spring:
 app:
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
+  security:
+    # Únicos usuarios que pueden crear o modificar cuentas de coordinador
+    # (admin) y director. Separar con comas. Se cambia en caliente con:
+    #   flyctl secrets set OWNER_USERNAMES="samuel.partida,otro.usuario"
+    owner-usernames: ${OWNER_USERNAMES:samuel.partida}
   jwt:
     secret: ${JWT_SECRET:bytekids-academy-super-secret-key-2026-must-be-32chars-min}
     expiration-ms: ${JWT_EXPIRATION_MS:604800000}   # 7 días

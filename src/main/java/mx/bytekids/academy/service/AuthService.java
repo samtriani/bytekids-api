@@ -16,6 +16,7 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final OwnershipService ownershipService;
 
     public LoginResponse login(LoginRequest req) {
         Authentication auth = authManager.authenticate(
@@ -32,6 +33,7 @@ public class AuthService {
                 .username(user.getUsername())
                 .displayName(user.getDisplayName())
                 .role(user.getRole().name())
+                .owner(ownershipService.isOwner(user.getUsername()))
                 .build();
     }
 }
