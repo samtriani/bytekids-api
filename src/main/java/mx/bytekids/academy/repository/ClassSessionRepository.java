@@ -17,4 +17,7 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, UUID
 
     Optional<ClassSession> findByScheduleAndParticipantAndSessionDate(
             ClassSchedule schedule, User participant, LocalDate date);
+
+    // Sesiones con videollamada encendida hoy (solo el maestro prende el video)
+    List<ClassSession> findBySessionDateAndIsActiveTrueAndVideoActiveTrue(LocalDate date);
 }
