@@ -122,6 +122,12 @@ public class SubmissionService {
                 .filter(c -> Boolean.TRUE.equals(c.getIsPublished()) && Boolean.TRUE.equals(c.getIsActive()))
                 .filter(c -> c.getType() != mx.bytekids.academy.entity.enums.ContentType.material)
                 .distinct()
+                // En orden de currículo: las columnas de la libreta deben seguir la
+                // secuencia que el maestro planeó, no el orden en que se asignaron.
+                .sorted(java.util.Comparator
+                        .comparing((Content c) -> c.getSubject() != null ? c.getSubject().getName() : "")
+                        .thenComparing(c -> c.getOrderIndex() != null ? c.getOrderIndex().intValue() : Integer.MAX_VALUE)
+                        .thenComparing(Content::getTitle))
                 .toList();
 
         Map<String, Map<String, Object>> grades = new HashMap<>();

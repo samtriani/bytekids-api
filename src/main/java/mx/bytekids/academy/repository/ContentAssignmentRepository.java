@@ -23,7 +23,9 @@ public interface ContentAssignmentRepository extends JpaRepository<ContentAssign
                    SELECT ce.classroom FROM ClassroomEnrollment ce
                    WHERE ce.student = :student AND ce.isActive = true
                ))
-        ORDER BY ca.assignedAt DESC
+        ORDER BY ca.content.subject.name ASC,
+                 ca.content.orderIndex ASC NULLS LAST,
+                 ca.assignedAt ASC
         """)
     List<ContentAssignment> findAllAssignmentsForStudent(User student);
 }
