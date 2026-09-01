@@ -76,7 +76,8 @@ public class ContentController {
     @Operation(summary = "Actualizar contenido")
     public ResponseEntity<ApiResponse<ContentResponse>> update(@PathVariable UUID id,
                                                                 @Valid @RequestBody ContentRequest req) {
-        return ResponseEntity.ok(ApiResponse.ok(contentService.update(id, req)));
+        var actor = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok(contentService.update(id, req, actor.getId())));
     }
 
     @PostMapping("/{id}/publish")
@@ -100,7 +101,8 @@ public class ContentController {
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @Operation(summary = "Desactivar contenido")
     public ResponseEntity<ApiResponse<Void>> deactivate(@PathVariable UUID id) {
-        contentService.deactivate(id);
+        var actor = userService.findByUsername(SecurityUtils.currentUsername());
+        contentService.deactivate(id, actor.getId());
         return ResponseEntity.ok(ApiResponse.ok("Contenido desactivado", null));
     }
 }
