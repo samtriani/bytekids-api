@@ -11,7 +11,10 @@ primary_region = 'iad'
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = 'stop'
+  # 'suspend' congela la RAM en vez de apagar la maquina: el arranque en frio
+  # de Spring Boot pasa de ~40s a ~1-2s. Con 'stop' el primer request tras un
+  # rato de inactividad se caia y el usuario veia pantallas en cero.
+  auto_stop_machines = 'suspend'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
