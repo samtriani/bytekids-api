@@ -80,6 +80,15 @@ public class ContentController {
         return ResponseEntity.ok(ApiResponse.ok(contentService.update(id, req, actor.getId())));
     }
 
+    @PostMapping("/{id}/adopt")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
+    @Operation(summary = "Adoptar contenido al plan base (coordinación pasa a ser dueña)")
+    public ResponseEntity<ApiResponse<ContentResponse>> adopt(@PathVariable UUID id) {
+        var actor = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok("Adoptado al plan base",
+                contentService.adoptar(id, actor.getId())));
+    }
+
     @PostMapping("/{id}/publish")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @Operation(summary = "Publicar contenido")
