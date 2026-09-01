@@ -46,10 +46,37 @@ public class ContentService {
                 .stream().map(ContentResponse::from).toList();
     }
 
+    /**
+     * Todo el contenido con el que trabaja un maestro: lo que el creó (editable)
+     * mas lo asignado a sus salones, que incluye el plan base de coordinacion
+     * (solo lectura).
+     *
+     * Antes filtraba unicamente por autoria, asi que al adoptar el plan base la
+     * pantalla del maestro se quedaba vacia aunque siguiera impartiendo esa
+     * clase todos los dias.
+     */
     public List<ContentResponse> findByTeacher(UUID teacherId) {
         User teacher = userService.findById(teacherId);
-        return contentRepository.findByCreatedByAndIsActiveTrue(teacher)
-                .stream().map(ContentResponse::from).toList();
+        Set<UUID> vistos = new HashSet<>();
+        List<Content> resultado = new java.util.ArrayList<>();
+
+        contentRepository.findByCreatedByAndIsActiveTrue(teacher).stream()
+                .filter(c -> vistos.add(c.getId()))
+                .forEach(resultado::add);
+
+        classroomRepository.findByTeacherAndIsActiveTrue(teacher).forEach(salon ->
+                assignmentRepository.findByClassroomAndIsActiveTrue(salon).stream()
+                        .map(ContentAssignment::getContent)
+                        .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                        .filter(c -> vistos.add(c.getId()))
+                        .forEach(resultado::add));
+
+        resultado.sort(java.util.Comparator
+                .comparing((Content c) -> c.getSubject() != null ? c.getSubject().getName() : "")
+                .thenComparing(c -> c.getOrderIndex() != null ? c.getOrderIndex().intValue() : Integer.MAX_VALUE)
+                .thenComparing(Content::getTitle));
+
+        return resultado.stream().map(ContentResponse::from).toList();
     }
 
     @Transactional
