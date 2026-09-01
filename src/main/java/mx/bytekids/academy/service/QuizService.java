@@ -1,6 +1,7 @@
 package mx.bytekids.academy.service;
 
 import lombok.RequiredArgsConstructor;
+import mx.bytekids.academy.dto.quiz.QuizQuestionResponse;
 import mx.bytekids.academy.entity.*;
 import mx.bytekids.academy.entity.enums.XpReason;
 import mx.bytekids.academy.exception.BusinessException;
@@ -27,9 +28,17 @@ public class QuizService {
     private final UserService userService;
     private final ProgressService progressService;
 
-    public List<QuizQuestion> findQuestions(UUID contentId) {
+    /**
+     * Preguntas con sus opciones. Antes devolvia la entidad cruda, que no tiene
+     * relacion a opciones: el alumno veia la pregunta y ningun lugar donde
+     * responder. Se arma el DTO para incluirlas sin filtrar cual es la correcta.
+     */
+    public List<QuizQuestionResponse> findQuestions(UUID contentId) {
         Content content = contentService.findById(contentId);
-        return questionRepository.findByContentOrderByOrderIndexAsc(content);
+        return questionRepository.findByContentOrderByOrderIndexAsc(content).stream()
+                .map(q -> QuizQuestionResponse.from(
+                        q, optionRepository.findByQuestionOrderByOrderIndexAsc(q)))
+                .toList();
     }
 
     @Transactional
