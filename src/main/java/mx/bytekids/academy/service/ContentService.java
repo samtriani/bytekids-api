@@ -121,6 +121,23 @@ public class ContentService {
         return ContentResponse.from(contentRepository.save(content));
     }
 
+    /**
+     * Coordinacion adopta un contenido al plan base: pasa a ser su dueña y el
+     * maestro deja de poder editarlo. Sirve para promover algo que hizo un
+     * maestro y merece ser institucional, y para corregir la autoria de lo que
+     * se cargo con la cuenta equivocada.
+     */
+    @Transactional
+    public ContentResponse adoptar(UUID contentId, UUID nuevoDuenoId) {
+        User nuevoDueno = userService.findById(nuevoDuenoId);
+        if (nuevoDueno.getRole() != UserRole.admin && nuevoDueno.getRole() != UserRole.director) {
+            throw new BusinessException("Solo coordinación o dirección pueden ser dueños del plan base.");
+        }
+        Content content = findById(contentId);
+        content.setCreatedBy(nuevoDueno);
+        return ContentResponse.from(contentRepository.save(content));
+    }
+
     @Transactional
     public ContentResponse publish(UUID id) {
         Content content = findById(id);
