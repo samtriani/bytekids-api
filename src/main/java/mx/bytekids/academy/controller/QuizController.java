@@ -11,6 +11,7 @@ import mx.bytekids.academy.security.SecurityUtils;
 import mx.bytekids.academy.service.QuizService;
 import mx.bytekids.academy.service.UserService;
 import org.springframework.http.ResponseEntity;
+import mx.bytekids.academy.dto.quiz.QuizQuestionResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +30,7 @@ public class QuizController {
 
     @GetMapping("/{contentId}/questions")
     @Operation(summary = "Preguntas de un quiz")
-    public ResponseEntity<ApiResponse<List<QuizQuestion>>> questions(@PathVariable UUID contentId) {
+    public ResponseEntity<ApiResponse<List<QuizQuestionResponse>>> questions(@PathVariable UUID contentId) {
         return ResponseEntity.ok(ApiResponse.ok(quizService.findQuestions(contentId)));
     }
 
