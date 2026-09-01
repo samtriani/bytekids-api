@@ -6,6 +6,7 @@ import mx.bytekids.academy.dto.content.ContentRequest;
 import mx.bytekids.academy.dto.content.ContentResponse;
 import mx.bytekids.academy.entity.*;
 import mx.bytekids.academy.entity.enums.ContentType;
+import mx.bytekids.academy.entity.enums.UserRole;
 import mx.bytekids.academy.exception.BusinessException;
 import mx.bytekids.academy.exception.ResourceNotFoundException;
 import mx.bytekids.academy.repository.ClassroomRepository;
@@ -70,19 +71,44 @@ public class ContentService {
 
         Content saved = contentRepository.save(content);
 
-        // Auto-asignar a todos los salones activos del maestro
-        classroomRepository.findByTeacherAndIsActiveTrue(creator).forEach(classroom ->
-            assignmentRepository.save(ContentAssignment.builder()
-                    .content(saved).classroom(classroom)
-                    .assignedBy(creator).build())
-        );
+        // Se asigna a los salones que pide la peticion, no a "todos los del creador".
+        // Aquel comportamiento (a) ignoraba el salon elegido en el formulario,
+        // (b) duplicaba la asignacion porque la UI llama assign() despues, y
+        // (c) no servia para coordinacion, que no es titular de ningun salon.
+        if (req.getClassroomIds() != null) {
+            req.getClassroomIds().stream().distinct().forEach(classroomId ->
+                assignmentRepository.save(ContentAssignment.builder()
+                        .content(saved)
+                        .classroom(classroomService.findById(classroomId))
+                        .assignedBy(creator).build()));
+        }
 
         return ContentResponse.from(saved);
     }
 
+    /**
+     * Modelo hibrido: coordinacion y direccion son dueñas del plan base, y el
+     * maestro complementa con contenido propio para su grupo. Por eso un maestro
+     * no puede tocar lo que creo coordinacion, aunque se lo hayan asignado.
+     * Coordinacion si puede editar cualquier cosa.
+     */
+    private void exigirPropiedad(Content content, UUID actorId) {
+        User actor = userService.findById(actorId);
+        boolean esCoordinacion = actor.getRole() == UserRole.admin || actor.getRole() == UserRole.director;
+        if (esCoordinacion) return;
+
+        boolean esSuyo = content.getCreatedBy().getId().equals(actorId);
+        if (!esSuyo) {
+            throw new BusinessException(
+                    "Este contenido es del plan base de la escuela. Pide a coordinación que lo ajuste, "
+                  + "o crea uno propio para tu grupo.");
+        }
+    }
+
     @Transactional
-    public ContentResponse update(UUID id, ContentRequest req) {
+    public ContentResponse update(UUID id, ContentRequest req, UUID actorId) {
         Content content = findById(id);
+        exigirPropiedad(content, actorId);
         content.setTitle(req.getTitle());
         content.setDescription(req.getDescription());
         if (req.getSubjectId() != null) content.setSubject(subjectService.findById(req.getSubjectId()));
@@ -136,8 +162,9 @@ public class ContentService {
     }
 
     @Transactional
-    public void deactivate(UUID id) {
+    public void deactivate(UUID id, UUID actorId) {
         Content content = findById(id);
+        exigirPropiedad(content, actorId);
         content.setIsActive(false);
         contentRepository.save(content);
     }

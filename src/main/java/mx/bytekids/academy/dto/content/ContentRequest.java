@@ -7,6 +7,7 @@ import mx.bytekids.academy.entity.enums.ContentType;
 import mx.bytekids.academy.entity.enums.DifficultyLevel;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -26,4 +27,7 @@ public class ContentRequest {
     private String contentBody;
     private Short orderIndex;
     private OffsetDateTime dueDate;
+
+    /** Salones a los que se asigna al crear. Vacio = no se asigna a ninguno. */
+    private List<UUID> classroomIds;
 }

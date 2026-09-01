@@ -1,6 +1,7 @@
 package mx.bytekids.academy.dto.content;
 
 import lombok.Builder;
+import mx.bytekids.academy.entity.enums.UserRole;
 import lombok.Data;
 import mx.bytekids.academy.entity.Content;
 import mx.bytekids.academy.entity.enums.ContentType;
@@ -30,6 +31,12 @@ public class ContentResponse {
     private OffsetDateTime createdAt;
     private OffsetDateTime dueDate;
 
+    /**
+     * true cuando lo creo coordinacion o direccion: es plan base de la escuela y
+     * el maestro no lo edita. Se deriva del rol del autor, sin columna nueva.
+     */
+    private Boolean basePlan;
+
     public static ContentResponse from(Content c) {
         return ContentResponse.builder()
                 .id(c.getId()).title(c.getTitle()).description(c.getDescription())
@@ -45,6 +52,12 @@ public class ContentResponse {
                 .orderIndex(c.getOrderIndex()).isPublished(c.getIsPublished())
                 .createdAt(c.getCreatedAt())
                 .dueDate(c.getDueDate())
+                .basePlan(esPlanBase(c))
                 .build();
+    }
+
+    private static boolean esPlanBase(Content c) {
+        var rol = c.getCreatedBy().getRole();
+        return rol == UserRole.admin || rol == UserRole.director;
     }
 }
