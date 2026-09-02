@@ -73,15 +73,26 @@ public class SubmissionService {
         var existing = submissionRepository.findTopByStudentAndContentOrderBySubmittedAtDesc(student, content);
         short attempts = existing.map(s -> (short) (s.getAttemptsCount() + 1)).orElse((short) 1);
 
+        // Un material es de consulta, no de entrega: el maestro no lo califica y
+        // de hecho ni aparece en la libreta. Antes quedaba "En progreso" para
+        // siempre. Al marcarlo como visto se aprueba solo y paga su XP.
+        boolean esMaterial = content.getType() == mx.bytekids.academy.entity.enums.ContentType.material;
+
         Submission submission = Submission.builder()
                 .student(student).content(content).assignment(assignment)
                 .codeSubmitted(req.getCodeSubmitted())
-                .status(SubmissionStatus.enviado)
+                .status(esMaterial ? SubmissionStatus.aprobado : SubmissionStatus.enviado)
                 .attemptsCount(attempts)
                 .build();
 
-        progressService.recordDailyActivity(studentId, LocalDate.now(), 0, 0);
-        return SubmissionResponse.from(submissionRepository.save(submission));
+        Submission guardada = submissionRepository.save(submission);
+
+        if (esMaterial) {
+            otorgarXpUnaVez(guardada, student.getId(), null);
+        } else {
+            progressService.recordDailyActivity(studentId, LocalDate.now(), 0, 0);
+        }
+        return SubmissionResponse.from(guardada);
     }
 
     @Transactional
@@ -100,23 +111,32 @@ public class SubmissionService {
         // tambien contaba cinco dias de actividad y volvia a evaluar los logros.
         // Se consulta el evento de XP en vez del estado anterior, para que
         // aprobar -> pedir correcciones -> aprobar tampoco pague dos veces.
-        boolean yaSePagoXp = xpEventRepository
-                .existsByReferenceIdAndReferenceType(submission.getId(), "submission");
-
-        if (req.getStatus() == SubmissionStatus.aprobado && !yaSePagoXp) {
-            UUID studentId  = submission.getStudent().getId();
-            short xp        = submission.getContent().getXpReward();
-            UUID subjectId  = submission.getContent().getSubject() != null
-                    ? submission.getContent().getSubject().getId() : null;
-
-            progressService.awardXp(studentId, xp,
-                    XpReason.mision_completada, submission.getId(), "submission", reviewerId);
-            progressService.updateSubjectProgress(studentId, subjectId, xp);
-            progressService.recordDailyActivity(studentId, LocalDate.now(), 1, xp);
-            achievementChecker.checkAndAward(studentId);
+        if (req.getStatus() == SubmissionStatus.aprobado) {
+            otorgarXpUnaVez(submission, submission.getStudent().getId(), reviewerId);
         }
 
         return SubmissionResponse.from(submissionRepository.save(submission));
+    }
+
+    /**
+     * Paga el XP de una entrega, una sola vez. Se consulta el evento de XP y no
+     * el estado anterior, para que aprobar -> pedir correcciones -> aprobar
+     * tampoco pague dos veces.
+     */
+    private void otorgarXpUnaVez(Submission submission, UUID studentId, UUID otorgadoPor) {
+        boolean yaSePago = xpEventRepository
+                .existsByReferenceIdAndReferenceType(submission.getId(), "submission");
+        if (yaSePago) return;
+
+        short xp       = submission.getContent().getXpReward();
+        UUID subjectId = submission.getContent().getSubject() != null
+                ? submission.getContent().getSubject().getId() : null;
+
+        progressService.awardXp(studentId, xp,
+                XpReason.mision_completada, submission.getId(), "submission", otorgadoPor);
+        progressService.updateSubjectProgress(studentId, subjectId, xp);
+        progressService.recordDailyActivity(studentId, LocalDate.now(), 1, xp);
+        achievementChecker.checkAndAward(studentId);
     }
 
     @Transactional(readOnly = true)
@@ -126,12 +146,24 @@ public class SubmissionService {
 
         List<User> students = enrollmentRepository.findActiveStudentsByClassroom(classroom);
 
-        List<Content> contents = assignmentRepository.findByClassroomAndIsActiveTrue(classroom)
+        List<Content> asignados = assignmentRepository.findByClassroomAndIsActiveTrue(classroom)
                 .stream()
                 .map(ContentAssignment::getContent)
                 .filter(c -> Boolean.TRUE.equals(c.getIsPublished()) && Boolean.TRUE.equals(c.getIsActive()))
-                .filter(c -> c.getType() != mx.bytekids.academy.entity.enums.ContentType.material)
                 .distinct()
+                .toList();
+
+        // Los materiales no se califican, pero el maestro si necesita saber quien
+        // ya los consulto. Van aparte para no ensuciar el promedio del salon.
+        List<Content> materiales = asignados.stream()
+                .filter(c -> c.getType() == mx.bytekids.academy.entity.enums.ContentType.material)
+                .sorted(java.util.Comparator
+                        .comparing(c -> c.getOrderIndex() != null ? c.getOrderIndex().intValue() : Integer.MAX_VALUE))
+                .toList();
+
+        List<Content> contents = asignados
+                .stream()
+                .filter(c -> c.getType() != mx.bytekids.academy.entity.enums.ContentType.material)
                 // En orden de currículo: las columnas de la libreta deben seguir la
                 // secuencia que el maestro planeó, no el orden en que se asignaron.
                 .sorted(java.util.Comparator
@@ -157,7 +189,31 @@ public class SubmissionService {
             grades.put(student.getId().toString(), sg);
         }
 
+        // Quien ya consulto cada material
+        Map<String, Map<String, Object>> lecturas = new HashMap<>();
+        for (User student : students) {
+            Map<String, Object> porAlumno = new HashMap<>();
+            for (Content material : materiales) {
+                submissionRepository.findTopByStudentAndContentOrderBySubmittedAtDesc(student, material)
+                        .ifPresent(sub -> {
+                            Map<String, Object> entry = new HashMap<>();
+                            entry.put("readAt", sub.getSubmittedAt() != null ? sub.getSubmittedAt().toString() : null);
+                            porAlumno.put(material.getId().toString(), entry);
+                        });
+            }
+            lecturas.put(student.getId().toString(), porAlumno);
+        }
+
         Map<String, Object> result = new HashMap<>();
+        result.put("materials", materiales.stream().map(c -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", c.getId());
+            m.put("title", c.getTitle());
+            m.put("orderIndex", c.getOrderIndex());
+            m.put("xpReward", c.getXpReward());
+            return m;
+        }).toList());
+        result.put("reads", lecturas);
         result.put("students", students.stream().map(s -> {
             Map<String, Object> m = new HashMap<>();
             m.put("id", s.getId().toString());
