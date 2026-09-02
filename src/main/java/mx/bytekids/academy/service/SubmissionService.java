@@ -12,6 +12,7 @@ import mx.bytekids.academy.repository.ClassroomEnrollmentRepository;
 import mx.bytekids.academy.repository.ClassroomRepository;
 import mx.bytekids.academy.repository.ContentAssignmentRepository;
 import mx.bytekids.academy.repository.SubmissionRepository;
+import mx.bytekids.academy.repository.XpEventRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ public class SubmissionService {
     private final AchievementCheckerService     achievementChecker;
     private final ClassroomRepository           classroomRepository;
     private final ClassroomEnrollmentRepository enrollmentRepository;
+    private final XpEventRepository             xpEventRepository;
 
     public Submission findById(UUID id) {
         return submissionRepository.findById(id)
@@ -93,7 +95,15 @@ public class SubmissionService {
         submission.setReviewedAt(OffsetDateTime.now());
         submission.setReviewedBy(reviewer);
 
-        if (req.getStatus() == SubmissionStatus.aprobado) {
+        // El XP se paga UNA sola vez por entrega. Sin esto, cada clic en Aprobar
+        // volvia a otorgarlo: aprobar cinco veces daba cinco veces los puntos, y
+        // tambien contaba cinco dias de actividad y volvia a evaluar los logros.
+        // Se consulta el evento de XP en vez del estado anterior, para que
+        // aprobar -> pedir correcciones -> aprobar tampoco pague dos veces.
+        boolean yaSePagoXp = xpEventRepository
+                .existsByReferenceIdAndReferenceType(submission.getId(), "submission");
+
+        if (req.getStatus() == SubmissionStatus.aprobado && !yaSePagoXp) {
             UUID studentId  = submission.getStudent().getId();
             short xp        = submission.getContent().getXpReward();
             UUID subjectId  = submission.getContent().getSubject() != null

@@ -12,6 +12,9 @@ import java.util.UUID;
 public interface XpEventRepository extends JpaRepository<XpEvent, UUID> {
     List<XpEvent> findByStudentOrderByCreatedAtDesc(User student);
 
+    /** Para no volver a otorgar XP por algo que ya se pago. */
+    boolean existsByReferenceIdAndReferenceType(UUID referenceId, String referenceType);
+
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM XpEvent e WHERE e.student = :student")
     Integer sumXpByStudent(User student);
 
