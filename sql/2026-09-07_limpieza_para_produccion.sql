@@ -24,6 +24,18 @@
 
 
 -- ============================================================================
+--  PASO 0 — ¿YA CORRI EL PASO 2?
+--  Corre esto si no estas seguro de si la limpieza ya se aplico.
+--  Antes: users > 1 y classrooms > 0.  Despues: users = 1 y classrooms = 0.
+-- ============================================================================
+
+SELECT (SELECT count(*) FROM users)      AS usuarios,
+       (SELECT count(*) FROM classrooms) AS salones,
+       (SELECT count(*) FROM subjects)   AS materias,
+       (SELECT count(*) FROM content)    AS contenido;
+
+
+-- ============================================================================
 --  PASO 1 — INVENTARIO (no borra nada, corre esto primero)
 -- ============================================================================
 
@@ -52,12 +64,12 @@ WHERE name NOT ILIKE 'IA para Ni%os%'
 ORDER BY name;
 
 -- 1e. Contenido que SOBREVIVE, por materia y tipo
-SELECT s.name AS materia, c.content_type, count(*) AS piezas
+SELECT s.name AS materia, c.type, count(*) AS piezas
 FROM content c
 JOIN subjects s ON s.id = c.subject_id
 WHERE s.name ILIKE 'IA para Ni%os%'
-GROUP BY s.name, c.content_type
-ORDER BY s.name, c.content_type;
+GROUP BY s.name, c.type
+ORDER BY s.name, c.type;
 
 -- 1f. Contenido que SE BORRA (de otras materias o sin materia)
 SELECT coalesce(s.name, '(sin materia)') AS materia, count(*) AS piezas
@@ -169,7 +181,7 @@ ORDER BY 1;
 -- Esperado: users = 1, subjects = 2, classrooms = 0, content_assignments = 0,
 -- content = las piezas de los dos temarios, achievement_definitions intacto.
 
-SELECT s.name AS materia, c.content_type, count(*) AS piezas
+SELECT s.name AS materia, c.type, count(*) AS piezas
 FROM content c JOIN subjects s ON s.id = c.subject_id
-GROUP BY s.name, c.content_type
-ORDER BY s.name, c.content_type;
+GROUP BY s.name, c.type
+ORDER BY s.name, c.type;
