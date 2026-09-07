@@ -186,11 +186,71 @@ public class ContentService {
         Classroom classroom = req.getClassroomId() != null ? classroomService.findById(req.getClassroomId()) : null;
         User student = req.getStudentId() != null ? userService.findById(req.getStudentId()) : null;
 
+        // Asignar dos veces al mismo salon no debe crear dos filas: el alumno
+        // veria la pieza duplicada en su lista de misiones.
+        if (classroom != null) {
+            var previa = assignmentRepository
+                    .findByContentAndClassroomAndIsActiveTrue(content, classroom);
+            if (!previa.isEmpty()) return previa.get(0);
+        }
+
         ContentAssignment assignment = ContentAssignment.builder()
                 .content(content).classroom(classroom).student(student)
                 .assignedBy(assignedBy).dueDate(req.getDueDate())
                 .build();
         return assignmentRepository.save(assignment);
+    }
+
+    /** El contenido que hoy recibe un salon, en el orden del curriculo. */
+    public List<ContentResponse> findForClassroom(UUID classroomId) {
+        Classroom salon = classroomService.findById(classroomId);
+        return assignmentRepository.findByClassroomAndIsActiveTrue(salon).stream()
+                .map(ContentAssignment::getContent)
+                .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                .sorted(java.util.Comparator
+                        .comparing((Content c) -> c.getSubject() != null
+                                ? c.getSubject().getName() : "")
+                        .thenComparing(c -> c.getOrderIndex() != null
+                                ? c.getOrderIndex() : Short.MAX_VALUE))
+                .map(ContentResponse::from)
+                .toList();
+    }
+
+    /** Baja logica: las entregas que ya hicieron los alumnos se conservan. */
+    @Transactional
+    public void desasignarDeSalon(UUID contentId, UUID classroomId) {
+        Content content = findById(contentId);
+        Classroom salon = classroomService.findById(classroomId);
+        var asignaciones = assignmentRepository
+                .findByContentAndClassroomAndIsActiveTrue(content, salon);
+        if (asignaciones.isEmpty()) {
+            throw new BusinessException("Esa pieza no esta asignada a este salon");
+        }
+        asignaciones.forEach(a -> a.setIsActive(false));
+        assignmentRepository.saveAll(asignaciones);
+    }
+
+    /**
+     * Asigna de un golpe todo el plan base publicado de una materia.
+     * Es el caso real: montar un salon nuevo son 12 o 17 piezas, y hacerlo
+     * de una en una no lo hace nadie.
+     */
+    @Transactional
+    public int asignarMateriaASalon(UUID subjectId, UUID classroomId, UUID actorId) {
+        Subject materia = subjectService.findById(subjectId);
+        Classroom salon = classroomService.findById(classroomId);
+        User actor     = userService.findById(actorId);
+
+        int nuevas = 0;
+        for (Content c : contentRepository.findBySubjectAndIsActiveTrue(materia)) {
+            if (!Boolean.TRUE.equals(c.getIsPublished())) continue;
+            if (!assignmentRepository
+                    .findByContentAndClassroomAndIsActiveTrue(c, salon).isEmpty()) continue;
+            assignmentRepository.save(ContentAssignment.builder()
+                    .content(c).classroom(salon).assignedBy(actor).build());
+            nuevas++;
+        }
+        return nuevas;
     }
 
     public List<ContentResponse> findForStudent(UUID studentId) {
