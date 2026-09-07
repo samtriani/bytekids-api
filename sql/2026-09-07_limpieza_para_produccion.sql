@@ -185,3 +185,25 @@ SELECT s.name AS materia, c.type, count(*) AS piezas
 FROM content c JOIN subjects s ON s.id = c.subject_id
 GROUP BY s.name, c.type
 ORDER BY s.name, c.type;
+
+
+-- ============================================================================
+--  PASO 4 — RENOMBRAR LA MATERIA BASICA
+--  "IA para Ni~nos" -> "IA para Ni~nos (Principiante)"
+--  Es independiente de la limpieza: se puede correr antes o despues.
+--
+--  El ILIKE va SIN % final a proposito: asi solo caza la materia "solita"
+--  y no la de "... Intermedio". El filtro del PASO 2 sigue cazando ambas
+--  despues del cambio, porque ese si lleva % al final.
+-- ============================================================================
+
+-- 4a. Antes: confirma que sea exactamente 1 fila y que sea la basica
+SELECT id, name FROM subjects WHERE name ILIKE 'IA para Ni%os';
+
+-- 4b. El cambio
+UPDATE subjects
+SET name = 'IA para Niños (Principiante)'
+WHERE name ILIKE 'IA para Ni%os';
+
+-- 4c. Despues: deben quedar las dos, con sus nombres nuevos
+SELECT id, name FROM subjects WHERE name ILIKE 'IA para Ni%os%' ORDER BY name;
