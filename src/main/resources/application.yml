@@ -12,11 +12,14 @@ spring:
     time-zone: ${TZ:America/Mexico_City}
     default-property-inclusion: non_null
 
+  # SIN valores por defecto: la app debe fallar al arrancar si falta un secreto,
+  # no caer silenciosamente a la base de produccion. Este archivo esta en un repo
+  # publico. Para desarrollo local usa application-local.yml (ya en .gitignore).
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${BK_DB_URL:jdbc:postgresql://ep-rough-hall-amvk9ba1.c-5.us-east-1.aws.neon.tech/neondb}
-    username: ${BK_DB_USER:neondb_owner}
-    password: ${BK_DB_PASSWORD:npg_V4KENtHuOzm5}
+    url: ${BK_DB_URL}
+    username: ${BK_DB_USER}
+    password: ${BK_DB_PASSWORD}
     hikari:
       minimum-idle: ${POOL_MINIMUM_IDLE:2}
       maximum-pool-size: ${POOL_MAX_SIZE:10}
@@ -48,12 +51,16 @@ app:
     #   flyctl secrets set OWNER_USERNAMES="samuel.partida,otro.usuario"
     owner-usernames: ${OWNER_USERNAMES:samuel.partida}
   jwt:
-    secret: ${JWT_SECRET:bytekids-academy-super-secret-key-2026-must-be-32chars-min}
+    # Minimo 32 caracteres o la app no arranca; 64+ para que use HS512.
+    secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:604800000}   # 7 días
   jaas:
     app-id: ${JAAS_APP_ID:vpaas-magic-cookie-7825138c95d24c7cb6f660d4a535d186}
     key-id: ${JAAS_KEY_ID:8a0eae}
-    private-key-path: ${JAAS_KEY_PATH:jitsi/Key 12_5_2026, 16_35_25.pk}
+    # PEM completo en base64. En produccion es el secret JAAS_PRIVATE_KEY.
+    private-key: ${JAAS_PRIVATE_KEY:}
+    # Respaldo solo para desarrollo local, con el archivo fuera del repo.
+    private-key-path: ${JAAS_KEY_PATH:}
   ai:
     base-url: ${AI_BASE_URL:http://127.0.0.1:1234/v1}
     model: ${AI_MODEL:meta-llama-3.1-8b-instruct}

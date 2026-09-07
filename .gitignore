@@ -1,1 +1,23 @@
 target/
+
+# ── Secretos: NUNCA versionar ────────────────────────────────────────────
+# La llave privada de Jitsi estuvo commiteada en este repo publico. En
+# produccion va como secret JAAS_PRIVATE_KEY; en local, fuera del repo.
+*.pk
+*.pem
+*.key
+*.p12
+*.jks
+src/main/resources/jitsi/
+
+# Configuracion local con credenciales reales
+application-local.yml
+application-local.properties
+src/main/resources/application-local.yml
+.env
+.env.*
+
+# Herramientas
+.idea/
+.vscode/
+*.iml

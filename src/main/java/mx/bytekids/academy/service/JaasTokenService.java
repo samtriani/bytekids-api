@@ -25,25 +25,58 @@ public class JaasTokenService {
 
     @Value("${app.jaas.app-id}")   private String appId;
     @Value("${app.jaas.key-id}")   private String keyId;
-    @Value("${app.jaas.private-key-path}") private String keyPath;
+    @Value("${app.jaas.private-key-path:}") private String keyPath;
+    /** PEM completo en base64. En produccion viene del secret JAAS_PRIVATE_KEY. */
+    @Value("${app.jaas.private-key:}")      private String privateKeyB64;
 
     private RSAPrivateKey privateKey;
 
+    /**
+     * Carga la llave privada de JaaS.
+     *
+     * Prioridad: la variable de entorno JAAS_PRIVATE_KEY (el PEM completo en
+     * base64). El archivo en el classpath es solo respaldo para desarrollo
+     * local: estuvo versionado en un repo publico, asi que en produccion la
+     * llave debe venir siempre de un secret, nunca del JAR.
+     */
     @PostConstruct
     public void init() {
         try {
-            ClassPathResource resource = new ClassPathResource(keyPath);
-            String pem = new String(resource.getInputStream().readAllBytes())
+            String pem = leerPem();
+            if (pem == null) {
+                log.error("❌ No hay llave de JaaS. Configura el secret JAAS_PRIVATE_KEY "
+                        + "(el PEM completo codificado en base64). Las videollamadas no funcionaran.");
+                return;
+            }
+
+            String cuerpo = pem
                     .replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
                     .replaceAll("\\s+", "");
-            byte[] decoded = Base64.getDecoder().decode(pem);
+            byte[] decoded = Base64.getDecoder().decode(cuerpo);
             KeyFactory kf = KeyFactory.getInstance("RSA");
             privateKey = (RSAPrivateKey) kf.generatePrivate(new PKCS8EncodedKeySpec(decoded));
-            log.info("✅ JaaS private key loaded successfully");
+            log.info("✅ Llave de JaaS cargada desde {}", origenLlave);
         } catch (Exception e) {
-            log.error("❌ Could not load JaaS private key: {}", e.getMessage());
+            log.error("❌ No se pudo cargar la llave de JaaS: {}", e.getMessage());
         }
+    }
+
+    private String origenLlave = "?";
+
+    private String leerPem() throws Exception {
+        if (privateKeyB64 != null && !privateKeyB64.isBlank()) {
+            origenLlave = "la variable JAAS_PRIVATE_KEY";
+            return new String(Base64.getDecoder().decode(privateKeyB64.trim()));
+        }
+        if (keyPath != null && !keyPath.isBlank()) {
+            ClassPathResource resource = new ClassPathResource(keyPath);
+            if (resource.exists()) {
+                origenLlave = "el classpath (solo desarrollo local)";
+                return new String(resource.getInputStream().readAllBytes());
+            }
+        }
+        return null;
     }
 
     public String generateToken(User user, String roomName) {
