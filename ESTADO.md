@@ -47,8 +47,8 @@ cd bytekids-api && flyctl deploy --remote-only -a bytekids-api
 
 ## 2. Dónde quedé
 
-- **API** — `9408ae5` "Merge dev: modelo hibrido de autoria de contenido"
-- **UI** — `2f1272d` "Asignaciones: agrupar salones por grado y filtrar por ciclo escolar"
+- **API** — "Merge dev: guia del maestro y filtrado de content_body"
+- **UI** — "Merge dev: guia del maestro en Mis Contenidos"
 
 Ambos en `dev` **y** `main`, ambos desplegados. El último despliegue de UI se
 verificó buscando la cadena `Buscando en todos los ciclos` dentro del bundle
@@ -214,6 +214,45 @@ la tabla `classrooms` ya tenía:
 Se descartó paginar: partir en páginas obliga a recordar en cuál estaba cada
 salón, mientras que agrupar por grado usa el orden mental que el coordinador
 ya tiene.
+
+---
+
+### El contenido no tenía capa para el maestro (7-sep)
+
+Revisando la pieza 1 del temario básico salieron tres cosas:
+
+**1. Pedía algo que la pantalla no podía recibir.** Su descripción decía
+"anota cuál te sorprendió más", pero un `material` no tiene textarea: solo el
+botón "Ya lo vi", que auto-aprueba y paga el XP. Se convirtió a `tarea`, así
+el alumno escribe lo que entendió y el maestro tiene señal desde el día uno
+en vez de esperar hasta el quiz de la pieza 6.
+
+**2. `content_body` salía crudo para todos.** `ContentResponse` es el único
+DTO de contenido y lo comparten el feed del alumno y las vistas del maestro.
+Ya se había filtrado dos veces por lo mismo — `expected_output` y el
+`isCorrect` de las opciones de quiz llegaban al navegador del alumno aunque
+la pantalla no los pintara. Ahora `ContentResponse.cuerpoVisible` quita
+`expected_output`, `solution_check` y `teacher_notes` cuando quien pregunta
+no es maestro, coordinación o dirección. **Se filtra en el DTO a propósito**,
+que es el único punto por el que sale todo el contenido: en un endpoint nuevo
+no se puede olvidar.
+
+**3. No existía dónde poner la guía del maestro.** La tabla `content` no
+tiene ningún campo dirigido al maestro; `description` es texto del alumno.
+Laura abría "Mis Contenidos" y veía exactamente lo mismo que Emily.
+La guía vive ahora en `content_body.teacher_notes` — JSONB, así que no hubo
+que migrar esquema, que en este proyecto importa porque no hay Flyway.
+Trae objetivo, duración real, qué explicar antes de soltarlos, preguntas para
+el grupo, errores típicos y cierre. Se renderiza plegable en Mis Contenidos.
+
+El script `sql/2026-09-07_guia_del_maestro_principiante.sql` hace las dos
+cosas y es idempotente.
+
+**Diagnóstico del temario, para que quede el criterio:** la secuencia está
+bien armada — el concepto sí aterriza, pero en las piezas 2, 5 y 8, no en la
+1. La 8 (entrenar un clasificador desbalanceado a propósito) es la mejor de
+todas porque les hace *provocar* el sesgo antes de nombrarlo en la 9. La
+pieza 1 se presentaba como la explicación y en realidad es un gancho.
 
 ---
 
