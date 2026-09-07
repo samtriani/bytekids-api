@@ -48,9 +48,11 @@ cd bytekids-api && flyctl deploy --remote-only -a bytekids-api
 ## 2. Dónde quedé
 
 - **API** — `9408ae5` "Merge dev: modelo hibrido de autoria de contenido"
-- **UI** — `082e57c` "Merge dev: UI del modelo hibrido"
+- **UI** — `2f1272d` "Asignaciones: agrupar salones por grado y filtrar por ciclo escolar"
 
-Ambos en `dev` **y** `main`, ambos desplegados.
+Ambos en `dev` **y** `main`, ambos desplegados. El último despliegue de UI se
+verificó buscando la cadena `Buscando en todos los ciclos` dentro del bundle
+servido en producción.
 
 ---
 
@@ -193,6 +195,27 @@ Además:
 
 **Lección**: rotar primero, limpiar el código después. Borrar un secreto del
 archivo no sirve de nada mientras siga vivo — y sigue en el historial público.
+
+### Asignaciones: la lista de salones ya no es plana (7-sep)
+
+Con un salón la columna izquierda de **Asignaciones** funcionaba; con cien
+habría obligado al coordinador a scrollear toda la pantalla o a recordar el
+nombre exacto. Se resolvió **sin tocar el backend**, aprovechando columnas que
+la tabla `classrooms` ya tenía:
+
+- **Filtro de ciclo escolar** (`school_year`) que arranca en el más reciente.
+  Solo aparece si hay más de un ciclo, para no estorbar hoy que hay uno.
+- **Secciones plegables por grado** (`grade_level`), cada una con su conteo.
+- **La búsqueda es la vía de escape**: ignora el filtro de ciclo, abre todos
+  los grupos y muestra un aviso con botón para limpiarla — si no, buscar un
+  salón del ciclo pasado no habría dado resultados y parecería un bug.
+- El contador del encabezado pasó de "N activos" a "visibles de total".
+
+Se descartó paginar: partir en páginas obliga a recordar en cuál estaba cada
+salón, mientras que agrupar por grado usa el orden mental que el coordinador
+ya tiene.
+
+---
 
 ### Pendiente de seguridad
 - [ ] **Volver el repo privado.** Aunque las credenciales viejas ya no sirven,
