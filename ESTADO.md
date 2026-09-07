@@ -1,7 +1,7 @@
 # Estado del proyecto — ByteKids
 
 > Bitácora para retomar el trabajo desde otra computadora.
-> **Última actualización: 1 de septiembre de 2026.**
+> **Última actualización: 7 de septiembre de 2026.**
 
 ---
 
@@ -78,7 +78,7 @@ Solo los usuarios en `OWNER_USERNAMES` pueden crear o modificar cuentas `admin`/
 
 ---
 
-## 4. Qué se construyó (27-ago → 1-sep)
+## 4. Qué se construyó (27-ago → 7-sep)
 
 ### Supervisión de clases en vivo
 `GET /api/sessions/live` (ADMIN/DIRECTOR) lista las clases transmitiendo. Pantallas `/admin/live` y `/administrator/live`, más la vista de observador. El admin obtiene token JaaS **sin llamar a `join()`**, así que no cuenta como asistencia — pero **sí lo ven** en Jitsi. Entra con mic y cámara apagados.
@@ -107,6 +107,96 @@ Solo los usuarios en `OWNER_USERNAMES` pueden crear o modificar cuentas `admin`/
 - **Portada:** decía "4 Salones activos" y "85 Alumnos" escritos a mano. La realidad era 1 y 1. Se reemplazaron por afirmaciones ciertas.
 - **Resiliencia:** `resilienceInterceptor` reintenta 4 veces con espera creciente ante errores transitorios. **Solo 401/403 mandan al login**; un backend dormido no cierra sesión. Barra de aviso mientras despierta.
 - **Horarios:** selección de varios días a la vez (una clase L-V era 5 capturas), fechas pasadas permitidas y precarga desde el horario existente.
+
+---
+
+### Del 2 al 7 de septiembre
+
+**Entregas y calificación**
+- La **Libreta** dejó de ser solo lectura: cada celda con entrega se abre y
+  muestra qué escribió el alumno, con formulario de nota y retroalimentación.
+  Antes calificar solo se podía **dentro del aula en vivo**, o sea durante la
+  clase: era el único lugar de la app que llamaba a `submissions/review`.
+- **Aprobar dos veces ya no paga XP dos veces.** `review()` otorgaba los puntos
+  cada vez; ahora consulta si ya existe un `XpEvent` para esa entrega.
+- El alumno **veía el intento viejo**: el mapa por `contentId` se armaba en un
+  `forEach` sobre una lista ordenada de más nueva a más vieja, así que ganaba la
+  más antigua. Se compara `submittedAt`.
+
+**Materiales**
+- Un material se **consulta, no se entrega**. Antes tenía el mismo formulario que
+  una misión y quedaba "En progreso" para siempre, porque la Libreta los excluye
+  y el maestro no tenía dónde calificarlo. Ahora el alumno lo marca como visto,
+  se aprueba solo y paga su XP.
+- La Libreta muestra la tabla **Materiales consultados**: quién lo leyó y cuándo,
+  aparte de las calificaciones para no ensuciar el promedio.
+
+**Quiz**
+- `GET /quiz/{id}/questions` devolvía la entidad cruda, **sin las opciones**: el
+  quiz nunca se pudo contestar. El frontend ya sabía pintarlas pero le llegaba
+  vacío. Se agregó `QuizQuestionResponse`, deliberadamente **sin `isCorrect`**.
+
+**Contenido y materias**
+- Coordinación puede **adoptar** contenido al plan base
+  (`POST /content/{id}/adopt`): reasigna `created_by` y el maestro deja de poder
+  editarlo. Las 12 piezas de IA para Niños ya son plan base.
+- `findByTeacher` devolvía solo lo que el maestro creó, así que al adoptar el
+  plan base **su pantalla quedó vacía**. Ahora trae lo suyo más lo asignado a
+  sus salones.
+- La pantalla de Materias muestra el **temario** de cada materia y permite
+  agregar, editar y quitar piezas del plan base.
+
+**Horarios**
+- Selección de **varios días a la vez** (una clase L-V eran 5 capturas).
+- Se permiten **fechas pasadas**: agregar un día a un curso en marcha necesita la
+  fecha de inicio original, y el `[min]="today"` lo impedía.
+
+### Lentitud del login (7-sep)
+
+Medido: en caliente el login tarda **250 ms** con bcrypt incluido. La lentitud
+es **solo el arranque en frío** — despiertan Fly y Neon, que también se duerme.
+
+La barra de "Despertando el servidor" que se agregó el 1-sep vive en el shell, y
+**la pantalla de login no tiene shell**: justo donde más se necesitaba, no
+aparecía. Ahora el login muestra avisos escalonados a los 2.5 s, 9 s y 20 s.
+
+También se acortaron las esperas entre reintentos (de 2/5/10/15 s a
+0.8/1.5/3/5/8 s): estaban calibradas para un backend caído, no para uno que
+despierta en segundos.
+
+**Para eliminar la espera del todo** habría que pagar `min_machines_running = 1`
+(~5-6 USD/mes) y aun así Neon seguiría durmiendo. Con un salón no vale la pena.
+
+---
+
+## 4b. Seguridad: rotación de credenciales (7-sep)
+
+**El repo `bytekids-api` es público y tenía tres secretos versionados** en
+`application.yml` como valores por defecto reales. Cualquiera que clonara el
+repo se conectaba a la base de producción sin darse cuenta.
+
+Las tres fueron **rotadas y verificadas**:
+
+| Credencial | Qué permitía | Estado |
+|---|---|---|
+| Contraseña de Neon | Acceso total a datos de alumnos | Rotada · base UP |
+| `JWT_SECRET` | Forjar tokens de cualquier usuario | Rotado · los viejos dan 403 |
+| Llave privada de Jitsi | Entrar a cualquier videollamada | Rotada y revocada en 8x8 |
+
+Además:
+- `application.yml` ya **no tiene ningún valor por defecto real**. Si falta un
+  secreto la app **falla al arrancar**, en vez de caer a producción en silencio.
+- La llave de Jitsi salió del repo. `JaasTokenService` la lee de
+  `JAAS_PRIVATE_KEY` (el PEM en base64) y solo cae al classpath en local.
+- `.gitignore` pasó de tener solo `target/` a cubrir `*.pk`, `*.pem`, `*.key`,
+  `.env` y `application-local.yml`.
+
+**Lección**: rotar primero, limpiar el código después. Borrar un secreto del
+archivo no sirve de nada mientras siga vivo — y sigue en el historial público.
+
+### Pendiente de seguridad
+- [ ] **Volver el repo privado.** Aunque las credenciales viejas ya no sirven,
+      el historial público conserva el esquema completo de la base.
 
 ---
 
@@ -156,6 +246,17 @@ Scripts de búsqueda y reemplazo que asuman `\n` no hacen match. Un `replace()` 
 ### Escribe el español con acentos desde el principio
 Al cargar el currículo se escribieron las instrucciones sin acentos para evitar problemas de codificación. El resultado le llegó a los niños con faltas — incluido "anos" en vez de "años". Se corrigió a mano el 1-sep. **La codificación se resuelve en el transporte** (JSON con escapes `\uXXXX`), no mutilando el texto.
 
+### JAAS_KEY_ID es solo el sufijo, no el ID completo
+
+El token de Jitsi se firma con `kid = appId + "/" + keyId`. En la consola de
+8x8 la llave se muestra como `vpaas-magic-cookie-.../88f709`: **`JAAS_KEY_ID`
+vale solo `88f709`**, no la cadena completa.
+
+Estuvo mal configurado meses —contenía el AppID repetido—, así que el `kid`
+salía como `<appid>/<appid>` y 8x8 rechazaba los tokens. Es casi seguro que
+por eso las videollamadas nunca habían funcionado. Se detectó el 7-sep porque
+`JAAS_APP_ID` y `JAAS_KEY_ID` tenían **el mismo digest** en `flyctl secrets list`.
+
 ### Cuidado con lo que se le manda al alumno
 Dos fugas ya ocurridas: `expected_output` visible en el workspace, y `isCorrect` que habría viajado en las opciones del quiz. Antes de exponer un campo nuevo, pregúntate si contiene la respuesta.
 
@@ -164,21 +265,47 @@ Dos fugas ya ocurridas: `expected_output` visible en el workspace, y `isCorrect`
 ## 7. Pendientes
 
 ### Sin probar con usuarios reales
-- [ ] **Token JaaS para admin/director.** `JaasTokenService` ya daba `moderator: true` a esos roles, pero nunca se había ejercido. Si 8x8 lo rechaza: *"No se pudo obtener el acceso a la videollamada"*.
-- [ ] **Candado de dueños.** Necesita dos sesiones: la tuya y una de coordinador no-dueño.
-- [ ] **Modelo híbrido.** Verificar que Laura vea 🏛️ Plan base sin botones, y que coordinación pueda agregar piezas desde Materias.
-- [ ] **Quiz.** Contestarlo completo y ver que califique. Da 40 XP y se califica solo.
+- [x] ~~Token JaaS para admin/director~~ — resuelto el 7-sep: el `kid` estaba mal
+      armado y por eso nunca funcionó. Ver la trampa de `JAAS_KEY_ID`.
+- [ ] **Candado de dueños.** Necesita dos sesiones: la tuya y una de coordinador
+      no-dueño, para ver que a la segunda sí la rechace.
+- [ ] **Modelo híbrido.** Verificar que Laura vea 🏛️ Plan base sin botones de
+      editar, y que coordinación pueda agregar piezas desde Materias.
+- [ ] **Quiz completo.** Contestarlo y ver que califique solo. Da 40 XP.
+- [ ] **Materiales.** Que el alumno marque uno como visto y aparezca la palomita
+      en la tabla de la Libreta.
 
 ### Deuda conocida
-- [ ] **Asignaciones duplicadas** en `content_assignments`: el contenido creado antes del 1-sep tiene 2 filas por salón (create auto-asignaba + la UI llamaba assign). No afecta al alumno porque `findForStudent` deduplica, pero son filas basura.
-- [ ] **Sin validación de choques de horario.** La única regla es `end_time > start_time`. Se pueden crear clases encimadas o un maestro en dos salones a la vez.
-- [ ] **Sin vista de avance del curso** para el maestro. La Libreta da calificaciones, pero no % de avance por alumno ni dónde se atoró el grupo.
-- [ ] **Bundle del frontend:** 3.42 MB contra presupuesto de 2 MB.
+- [ ] **Repo público.** El historial conserva el esquema de la base y las
+      credenciales viejas (ya inservibles). Considerar volverlo privado.
+- [ ] **Asignaciones duplicadas** en `content_assignments`: el contenido creado
+      antes del 1-sep tiene 2 filas por salón. No afecta al alumno porque
+      `findForStudent` deduplica, pero son filas basura. La causa ya se arregló.
+- [ ] **Sin validación de choques de horario.** La única regla es
+      `end_time > start_time`. Se pueden crear clases encimadas o un maestro en
+      dos salones a la vez — y ahora es más fácil, porque un clic crea N días.
+- [ ] **Sin endpoints de asignación.** Se puede asignar contenido a un salón pero
+      no listar ni quitar asignaciones. No hay forma de mover una pieza de un
+      salón a otro sin recrearla.
+- [ ] **`show-sql: true` y `format_sql: true` activos en producción.** Formatea e
+      imprime cada consulta: cuesta rendimiento y ahoga los logs.
+- [ ] **Mis Contenidos no distingue salón.** Con varios salones del mismo maestro,
+      las piezas se agrupan solo por materia y no se sabe cuál es de cuál grupo.
+- [ ] **Sin vista de avance del curso** para el maestro. La Libreta da
+      calificaciones, no % de avance por alumno ni dónde se atoró el grupo.
+- [ ] **Bundle del frontend:** 3.47 MB contra presupuesto de 2 MB.
 - [ ] **Notificaciones** (`722b56d`): desplegadas pero nunca probadas.
+- [ ] **Datos de prueba de Emily**: tiene 10/10 y XP de una entrega donde se
+      pegaron las instrucciones para probar. Sus números no reflejan trabajo real.
 
 ### Ideas en la mesa
-- Renombrar "Mis Misiones" → "Mis Retos" para el alumno.
-- *Lurking mode* de JaaS, para que el supervisor no sea visible en la videollamada.
-- Fallback de modelo: si Groq da 404, pedir el catálogo y elegir uno vigente en vez de tirar el bot.
+- **Temario intermedio de IA para Niños**: 17 piezas ya diseñadas y aprobadas,
+  pendientes de cargar. Decisiones abiertas: materia nueva vs continuación, y a
+  qué salón se asigna.
+- Renombrar "Mis Misiones" → "Mis Retos" para el alumno, porque hoy "Misión"
+  significa dos cosas: la página y uno de los cinco tipos.
+- *Lurking mode* de JaaS, para que el supervisor no sea visible en la llamada.
+- Fallback de modelo: si Groq da 404, pedir el catálogo y elegir uno vigente en
+  vez de tirar el bot.
 - Historial de intentos: `submissions` guarda todos, pero solo se muestra el último.
-- Validar en backend que no se reenvíe una entrega ya aprobada (hoy el candado es solo de UI).
+- Validar en backend que no se reenvíe una entrega ya aprobada (hoy es solo UI).
