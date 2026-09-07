@@ -55,19 +55,19 @@ ORDER BY role;
 -- 1c. Materias que SOBREVIVEN (deben ser exactamente 2)
 SELECT id, name, icon, is_active
 FROM subjects
-WHERE name ILIKE 'IA para Ni%os%'
+WHERE name ILIKE '%IA para Ni%os%'
 ORDER BY name;
 
 -- 1d. Materias que SE BORRAN
 SELECT id, name FROM subjects
-WHERE name NOT ILIKE 'IA para Ni%os%'
+WHERE name NOT ILIKE '%IA para Ni%os%'
 ORDER BY name;
 
 -- 1e. Contenido que SOBREVIVE, por materia y tipo
 SELECT s.name AS materia, c.type, count(*) AS piezas
 FROM content c
 JOIN subjects s ON s.id = c.subject_id
-WHERE s.name ILIKE 'IA para Ni%os%'
+WHERE s.name ILIKE '%IA para Ni%os%'
 GROUP BY s.name, c.type
 ORDER BY s.name, c.type;
 
@@ -75,7 +75,7 @@ ORDER BY s.name, c.type;
 SELECT coalesce(s.name, '(sin materia)') AS materia, count(*) AS piezas
 FROM content c
 LEFT JOIN subjects s ON s.id = c.subject_id
-WHERE s.id IS NULL OR s.name NOT ILIKE 'IA para Ni%os%'
+WHERE s.id IS NULL OR s.name NOT ILIKE '%IA para Ni%os%'
 GROUP BY s.name
 ORDER BY 1;
 
@@ -92,7 +92,7 @@ CREATE TEMP TABLE conservados AS
 SELECT id FROM users WHERE username IN ('samuel.partida');
 
 CREATE TEMP TABLE materias_base AS
-SELECT id FROM subjects WHERE name ILIKE 'IA para Ni%os%';
+SELECT id FROM subjects WHERE name ILIKE '%IA para Ni%os%';
 
 CREATE TEMP TABLE contenido_base AS
 SELECT id FROM content WHERE subject_id IN (SELECT id FROM materias_base);
@@ -188,22 +188,39 @@ ORDER BY s.name, c.type;
 
 
 -- ============================================================================
---  PASO 4 — RENOMBRAR LA MATERIA BASICA
---  "IA para Ni~nos" -> "IA para Ni~nos (Principiante)"
---  Es independiente de la limpieza: se puede correr antes o despues.
+--  PASO 4 — HOMOLOGAR LOS NOMBRES DE LAS DOS MATERIAS
 --
---  El ILIKE va SIN % final a proposito: asi solo caza la materia "solita"
---  y no la de "... Intermedio". El filtro del PASO 2 sigue cazando ambas
---  despues del cambio, porque ese si lleva % al final.
+--    "IA para Ni~nos"              -> "IA para Ni~nos (Principiante)"
+--    "IA para Ni~nos . Intermedio" -> "IA para Ni~nos (Intermedio)"
+--
+--  Se elige el parentesis y no el guion largo porque el "." y el "—" son
+--  caracteres que el coordinador no tiene a la mano al dar de alta una
+--  materia nueva: la convencion se romperia sola en la tercera materia.
+--
+--  Es independiente de la limpieza: corre antes o despues.
 -- ============================================================================
 
--- 4a. Antes: confirma que sea exactamente 1 fila y que sea la basica
-SELECT id, name FROM subjects WHERE name ILIKE 'IA para Ni%os';
+-- 4a. DIAGNOSTICO. Los corchetes revelan espacios invisibles al final,
+--     que es lo que hace fallar a un LIKE sin % de cierre.
+SELECT id, '[' || name || ']' AS nombre_delimitado, length(name) AS largo
+FROM subjects
+WHERE name ILIKE '%Ni%os%'
+ORDER BY name;
 
--- 4b. El cambio
+-- 4b. El cambio. No depende de que el nombre termine exacto: distingue las
+--     dos materias por la presencia de "Intermedio", que es lo unico
+--     realmente estable entre ellas.
+UPDATE subjects
+SET name = 'IA para Niños (Intermedio)'
+WHERE name ILIKE '%Ni%os%' AND name ILIKE '%Intermedio%';
+
 UPDATE subjects
 SET name = 'IA para Niños (Principiante)'
-WHERE name ILIKE 'IA para Ni%os';
+WHERE name ILIKE '%Ni%os%' AND name NOT ILIKE '%Intermedio%';
 
--- 4c. Despues: deben quedar las dos, con sus nombres nuevos
-SELECT id, name FROM subjects WHERE name ILIKE 'IA para Ni%os%' ORDER BY name;
+-- 4c. VERIFICACION. Deben salir exactamente dos filas:
+--       IA para Ninos (Intermedio)
+--       IA para Ninos (Principiante)
+SELECT id, '[' || name || ']' AS nombre_delimitado, length(name) AS largo
+FROM subjects
+ORDER BY name;
