@@ -106,6 +106,36 @@ public class ContentController {
         return ResponseEntity.ok(ApiResponse.ok("Contenido asignado", null));
     }
 
+    @GetMapping("/classroom/{classroomId}")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR','TEACHER')")
+    @Operation(summary = "Contenido asignado a un salon")
+    public ResponseEntity<ApiResponse<List<ContentResponse>>> byClassroom(
+            @PathVariable UUID classroomId) {
+        return ResponseEntity.ok(ApiResponse.ok(contentService.findForClassroom(classroomId)));
+    }
+
+    @PostMapping("/subject/{subjectId}/assign/classroom/{classroomId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Asignar todo el plan base de una materia a un salon")
+    public ResponseEntity<ApiResponse<Integer>> assignSubject(@PathVariable UUID subjectId,
+                                                              @PathVariable UUID classroomId) {
+        var actor = userService.findByUsername(SecurityUtils.currentUsername());
+        int nuevas = contentService.asignarMateriaASalon(subjectId, classroomId, actor.getId());
+        return ResponseEntity.ok(ApiResponse.ok(
+                nuevas == 0 ? "El salon ya tenia todo el plan base de esa materia"
+                            : nuevas + " piezas asignadas", nuevas));
+    }
+
+    // Solo coordinacion: el plan base no lo quita el maestro de su salon.
+    @DeleteMapping("/{id}/assign/classroom/{classroomId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Quitar una pieza de un salon")
+    public ResponseEntity<ApiResponse<Void>> unassign(@PathVariable UUID id,
+                                                      @PathVariable UUID classroomId) {
+        contentService.desasignarDeSalon(id, classroomId);
+        return ResponseEntity.ok(ApiResponse.ok("Se quito del salon", null));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @Operation(summary = "Desactivar contenido")
