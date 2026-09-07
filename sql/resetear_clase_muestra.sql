@@ -10,9 +10,9 @@
 --    llegan con cientos de XP y logros desbloqueados, y se nota.
 --
 --  CONVENCION
---    Los alumnos de muestra se llaman alumno.muestra.01, .02, ... El patron
---    de abajo caza cualquier usuario cuyo username empiece con
---    "alumno.muestra". Si usas otro prefijo, cambialo en los tres lugares.
+--    Los alumnos de muestra se llaman explorador01, explorador02, ... El patron
+--    de abajo NO es un prefijo suelto sino un patron exacto, y caza
+--    exactamente "explorador" + dos digitos: explorador01 .. explorador99.
 --
 --  Corre PASO 1, revisa a quien va a afectar, y luego el PASO 2.
 -- ============================================================================
@@ -28,7 +28,7 @@ SELECT u.username, u.display_name,
        (SELECT coalesce(sum(x.amount), 0) FROM xp_events x WHERE x.student_id = u.id) AS xp,
        (SELECT count(*) FROM student_achievements a WHERE a.student_id = u.id) AS logros
 FROM users u
-WHERE u.username LIKE 'alumno.muestra%'
+WHERE u.username ~ '^explorador[0-9]{2}$'
 ORDER BY u.username;
 
 -- Si esta consulta no devuelve nada, revisa el prefijo antes de seguir.
@@ -41,7 +41,7 @@ ORDER BY u.username;
 BEGIN;
 
 CREATE TEMP TABLE muestra AS
-SELECT id FROM users WHERE username LIKE 'alumno.muestra%';
+SELECT id FROM users WHERE username ~ '^explorador[0-9]{2}$';
 
 -- Cortafuegos: sin esto, un prefijo mal escrito no borraria nada... pero uno
 -- DEMASIADO amplio se llevaria a los alumnos reales por delante.
@@ -87,5 +87,5 @@ SELECT u.username,
        (SELECT coalesce(sum(x.amount), 0) FROM xp_events x WHERE x.student_id = u.id) AS xp,
        (SELECT count(*) FROM student_achievements a WHERE a.student_id = u.id) AS logros
 FROM users u
-WHERE u.username LIKE 'alumno.muestra%'
+WHERE u.username ~ '^explorador[0-9]{2}$'
 ORDER BY u.username;
