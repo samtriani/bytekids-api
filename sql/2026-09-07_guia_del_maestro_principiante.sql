@@ -46,20 +46,20 @@ UPDATE content c
 SET type              = 'tarea',
     xp_reward         = 30,
     estimated_minutes = 20,
-    description       = 'La IA no es un robot que piensa como tu: es una maquina que aprende a reconocer patrones a partir de muchos ejemplos. Hoy vas a entrenar una tu mismo, etiquetando peces.',
+    description       = 'La IA no es un robot que piensa como tú: es una máquina que aprende a reconocer patrones a partir de muchos ejemplos. Hoy vas a entrenar una tú mismo, etiquetando peces.',
     content_body      = coalesce(c.content_body, '{}'::jsonb) || jsonb_build_object(
         'url',           'https://studio.code.org/s/oceans',
         'resource_type', 'enlace',
-        'instructions',  $inst$Entra al enlace y haz la actividad "IA para los oceanos".
-Si te aparece en ingles, cambia el idioma a Espanol hasta abajo de la pagina.
+        'instructions',  $inst$Entra al enlace y haz la actividad "IA para los océanos".
+Si te aparece en inglés, cambia el idioma a Español hasta abajo de la página.
 
-Vas a ensenarle a una maquina a separar peces de basura. Tu le pones las
+Vas a enseñarle a una máquina a separar peces de basura. Tú le pones las
 etiquetas, y eso es justamente entrenarla.
 
 Cuando termines, responde con tus propias palabras:
-1. Quien le enseno a la maquina que era un pez?
-2. Que paso cuando le mostraste algo raro que no habia visto antes?
-3. La maquina entiende que es un pez, o solo sabe a que se parece lo que le ensenaste?$inst$)
+1. ¿Quién le enseñó a la máquina qué era un pez?
+2. ¿Qué pasó cuando le mostraste algo raro que no había visto antes?
+3. ¿La máquina entiende qué es un pez, o solo sabe a qué se parece lo que le enseñaste?$inst$)
 FROM subjects s
 WHERE s.id = c.subject_id
   AND s.name ILIKE '%Ni%os%' AND s.name NOT ILIKE '%Intermedio%'
