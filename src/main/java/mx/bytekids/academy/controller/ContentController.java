@@ -126,6 +126,48 @@ public class ContentController {
                             : nuevas + " piezas asignadas", nuevas));
     }
 
+    // ── Membresia individual: contenido sin salon ──────────────────────
+    // Da acceso al temario y al tutor de IA, no a las clases en vivo.
+
+    @GetMapping("/student/{studentId}/direct")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
+    @Operation(summary = "Contenido asignado a un alumno a titulo personal")
+    public ResponseEntity<ApiResponse<List<ContentResponse>>> directoDelAlumno(
+            @PathVariable UUID studentId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                contentService.findAssignedDirectlyTo(studentId)));
+    }
+
+    @PostMapping("/subject/{subjectId}/assign/student/{studentId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Dar de alta la membresia de una materia a un alumno")
+    public ResponseEntity<ApiResponse<Integer>> assignSubjectToStudent(
+            @PathVariable UUID subjectId, @PathVariable UUID studentId) {
+        var actor = userService.findByUsername(SecurityUtils.currentUsername());
+        int nuevas = contentService.asignarMateriaAAlumno(subjectId, studentId, actor.getId());
+        return ResponseEntity.ok(ApiResponse.ok(
+                nuevas == 0 ? "El alumno ya tenia esa materia"
+                            : nuevas + " piezas asignadas", nuevas));
+    }
+
+    @DeleteMapping("/subject/{subjectId}/assign/student/{studentId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Dar de baja la membresia de una materia")
+    public ResponseEntity<ApiResponse<Integer>> unassignSubjectFromStudent(
+            @PathVariable UUID subjectId, @PathVariable UUID studentId) {
+        int bajas = contentService.quitarMateriaAAlumno(subjectId, studentId);
+        return ResponseEntity.ok(ApiResponse.ok(bajas + " piezas dadas de baja", bajas));
+    }
+
+    @DeleteMapping("/{id}/assign/student/{studentId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Quitarle una pieza suelta a un alumno")
+    public ResponseEntity<ApiResponse<Void>> unassignFromStudent(
+            @PathVariable UUID id, @PathVariable UUID studentId) {
+        contentService.desasignarDeAlumno(id, studentId);
+        return ResponseEntity.ok(ApiResponse.ok("Se quito del alumno", null));
+    }
+
     // Solo coordinacion: el plan base no lo quita el maestro de su salon.
     @DeleteMapping("/{id}/assign/classroom/{classroomId}")
     @PreAuthorize("hasRole('ADMIN')")
