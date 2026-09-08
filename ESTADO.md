@@ -47,8 +47,8 @@ cd bytekids-api && flyctl deploy --remote-only -a bytekids-api
 
 ## 2. Dónde quedé
 
-- **API** — "Merge dev: guia del maestro y filtrado de content_body"
-- **UI** — "Merge dev: guia del maestro en Mis Contenidos"
+- **API** — "Merge dev: correo electronico en usuarios"
+- **UI** — "Merge dev: campo de correo en los formularios"
 
 Ambos en `dev` **y** `main`, ambos desplegados. El último despliegue de UI se
 verificó buscando la cadena `Buscando en todos los ciclos` dentro del bundle
@@ -253,6 +253,53 @@ bien armada — el concepto sí aterriza, pero en las piezas 2, 5 y 8, no en la
 1. La 8 (entrenar un clasificador desbalanceado a propósito) es la mejor de
 todas porque les hace *provocar* el sesgo antes de nombrarlo en la 9. La
 pieza 1 se presentaba como la explicación y en realidad es un gancho.
+
+---
+
+### Correo en usuarios: la primera pieza comercial (8-sep)
+
+Antes de construir nada de membresías se hizo una revisión de qué tan lista
+está la plataforma. **La parte educativa aguanta; la capa comercial no existe.**
+Lo que se encontró, con evidencia:
+
+- **`content_assignments` ya soporta `student_id`**, no solo salón. O sea que
+  "membresía = acceso al contenido de una materia" cabe en el modelo actual
+  sin cambios: se le asignan las piezas al alumno directo, sin salón.
+- **`/auth/register` es `hasRole('ADMIN')`**: no hay alta pública.
+- **Cero integración de pagos.**
+- **`users` no tenía correo.** Sin él no hay recibo, bienvenida, recordatorio
+  de renovación ni "olvidé mi contraseña". Es lo que desbloquea todo lo demás,
+  y por eso se hizo primero.
+- **0 pruebas automatizadas** (`src/test` vacío). Cada cambio se verifica a mano.
+- **`/auth/login` sin límite de intentos**: endpoint público sin throttle.
+- **Menores de edad**: se guarda edad y dirección de niños y no hay registro de
+  aceptación de aviso de privacidad ni consentimiento del tutor. Con cobro de
+  por medio eso es exposición legal (LFPDPPP), no deuda técnica.
+
+**Decisión de producto:** no se construye la capa comercial todavía. Se vende a
+mano —cuenta creada por coordinación, contenido asignado con el botón de
+Asignaciones, las 4 clases en una hoja— hasta saber si la gente paga. Construir
+signup + pagos antes de eso es trabajo que se tira si el precio está mal.
+
+**Lo que sí se hizo: el correo.** Nullable porque las cuentas viejas no tienen;
+único **parcial** sobre `lower(email)` porque Postgres trata cada NULL como
+distinto y un índice único normal habría dejado pasar duplicados en blanco; y
+normalizado a minúsculas al guardar, porque `Ana@x.com` y `ana@x.com` son el
+mismo buzón y el día de una recuperación no puede haber dos cuentas
+reclamándolo. En alumnos el correo es del tutor, y la UI lo dice donde se
+captura.
+
+**Orden de despliegue, que aquí importa:** con `ddl-auto: none` Hibernate no
+crea la columna. El `ALTER` corre **antes** que el despliegue; si se invierte,
+toda consulta de usuarios truena y nadie entra. Se verificó después con un
+login de credenciales falsas: un **401** prueba que la consulta corrió; un 500
+habría significado que la columna no estaba.
+
+**Siguiente pieza sugerida (no hecha):** `token_version` en `users`. Hoy, al
+cambiar una contraseña los JWT viejos siguen sirviendo hasta expirar, así que
+cambiarla no expulsa a nadie. Ese mismo campo es el que después permite limitar
+sesiones por cuenta — recomendado a **2 dispositivos**, no 1: un niño usa
+tablet y compu, y un límite duro genera tickets de soporte legítimos.
 
 ---
 
