@@ -158,7 +158,7 @@ Solo los usuarios en `OWNER_USERNAMES` pueden crear o modificar cuentas `admin`/
 Medido: en caliente el login tarda **250 ms** con bcrypt incluido. La lentitud
 es **solo el arranque en frío** — despiertan Fly y Neon, que también se duerme.
 
-La barra de "Despertando el servidor" que se agregó el 1-sep vive en el shell, y
+La barra de "Despertando a Bytebot🤖" que se agregó el 1-sep vive en el shell, y
 **la pantalla de login no tiene shell**: justo donde más se necesitaba, no
 aparecía. Ahora el login muestra avisos escalonados a los 2.5 s, 9 s y 20 s.
 
