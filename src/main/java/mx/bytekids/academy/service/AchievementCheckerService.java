@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import mx.bytekids.academy.entity.AchievementDefinition;
 import mx.bytekids.academy.entity.User;
 import mx.bytekids.academy.entity.enums.ContentType;
+import mx.bytekids.academy.entity.enums.UserRole;
 import mx.bytekids.academy.entity.enums.SubmissionStatus;
 import mx.bytekids.academy.repository.AchievementDefinitionRepository;
 import mx.bytekids.academy.repository.StudentAchievementRepository;
@@ -39,6 +40,31 @@ public class AchievementCheckerService {
      * Llamar después de cualquier acción que pueda desbloquear logros:
      * aprobación de entrega, inicio de racha, etc.
      */
+    /**
+     * Vuelve a evaluar a todos los alumnos activos. Se usa despues de
+     * publicar logros nuevos: los que ya cumplian la condicion no se
+     * enteran solos, porque la evaluacion solo corre cuando el alumno
+     * entrega o le aprueban algo.
+     *
+     * @return cuantos alumnos se revisaron
+     */
+    @Transactional
+    public int recheckAll() {
+        // findByRole devuelve DTOs, no entidades; para lo unico que se usan aqui
+        // es el id y el username del log.
+        var alumnos = userService.findByRole(UserRole.student);
+        for (var alumno : alumnos) {
+            try {
+                checkAndAward(alumno.getId());
+            } catch (Exception e) {
+                // Un alumno con datos raros no debe frenar la revision de los demas.
+                log.warn("No se pudo revisar los logros de {}: {}",
+                        alumno.getUsername(), e.getMessage());
+            }
+        }
+        return alumnos.size();
+    }
+
     @Transactional
     public void checkAndAward(UUID studentId) {
         User student = userService.findById(studentId);
