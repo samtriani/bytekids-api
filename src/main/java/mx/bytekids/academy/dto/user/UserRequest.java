@@ -1,5 +1,6 @@
 package mx.bytekids.academy.dto.user;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,6 +18,11 @@ public class UserRequest {
 
     @NotBlank(message = "El nombre es requerido")
     private String displayName;
+
+    // Opcional mientras no haya alta publica: las cuentas viejas no tienen.
+    @Email(message = "El correo no tiene un formato valido")
+    @Size(max = 255)
+    private String email;
 
     @NotNull(message = "El rol es requerido")
     private UserRole role;
