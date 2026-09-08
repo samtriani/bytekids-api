@@ -19,6 +19,10 @@ public interface ContentAssignmentRepository extends JpaRepository<ContentAssign
     List<ContentAssignment> findByContentAndClassroomAndIsActiveTrue(
             Content content, Classroom classroom);
 
+    /** Lo mismo para la membresia individual, que no pasa por un salon. */
+    List<ContentAssignment> findByContentAndStudentAndIsActiveTrue(
+            Content content, User student);
+
     @Query("""
         SELECT ca FROM ContentAssignment ca
         WHERE ca.isActive = true

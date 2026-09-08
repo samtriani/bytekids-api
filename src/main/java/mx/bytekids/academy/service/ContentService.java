@@ -193,6 +193,11 @@ public class ContentService {
                     .findByContentAndClassroomAndIsActiveTrue(content, classroom);
             if (!previa.isEmpty()) return previa.get(0);
         }
+        if (student != null) {
+            var previa = assignmentRepository
+                    .findByContentAndStudentAndIsActiveTrue(content, student);
+            if (!previa.isEmpty()) return previa.get(0);
+        }
 
         ContentAssignment assignment = ContentAssignment.builder()
                 .content(content).classroom(classroom).student(student)
@@ -251,6 +256,81 @@ public class ContentService {
             nuevas++;
         }
         return nuevas;
+    }
+
+    /**
+     * Lo que el alumno recibe A TITULO PERSONAL, sin pasar por un salon.
+     * Es la membresia de solo contenido: da acceso al temario y al tutor de
+     * IA, pero no a las clases en vivo, que cuelgan del horario de un salon.
+     *
+     * A proposito NO incluye lo que le llega por estar inscrito en un salon:
+     * esta lista es la que coordinacion administra a mano, y mezclar las dos
+     * llevaria a intentar quitar de aqui algo que en realidad viene del salon.
+     */
+    public List<ContentResponse> findAssignedDirectlyTo(UUID studentId) {
+        User student = userService.findById(studentId);
+        return assignmentRepository.findByStudentAndIsActiveTrue(student).stream()
+                .map(ContentAssignment::getContent)
+                .filter(c -> Boolean.TRUE.equals(c.getIsActive()))
+                .sorted(java.util.Comparator
+                        .comparing((Content c) -> c.getSubject() != null
+                                ? c.getSubject().getName() : "")
+                        .thenComparing(c -> c.getOrderIndex() != null
+                                ? c.getOrderIndex() : Short.MAX_VALUE))
+                .map(ContentResponse::from)
+                .toList();
+    }
+
+    /** Baja logica: al vencer la membresia se conserva lo que ya entrego. */
+    @Transactional
+    public void desasignarDeAlumno(UUID contentId, UUID studentId) {
+        Content content = findById(contentId);
+        User student    = userService.findById(studentId);
+        var asignaciones = assignmentRepository
+                .findByContentAndStudentAndIsActiveTrue(content, student);
+        if (asignaciones.isEmpty()) {
+            throw new BusinessException("Esa pieza no esta asignada a este alumno");
+        }
+        asignaciones.forEach(a -> a.setIsActive(false));
+        assignmentRepository.saveAll(asignaciones);
+    }
+
+    /** Alta de la membresia: todo el plan base publicado de una materia. */
+    @Transactional
+    public int asignarMateriaAAlumno(UUID subjectId, UUID studentId, UUID actorId) {
+        Subject materia = subjectService.findById(subjectId);
+        User student    = userService.findById(studentId);
+        User actor      = userService.findById(actorId);
+
+        if (student.getRole() != UserRole.student) {
+            throw new BusinessException("Solo se le puede asignar contenido a un alumno");
+        }
+
+        int nuevas = 0;
+        for (Content c : contentRepository.findBySubjectAndIsActiveTrue(materia)) {
+            if (!Boolean.TRUE.equals(c.getIsPublished())) continue;
+            if (!assignmentRepository
+                    .findByContentAndStudentAndIsActiveTrue(c, student).isEmpty()) continue;
+            assignmentRepository.save(ContentAssignment.builder()
+                    .content(c).student(student).assignedBy(actor).build());
+            nuevas++;
+        }
+        return nuevas;
+    }
+
+    /** Baja completa de la membresia individual de una materia. */
+    @Transactional
+    public int quitarMateriaAAlumno(UUID subjectId, UUID studentId) {
+        Subject materia = subjectService.findById(subjectId);
+        User student    = userService.findById(studentId);
+
+        var bajas = assignmentRepository.findByStudentAndIsActiveTrue(student).stream()
+                .filter(a -> a.getContent().getSubject() != null
+                          && a.getContent().getSubject().getId().equals(materia.getId()))
+                .peek(a -> a.setIsActive(false))
+                .toList();
+        assignmentRepository.saveAll(bajas);
+        return bajas.size();
     }
 
     public List<ContentResponse> findForStudent(UUID studentId) {
