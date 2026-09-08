@@ -91,6 +91,12 @@ public class SubmissionService {
             otorgarXpUnaVez(guardada, student.getId(), null);
         } else {
             progressService.recordDailyActivity(studentId, LocalDate.now(), 0, 0);
+            // La racha crece al ENTREGAR, no al calificar. Si los logros solo se
+            // revisaran al aprobar, una racha de 7 dias sin nada calificado ese
+            // mismo dia no se premiaria nunca: getCurrentStreak se ancla a hoy,
+            // asi que para cuando el maestro califique ya se rompio y el logro
+            // se pierde para siempre.
+            achievementChecker.checkAndAward(studentId);
         }
         return SubmissionResponse.from(guardada);
     }
