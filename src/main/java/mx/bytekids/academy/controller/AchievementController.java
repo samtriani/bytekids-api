@@ -7,6 +7,7 @@ import mx.bytekids.academy.dto.common.ApiResponse;
 import mx.bytekids.academy.entity.AchievementDefinition;
 import mx.bytekids.academy.entity.StudentAchievement;
 import mx.bytekids.academy.security.SecurityUtils;
+import mx.bytekids.academy.service.AchievementCheckerService;
 import mx.bytekids.academy.service.AchievementService;
 import mx.bytekids.academy.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class AchievementController {
 
     private final AchievementService achievementService;
+    private final AchievementCheckerService achievementChecker;
     private final UserService userService;
 
     @GetMapping
@@ -50,6 +52,27 @@ public class AchievementController {
     @Operation(summary = "Logros de un alumno")
     public ResponseEntity<ApiResponse<List<StudentAchievement>>> studentAchievements(@PathVariable UUID studentId) {
         return ResponseEntity.ok(ApiResponse.ok(achievementService.findEarnedByStudent(studentId)));
+    }
+
+    // Los logros se evaluan al entregar y al aprobar. Cuando se publican
+    // logros nuevos hay que forzar una revision, o quien ya los merecia se
+    // queda esperando hasta su siguiente entrega.
+
+    @PostMapping("/recheck/{studentId}")
+    @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
+    @Operation(summary = "Revisar los logros de un alumno")
+    public ResponseEntity<ApiResponse<Void>> recheck(@PathVariable UUID studentId) {
+        achievementChecker.checkAndAward(studentId);
+        return ResponseEntity.ok(ApiResponse.ok("Logros revisados", null));
+    }
+
+    @PostMapping("/recheck")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Revisar los logros de todos los alumnos")
+    public ResponseEntity<ApiResponse<Integer>> recheckAll() {
+        int revisados = achievementChecker.recheckAll();
+        return ResponseEntity.ok(ApiResponse.ok(
+                revisados + " alumnos revisados", revisados));
     }
 
     @PostMapping("/award/{studentId}/{achievementId}")
