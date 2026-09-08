@@ -18,7 +18,7 @@
 --    temario, no una metrica. El corte esta puesto para caer justo despues de
 --    esa pieza si va en orden.
 --
---  Corre PASO 1, luego 2 y 3.
+--  Corre PASO 1, luego 2 y 3. Es idempotente: se puede repetir.
 -- ============================================================================
 
 
@@ -41,6 +41,14 @@ WHERE s.name = 'IA para Niños (Intermedio)';
 INSERT INTO achievement_definitions
   (title, description, icon, xp_reward, category, rarity, condition_type, condition_value)
 VALUES
+  -- Cae con la PRIMERA actividad aprobada. Sin este, un alumno que empieza
+  -- directo en Intermedio hace tres piezas antes de recibir nada, y el
+  -- primer logro es justo el que mas importa.
+  ('Bienvenido al siguiente nivel',
+   'Diste tu primer paso en IA Intermedio. Aqui ya no solo usas la IA: vas a ver como funciona por dentro.',
+   '🚀', 40, 'programacion', 'comun', 'subject_missions',
+   '{"subject": "IA para Niños (Intermedio)", "count": 1}'),
+
   -- Cae tras la pieza 3, "El experimento del ruido".
   ('Oído de máquina',
    'Entrenaste una IA que reconoce sonidos y descubriste que el ruido de fondo también le enseña.',
