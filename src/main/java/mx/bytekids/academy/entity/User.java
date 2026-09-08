@@ -29,6 +29,13 @@ public class User {
     @Column(name = "display_name", nullable = false, length = 100)
     private String displayName;
 
+    /**
+     * Nullable a proposito: las cuentas que ya existian no tienen correo.
+     * En un alumno suele ser el del padre o tutor, no el del nino.
+     */
+    @Column(length = 255)
+    private String email;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, columnDefinition = "user_role")

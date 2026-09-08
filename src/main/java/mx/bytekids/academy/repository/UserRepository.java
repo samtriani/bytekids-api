@@ -11,5 +11,8 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByUsernameAndIsActiveTrue(String username);
     boolean existsByUsername(String username);
+
+    /** El indice de la base es unico sobre lower(email); esto lo respeta. */
+    boolean existsByEmailIgnoreCase(String email);
     List<User> findByRoleAndIsActiveTrue(UserRole role);
 }

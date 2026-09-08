@@ -42,6 +42,24 @@ public class UserService {
     }
 
     @Transactional
+    /**
+     * Normaliza y valida el correo. Se guarda en minusculas porque
+     * "Ana@x.com" y "ana@x.com" son el mismo buzon: sin esto, dos cuentas
+     * distintas podrian reclamar el mismo correo y el dia que se mande un
+     * "olvide mi contrasena" no se sabria a cual pertenece.
+     *
+     * @param actual el correo que ya tiene el usuario, para que editarlo
+     *               sin cambiarlo no choque consigo mismo. Null al crear.
+     */
+    private String normalizarEmail(String crudo, String actual) {
+        if (crudo == null || crudo.isBlank()) return null;
+        String email = crudo.trim().toLowerCase();
+        if (!email.equalsIgnoreCase(actual) && userRepository.existsByEmailIgnoreCase(email)) {
+            throw new BusinessException("El correo '" + email + "' ya esta registrado");
+        }
+        return email;
+    }
+
     public UserResponse create(UserRequest request) {
         ownershipService.requireOwnerToCreate(request.getRole());
         if (request.getPassword() == null || request.getPassword().isBlank()) {
@@ -55,6 +73,7 @@ public class UserService {
                 .username(normalizedUsername)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .displayName(request.getDisplayName())
+                .email(normalizarEmail(request.getEmail(), null))
                 .role(request.getRole())
                 .initials(request.getInitials())
                 .avatarUrl(request.getAvatarUrl())
@@ -74,6 +93,7 @@ public class UserService {
         }
         user.setUsername(normalizedUsername);
         user.setDisplayName(request.getDisplayName());
+        user.setEmail(normalizarEmail(request.getEmail(), user.getEmail()));
         user.setRole(request.getRole());
         user.setInitials(request.getInitials());
         user.setAvatarUrl(request.getAvatarUrl());
