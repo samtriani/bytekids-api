@@ -26,6 +26,7 @@ public class QuizService {
     private final QuizAttemptRepository attemptRepository;
     private final ContentService contentService;
     private final UserService userService;
+    private final AchievementCheckerService achievementChecker;
     private final ProgressService progressService;
 
     /**
@@ -114,6 +115,9 @@ public class QuizService {
                     content.getSubject() != null ? content.getSubject().getId() : null, xp);
         }
         progressService.recordDailyActivity(studentId, LocalDate.now(), 0, 0);
+        // Un quiz tambien suma dia de racha, asi que aqui tambien hay que
+        // revisar: si no, la racha avanza y el logro no se entera.
+        achievementChecker.checkAndAward(studentId);
         return attempt;
     }
 }
