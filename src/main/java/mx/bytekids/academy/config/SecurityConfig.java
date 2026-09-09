@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -57,6 +58,17 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
                 )
+                // Sin esto, una peticion SIN autenticar tambien devuelve 403, igual
+                // que una autenticada pero sin permiso. El frontend no puede
+                // distinguirlas y termina cerrando la sesion por un simple "eso no
+                // te toca": el usuario ve un logout inexplicable en vez de un
+                // control que no carga.
+                //   401 -> no hay sesion valida (token ausente o vencido)
+                //   403 -> hay sesion, pero el rol no alcanza
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint((req, res, ex) ->
+                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                                              "No hay sesión activa")))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
