@@ -8,6 +8,7 @@ import mx.bytekids.academy.entity.Submission;
 import mx.bytekids.academy.entity.enums.SubmissionStatus;
 import mx.bytekids.academy.repository.QuizAttemptAnswerRepository;
 import mx.bytekids.academy.repository.SubmissionRepository;
+import mx.bytekids.academy.repository.XpEventRepository;
 import mx.bytekids.academy.exception.BusinessException;
 import mx.bytekids.academy.exception.ResourceNotFoundException;
 import mx.bytekids.academy.repository.*;
@@ -30,6 +31,7 @@ public class QuizService {
     private final QuizAttemptRepository attemptRepository;
     private final QuizAttemptAnswerRepository answerRepository;
     private final SubmissionRepository submissionRepository;
+    private final XpEventRepository xpEventRepository;
     private final ContentService contentService;
     private final UserService userService;
     private final AchievementCheckerService achievementChecker;
@@ -83,7 +85,7 @@ public class QuizService {
      * 70 es el mismo con el que se paga el XP: aprobado si lo alcanza,
      * y si no queda pendiente de que el maestro lo vea.
      */
-    private void registrarEntrega(Content content, User student, short score) {
+    private Submission registrarEntrega(Content content, User student, short score) {
         Submission previa = submissionRepository
                 .findTopByStudentAndContentOrderBySubmittedAtDesc(student, content)
                 .orElse(null);
@@ -96,7 +98,7 @@ public class QuizService {
         entrega.setStatus(score >= 70 ? SubmissionStatus.aprobado : SubmissionStatus.enviado);
         entrega.setAttemptsCount((short) ((entrega.getAttemptsCount() == null ? 0
                 : entrega.getAttemptsCount()) + 1));
-        submissionRepository.save(entrega);
+        return submissionRepository.save(entrega);
     }
 
     public QuizAttempt submitAttempt(UUID contentId, UUID studentId,
@@ -157,18 +159,23 @@ public class QuizService {
         attempt.setScore(score);
         attempt = attemptRepository.save(attempt);
 
-        if (score >= 70) {
+        Submission entrega = registrarEntrega(content, student, score);
+
+        // El XP se paga UNA vez por quiz, no una por intento. Antes la
+        // referencia era el id del intento --nuevo en cada envio-- asi que
+        // la verificacion de "ya se pago" nunca encontraba nada: contestar
+        // el mismo quiz cinco veces daba cinco veces los puntos. Se usa la
+        // entrega, que si es unica por alumno y contenido, igual que en el
+        // resto de las actividades.
+        boolean yaSePago = xpEventRepository
+                .existsByReferenceIdAndReferenceType(entrega.getId(), "submission");
+        if (score >= 70 && !yaSePago) {
             short xp = content.getXpReward();
             progressService.awardXp(studentId, xp, XpReason.quiz_completado,
-                    attempt.getId(), "quiz_attempt", null);
+                    entrega.getId(), "submission", null);
             progressService.updateSubjectProgress(studentId,
                     content.getSubject() != null ? content.getSubject().getId() : null, xp);
         }
-        // El quiz no dejaba rastro en submissions, asi que en la Libreta
-        // salia "sin entregar" aunque estuviera contestado, y no contaba
-        // para el avance del temario. Se registra como cualquier entrega.
-        registrarEntrega(content, student, score);
-
         progressService.recordDailyActivity(studentId, LocalDate.now(), 0, 0);
         // Un quiz tambien suma dia de racha, asi que aqui tambien hay que
         // revisar: si no, la racha avanza y el logro no se entera.
