@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import mx.bytekids.academy.dto.common.ApiResponse;
 import mx.bytekids.academy.entity.QuizAttempt;
+import mx.bytekids.academy.entity.QuizAttemptAnswer;
 import mx.bytekids.academy.entity.QuizOption;
 import mx.bytekids.academy.entity.QuizQuestion;
 import mx.bytekids.academy.security.SecurityUtils;
@@ -53,6 +54,22 @@ public class QuizController {
     }
 
     // Body: { "answers": { "<questionId>": "<optionId>" }, "assignmentId": "<uuid>" }
+    @GetMapping("/{contentId}/attempts/me")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Operation(summary = "Mis intentos en este quiz")
+    public ResponseEntity<ApiResponse<List<QuizAttempt>>> myAttempts(@PathVariable UUID contentId) {
+        var student = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok(
+                quizService.findAttempts(contentId, student.getId())));
+    }
+
+    @GetMapping("/attempts/{attemptId}/answers")
+    @PreAuthorize("hasAnyRole('STUDENT','TEACHER','ADMIN')")
+    @Operation(summary = "Que contesto en ese intento")
+    public ResponseEntity<ApiResponse<List<QuizAttemptAnswer>>> answers(@PathVariable UUID attemptId) {
+        return ResponseEntity.ok(ApiResponse.ok(quizService.findAnswers(attemptId)));
+    }
+
     @PostMapping("/{contentId}/attempt")
     @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Responder quiz — devuelve calificación inmediata")
