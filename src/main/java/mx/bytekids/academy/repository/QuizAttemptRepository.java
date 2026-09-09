@@ -11,4 +11,7 @@ import java.util.UUID;
 public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, UUID> {
     List<QuizAttempt> findByStudentOrderByCompletedAtDesc(User student);
     List<QuizAttempt> findByContentOrderByCompletedAtDesc(Content content);
+
+    /** Los intentos de un alumno en un quiz, del mas reciente al mas viejo. */
+    List<QuizAttempt> findByStudentAndContentOrderByCompletedAtDesc(User student, Content content);
 }
