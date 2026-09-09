@@ -1,6 +1,7 @@
 package mx.bytekids.academy.service;
 
 import lombok.RequiredArgsConstructor;
+import mx.bytekids.academy.dto.content.ContentResponse;
 import mx.bytekids.academy.entity.*;
 import mx.bytekids.academy.exception.BusinessException;
 import mx.bytekids.academy.exception.ResourceNotFoundException;
@@ -217,15 +218,26 @@ public class ClassSessionService {
     }
 
     private Map<String, Object> buildMissionResponse(ClassSessionMission m) {
+        // Se pasa por ContentResponse y no por el Content directo porque ese
+        // es el unico punto donde se filtran las llaves que son del maestro:
+        // expected_output, solution_check y teacher_notes. Volcar
+        // getContentBody() aqui le entregaria las respuestas al alumno.
+        ContentResponse c = ContentResponse.from(m.getContent());
+
         Map<String, Object> r = new HashMap<>();
-        r.put("contentId",    m.getContent().getId());
-        r.put("title",        m.getContent().getTitle());
-        r.put("type",         m.getContent().getType().name());
-        r.put("difficulty",   m.getContent().getDifficulty() != null ? m.getContent().getDifficulty().name() : "normal");
-        r.put("xpReward",     m.getContent().getXpReward());
-        r.put("subjectName",  m.getContent().getSubject() != null ? m.getContent().getSubject().getName() : "");
-        r.put("subjectIcon",  m.getContent().getSubject() != null && m.getContent().getSubject().getIcon() != null
-                ? m.getContent().getSubject().getIcon() : "📚");
+        r.put("contentId",    c.getId());
+        r.put("title",        c.getTitle());
+        r.put("type",         c.getType().name());
+        r.put("difficulty",   c.getDifficulty() != null ? c.getDifficulty().name() : "normal");
+        r.put("xpReward",     c.getXpReward());
+        r.put("subjectName",  c.getSubjectName() != null ? c.getSubjectName() : "");
+        r.put("subjectIcon",  c.getSubjectIcon() != null ? c.getSubjectIcon() : "📚");
+
+        // Lo que hace falta para resolver la actividad SIN salirse del aula.
+        r.put("description",      c.getDescription());
+        r.put("contentBody",      c.getContentBody());
+        r.put("estimatedMinutes", c.getEstimatedMinutes());
+        r.put("subjectColor",     c.getSubjectColor());
         r.put("launchedAt",   m.getLaunchedAt() != null ? m.getLaunchedAt().toString() : "");
         r.put("launchedBy",   m.getLaunchedBy().getDisplayName());
         return r;
