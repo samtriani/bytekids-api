@@ -5,12 +5,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.bytekids.academy.dto.common.ApiResponse;
+import mx.bytekids.academy.dto.message.ContactoResponse;
 import mx.bytekids.academy.dto.message.MessageRequest;
 import mx.bytekids.academy.entity.Message;
 import mx.bytekids.academy.security.SecurityUtils;
 import mx.bytekids.academy.service.MessageService;
 import mx.bytekids.academy.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,11 @@ import java.util.UUID;
 @RequestMapping("/messages")
 @RequiredArgsConstructor
 @Tag(name = "Mensajes")
+// Este controlador no tenia ni un @PreAuthorize. No se notaba porque el
+// alumno no tenia pantalla desde donde llamarlo, pero la mensajeria es de
+// los cinco roles y quien decide a quien se le puede escribir es
+// MessageService.contactosPermitidos(), no la pantalla.
+@PreAuthorize("hasAnyRole('ADMIN','DIRECTOR','TEACHER','STUDENT','PARENT')")
 public class MessageController {
 
     private final MessageService messageService;
@@ -42,7 +49,17 @@ public class MessageController {
     @GetMapping("/thread/{parentId}")
     @Operation(summary = "Hilo de respuestas de un mensaje")
     public ResponseEntity<ApiResponse<List<Message>>> thread(@PathVariable UUID parentId) {
-        return ResponseEntity.ok(ApiResponse.ok(messageService.findThread(parentId)));
+        // El servicio verifica que quien pregunta sea parte del hilo.
+        var user = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok(
+                messageService.findThread(parentId, user.getId())));
+    }
+
+    @GetMapping("/contactos")
+    @Operation(summary = "A quien le puedo escribir")
+    public ResponseEntity<ApiResponse<List<ContactoResponse>>> contactos() {
+        var user = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok(messageService.contactos(user.getId())));
     }
 
     @PostMapping
