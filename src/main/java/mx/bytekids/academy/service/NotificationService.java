@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.PageRequest;
+
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,9 +29,43 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserService userService;
 
-    public List<Notification> findByRecipient(UUID recipientId) {
+    /** Cuanto vive una notificacion despues de creada. */
+    private static final int DIAS_LEIDAS    = 30;
+    private static final int DIAS_SIN_LEER  = 90;
+
+    /** Tope de lo que devuelve el panel, por si alguien pide 5000. */
+    private static final int LIMITE_MAXIMO = 100;
+
+    /**
+     * Las mas recientes primero, acotadas, y de paso tira las viejas.
+     *
+     * La purga va aqui y no en un @Scheduled porque las maquinas de Fly se
+     * suspenden sin trafico: un cron nocturno no correria nunca, y con dos
+     * maquinas podria correr dos veces. Aqui va pegada a una peticion que ya
+     * sucede y esta acotada al usuario que pregunta.
+     */
+    @Transactional
+    public List<Notification> findByRecipient(UUID recipientId, int limite) {
         User recipient = userService.findById(recipientId);
-        return notificationRepository.findByRecipientOrderByCreatedAtDesc(recipient);
+        purgar(recipient);
+        int tope = Math.max(1, Math.min(limite, LIMITE_MAXIMO));
+        return notificationRepository.findByRecipientOrderByCreatedAtDesc(
+                recipient, PageRequest.of(0, tope));
+    }
+
+    private void purgar(User recipient) {
+        try {
+            OffsetDateTime ahora = OffsetDateTime.now();
+            int tiradas = notificationRepository.purgarViejas(recipient,
+                    ahora.minusDays(DIAS_LEIDAS), ahora.minusDays(DIAS_SIN_LEER));
+            if (tiradas > 0) {
+                log.debug("Purgadas {} notificaciones viejas de {}", tiradas, recipient.getId());
+            }
+        } catch (Exception e) {
+            // Limpiar es mantenimiento: que falle no puede dejar al usuario
+            // sin ver sus notificaciones.
+            log.warn("No se pudo purgar notificaciones de {}: {}", recipient.getId(), e.getMessage());
+        }
     }
 
     public long countUnread(UUID recipientId) {
