@@ -41,7 +41,6 @@ public class UserService {
         return userRepository.findByRoleAndIsActiveTrue(role).stream().map(UserResponse::from).toList();
     }
 
-    @Transactional
     /**
      * Normaliza y valida el correo. Se guarda en minusculas porque
      * "Ana@x.com" y "ana@x.com" son el mismo buzon: sin esto, dos cuentas
@@ -60,6 +59,7 @@ public class UserService {
         return email;
     }
 
+    @Transactional
     public UserResponse create(UserRequest request) {
         ownershipService.requireOwnerToCreate(request.getRole());
         if (request.getPassword() == null || request.getPassword().isBlank()) {

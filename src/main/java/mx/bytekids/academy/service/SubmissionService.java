@@ -140,12 +140,17 @@ public class SubmissionService {
      */
     private void avisarAlMaestro(User student, Content content, Submission entrega) {
         UUID materiaId = content.getSubject() != null ? content.getSubject().getId() : null;
-        List<User> maestros = classroomService.findTeachersForStudent(student, materiaId);
 
-        notificationService.avisarATodos(maestros, student, NotificationType.calificacion,
-                student.getDisplayName() + " entreg\u00f3 una actividad",
-                content.getTitle() + " \u00b7 est\u00e1 esperando tu revisi\u00f3n",
-                entrega.getId(), "entrega");
+        // La referencia es el SAL\u00d3N y no la entrega: la Libreta se abre por
+        // sal\u00f3n (?salon=...), as\u00ed que con el id de la entrega ca\u00eda siempre en
+        // el sal\u00f3n por defecto. Se recorre sal\u00f3n por sal\u00f3n, y no con
+        // avisarATodos, porque cada maestro necesita SU libreta.
+        for (Classroom salon : classroomService.findClassroomsForStudent(student, materiaId)) {
+            notificationService.avisar(salon.getTeacher(), student, NotificationType.calificacion,
+                    student.getDisplayName() + " entreg\u00f3 una actividad",
+                    content.getTitle() + " \u00b7 est\u00e1 esperando tu revisi\u00f3n",
+                    salon.getId(), "salon");
+        }
     }
 
     /**
