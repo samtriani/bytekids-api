@@ -16,6 +16,7 @@ import mx.bytekids.academy.repository.SubmissionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -85,6 +86,11 @@ public class AchievementCheckerService {
 
         if (candidates.isEmpty()) return;
 
+        // Se juntan para avisar UNA vez al final. El primer dia de un alumno
+        // pueden caer tres o cuatro de golpe, y tres notificaciones seguidas
+        // se sienten spam justo cuando queriamos que se sintiera premio.
+        List<AchievementDefinition> desbloqueados = new ArrayList<>();
+
         // Carga estadísticas del alumno una sola vez
         long   approvedCount = submissionRepo.countApprovedByStudent(student);
         Integer totalXp      = null;
@@ -104,17 +110,41 @@ public class AchievementCheckerService {
                 if (met) {
                     achievementService.award(studentId, def.getId());
                     log.info("🏆 Logro desbloqueado: '{}' para alumno {}", def.getTitle(), studentId);
-                    // Un logro que nadie ve no premia nada. Va sin remitente:
-                    // no se lo dio una persona, se lo gano el.
-                    notificationService.avisar(student, null,
-                            NotificationType.logro_desbloqueado,
-                            "🏆 ¡Desbloqueaste " + def.getTitle() + "!",
-                            def.getDescription(), def.getId(), "logro");
+                    desbloqueados.add(def);
                 }
             } catch (Exception e) {
                 log.warn("No se pudo evaluar logro '{}': {}", def.getTitle(), e.getMessage());
             }
         }
+
+        avisarDeLogros(student, desbloqueados);
+    }
+
+    /**
+     * Un logro que nadie ve no premia nada. Va sin remitente: no se lo dio
+     * una persona, se lo gano el.
+     *
+     * Cuando cae mas de uno se manda una sola, con los nombres en el cuerpo.
+     * Se conserva aparte de la notificacion de "actividad aprobada" a
+     * proposito: son cosas distintas, llevan a pantallas distintas, y el
+     * trofeo es el premio -- fundirlo en la de calificacion lo entierra.
+     */
+    private void avisarDeLogros(User student, List<AchievementDefinition> nuevos) {
+        if (nuevos.isEmpty()) return;
+
+        if (nuevos.size() == 1) {
+            AchievementDefinition d = nuevos.get(0);
+            notificationService.avisar(student, null, NotificationType.logro_desbloqueado,
+                    "🏆 ¡Desbloqueaste " + d.getTitle() + "!",
+                    d.getDescription(), d.getId(), "logro");
+            return;
+        }
+
+        String nombres = nuevos.stream().map(AchievementDefinition::getTitle)
+                .collect(Collectors.joining(", "));
+        notificationService.avisar(student, null, NotificationType.logro_desbloqueado,
+                "🏆 ¡Desbloqueaste " + nuevos.size() + " logros!",
+                nombres, null, "logro");
     }
 
     private boolean evaluate(AchievementDefinition def, User student, UUID studentId,

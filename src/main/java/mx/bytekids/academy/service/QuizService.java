@@ -5,6 +5,7 @@ import mx.bytekids.academy.dto.quiz.QuizQuestionResponse;
 import mx.bytekids.academy.entity.*;
 import mx.bytekids.academy.entity.enums.XpReason;
 import mx.bytekids.academy.entity.Submission;
+import mx.bytekids.academy.entity.enums.NotificationType;
 import mx.bytekids.academy.entity.enums.SubmissionStatus;
 import mx.bytekids.academy.repository.QuizAttemptAnswerRepository;
 import mx.bytekids.academy.repository.SubmissionRepository;
@@ -36,6 +37,8 @@ public class QuizService {
     private final UserService userService;
     private final AchievementCheckerService achievementChecker;
     private final ProgressService progressService;
+    private final ClassroomService classroomService;
+    private final NotificationService notificationService;
 
     /**
      * Preguntas con sus opciones. Antes devolvia la entidad cruda, que no tiene
@@ -67,6 +70,25 @@ public class QuizService {
 
     // answers: map questionId → selectedOptionId (null para respuesta corta)
     @Transactional
+    /**
+     * El quiz se autocalifica, asi que no hay nada que revisar: el aviso es
+     * para que el maestro se entere, sobre todo si le fue mal. Por eso lleva
+     * la calificacion en el titulo y no un "esta esperando tu revision".
+     */
+    private void avisarAlMaestro(User student, Content content, Submission entrega, short score) {
+        UUID materiaId = content.getSubject() != null ? content.getSubject().getId() : null;
+        List<User> maestros = classroomService.findTeachersForStudent(student, materiaId);
+
+        // score viene de 0 a 100 y en la plataforma se muestra sobre 10.
+        String calificacion = String.format(java.util.Locale.US, "%.1f", score / 10.0);
+        boolean aprobo = score >= 70;
+
+        notificationService.avisarATodos(maestros, student, NotificationType.calificacion,
+                student.getDisplayName() + " contestó el quiz · " + calificacion,
+                content.getTitle() + (aprobo ? "" : " · no alcanzó el 7, quizá necesite apoyo"),
+                entrega.getId(), "entrega");
+    }
+
     /** Los intentos de este alumno en este quiz, del mas reciente al mas viejo. */
     public List<QuizAttempt> findAttempts(UUID contentId, UUID studentId) {
         return attemptRepository.findByStudentAndContentOrderByCompletedAtDesc(
@@ -169,12 +191,23 @@ public class QuizService {
         // resto de las actividades.
         boolean yaSePago = xpEventRepository
                 .existsByReferenceIdAndReferenceType(entrega.getId(), "submission");
-        if (score >= 70 && !yaSePago) {
+        boolean primeraAprobacion = score >= 70 && !yaSePago;
+        if (primeraAprobacion) {
             short xp = content.getXpReward();
             progressService.awardXp(studentId, xp, XpReason.quiz_completado,
                     entrega.getId(), "submission", null);
             progressService.updateSubjectProgress(studentId,
                     content.getSubject() != null ? content.getSubject().getId() : null, xp);
+        }
+
+        // Solo dos avisos por quiz: cuando lo contesta por primera vez, y
+        // cuando lo aprueba por primera vez. Avisar en cada reintento seria
+        // ruido, y ademas dejaria colgado un "quiza necesite apoyo" de un
+        // intento que el nino ya remonto.
+        boolean primerIntento = entrega.getAttemptsCount() != null
+                             && entrega.getAttemptsCount() == 1;
+        if (primerIntento || primeraAprobacion) {
+            avisarAlMaestro(student, content, entrega, score);
         }
         progressService.recordDailyActivity(studentId, LocalDate.now(), 0, 0);
         // Un quiz tambien suma dia de racha, asi que aqui tambien hay que

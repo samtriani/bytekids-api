@@ -39,6 +39,7 @@ public class SubmissionService {
     private final ClassroomEnrollmentRepository enrollmentRepository;
     private final XpEventRepository             xpEventRepository;
     private final NotificationService           notificationService;
+    private final ClassroomService              classroomService;
 
     public Submission findById(UUID id) {
         return submissionRepository.findById(id)
@@ -139,15 +140,7 @@ public class SubmissionService {
      */
     private void avisarAlMaestro(User student, Content content, Submission entrega) {
         UUID materiaId = content.getSubject() != null ? content.getSubject().getId() : null;
-
-        List<User> maestros = new ArrayList<>();
-        for (var inscripcion : enrollmentRepository.findByStudentAndIsActiveTrue(student)) {
-            var salon = inscripcion.getClassroom();
-            if (salon == null || salon.getTeacher() == null) continue;
-            boolean daEstaMateria = materiaId == null || salon.getSubjects().stream()
-                    .anyMatch(m -> m.getId().equals(materiaId));
-            if (daEstaMateria) maestros.add(salon.getTeacher());
-        }
+        List<User> maestros = classroomService.findTeachersForStudent(student, materiaId);
 
         notificationService.avisarATodos(maestros, student, NotificationType.calificacion,
                 student.getDisplayName() + " entreg\u00f3 una actividad",
