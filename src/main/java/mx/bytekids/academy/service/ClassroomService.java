@@ -17,6 +17,7 @@ import mx.bytekids.academy.repository.SubjectRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -162,7 +163,30 @@ public class ClassroomService {
                 .toList();
     }
 
+    /**
+     * Los maestros de este alumno que dan ESTA materia.
+     *
+     * Un nino inscrito en dos salones tiene dos maestros, y avisarle al de
+     * la otra materia de algo que no le toca es ruido. Si la materia viene
+     * en null --contenido sin materia-- se devuelven todos sus maestros,
+     * que es preferible a no avisarle a nadie.
+     *
+     * Vive aqui y no en SubmissionService porque lo usan tambien las
+     * entregas de quiz, y duplicarlo era garantizar que se separaran.
+     */
     @Transactional(readOnly = true)
+    public List<User> findTeachersForStudent(User student, UUID subjectId) {
+        List<User> maestros = new ArrayList<>();
+        for (var inscripcion : enrollmentRepository.findByStudentAndIsActiveTrue(student)) {
+            Classroom salon = inscripcion.getClassroom();
+            if (salon == null || salon.getTeacher() == null) continue;
+            boolean daEstaMateria = subjectId == null || salon.getSubjects().stream()
+                    .anyMatch(m -> m.getId().equals(subjectId));
+            if (daEstaMateria) maestros.add(salon.getTeacher());
+        }
+        return maestros;
+    }
+
     public List<Subject> getSubjects(UUID classroomId) {
         Classroom classroom = findById(classroomId);
         classroom.getSubjects().size(); // init lazy collection
