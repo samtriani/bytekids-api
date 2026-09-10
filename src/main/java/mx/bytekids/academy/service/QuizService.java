@@ -7,6 +7,7 @@ import mx.bytekids.academy.entity.enums.XpReason;
 import mx.bytekids.academy.entity.Submission;
 import mx.bytekids.academy.entity.Classroom;
 import mx.bytekids.academy.entity.enums.NotificationType;
+import mx.bytekids.academy.entity.enums.QuestionType;
 import mx.bytekids.academy.entity.enums.SubmissionStatus;
 import mx.bytekids.academy.repository.QuizAttemptAnswerRepository;
 import mx.bytekids.academy.repository.SubmissionRepository;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -49,9 +52,36 @@ public class QuizService {
     public List<QuizQuestionResponse> findQuestions(UUID contentId) {
         Content content = contentService.findById(contentId);
         return questionRepository.findByContentOrderByOrderIndexAsc(content).stream()
-                .map(q -> QuizQuestionResponse.from(
-                        q, optionRepository.findByQuestionOrderByOrderIndexAsc(q)))
+                .map(q -> QuizQuestionResponse.from(q, opcionesRevueltas(q)))
                 .toList();
+    }
+
+    /**
+     * Las opciones salen revueltas, no en el orden con el que se capturaron.
+     *
+     * En todos los quizzes del temario la respuesta correcta quedo en la
+     * primera posicion, asi que un nino que se diera cuenta contestaba diez de
+     * diez sin leer. Se arregla aqui y no con un UPDATE a la base porque el
+     * problema no es el dato: es que quien captura un quiz tiende a escribir
+     * primero la respuesta buena, y el siguiente que se capture va a salir
+     * igual. Revolver al entregarlas lo resuelve para siempre.
+     *
+     * Se revuelve por peticion, asi que al repetir el quiz el orden cambia:
+     * eso ademas evita que se memorice la posicion en vez del contenido.
+     *
+     * Verdadero/falso NO se revuelve: ahi el orden es parte de como se lee la
+     * pregunta, y no hay posicion que delate nada.
+     *
+     * Calificar no depende del orden --submitAttempt casa por id de opcion--
+     * asi que revolver es seguro.
+     */
+    private List<QuizOption> opcionesRevueltas(QuizQuestion pregunta) {
+        List<QuizOption> opciones = new ArrayList<>(
+                optionRepository.findByQuestionOrderByOrderIndexAsc(pregunta));
+        if (pregunta.getQuestionType() != QuestionType.verdadero_falso) {
+            Collections.shuffle(opciones);
+        }
+        return opciones;
     }
 
     @Transactional
