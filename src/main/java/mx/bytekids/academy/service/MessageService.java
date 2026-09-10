@@ -8,6 +8,7 @@ import mx.bytekids.academy.entity.ClassroomEnrollment;
 import mx.bytekids.academy.entity.Message;
 import mx.bytekids.academy.entity.ParentStudent;
 import mx.bytekids.academy.entity.User;
+import mx.bytekids.academy.entity.enums.NotificationType;
 import mx.bytekids.academy.entity.enums.UserRole;
 import mx.bytekids.academy.exception.BusinessException;
 import mx.bytekids.academy.exception.ResourceNotFoundException;
@@ -36,6 +37,7 @@ public class MessageService {
     private final ParentStudentRepository parentStudentRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final NotificationService notificationService;
 
     public List<Message> findInbox(UUID userId) {
         User user = userService.findById(userId);
@@ -102,7 +104,17 @@ public class MessageService {
                 .subject(req.getSubject()).body(req.getBody())
                 .parentMessage(parent)
                 .build();
-        return messageRepository.save(message);
+        Message guardado = messageRepository.save(message);
+
+        // La referencia es el REMITENTE, no el mensaje: al tocar la
+        // notificacion lo util es abrir la conversacion con esa persona,
+        // no un mensaje suelto fuera de su hilo.
+        notificationService.avisar(recipient, sender, NotificationType.mensaje,
+                sender.getDisplayName() + " te escribi\u00f3",
+                recorta(req.getBody()),
+                sender.getId(), "conversacion");
+
+        return guardado;
     }
 
     @Transactional
@@ -114,6 +126,13 @@ public class MessageService {
             message.setReadAt(OffsetDateTime.now());
             messageRepository.save(message);
         }
+    }
+
+    /** El cuerpo del aviso es un adelanto, no el mensaje completo. */
+    private static String recorta(String texto) {
+        if (texto == null) return null;
+        String limpio = texto.strip().replaceAll("\\s+", " ");
+        return limpio.length() <= 90 ? limpio : limpio.substring(0, 89) + "\u2026";
     }
 
     /** A quién le puede escribir este usuario, para pintarle el selector. */

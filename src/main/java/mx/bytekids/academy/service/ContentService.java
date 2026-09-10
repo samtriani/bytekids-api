@@ -6,10 +6,12 @@ import mx.bytekids.academy.dto.content.ContentRequest;
 import mx.bytekids.academy.dto.content.ContentResponse;
 import mx.bytekids.academy.entity.*;
 import mx.bytekids.academy.entity.enums.ContentType;
+import mx.bytekids.academy.entity.enums.NotificationType;
 import mx.bytekids.academy.entity.enums.UserRole;
 import mx.bytekids.academy.exception.BusinessException;
 import mx.bytekids.academy.exception.ResourceNotFoundException;
 import mx.bytekids.academy.repository.ClassroomRepository;
+import mx.bytekids.academy.repository.UserRepository;
 import mx.bytekids.academy.repository.ContentAssignmentRepository;
 import mx.bytekids.academy.repository.ContentRepository;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,8 @@ public class ContentService {
     private final UserService                  userService;
     private final ClassroomService             classroomService;
     private final ClassroomRepository          classroomRepository;
+    private final UserRepository               userRepository;
+    private final NotificationService          notificationService;
 
     public Content findById(UUID id) {
         return contentRepository.findById(id)
@@ -108,6 +112,20 @@ public class ContentService {
                         .content(saved)
                         .classroom(classroomService.findById(classroomId))
                         .assignedBy(creator).build()));
+        }
+
+        // Coordinacion y direccion son dueñas del plan base, asi que se
+        // enteran de lo que un maestro agrega por su cuenta. Al reves no:
+        // avisarle a coordinacion de lo que coordinacion acaba de crear es
+        // ruido, y el ruido termina con la campanita silenciada.
+        if (creator.getRole() == UserRole.teacher) {
+            var personal = new java.util.ArrayList<User>();
+            personal.addAll(userRepository.findByRoleAndIsActiveTrue(UserRole.director));
+            personal.addAll(userRepository.findByRoleAndIsActiveTrue(UserRole.admin));
+            notificationService.avisarATodos(personal, creator, NotificationType.sistema,
+                    creator.getDisplayName() + " publicó contenido nuevo",
+                    saved.getTitle() + (subject != null ? " · " + subject.getName() : ""),
+                    saved.getId(), "contenido");
         }
 
         return ContentResponse.from(saved);
