@@ -12,4 +12,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     List<Message> findBySenderOrderByCreatedAtDesc(User sender);
     List<Message> findByParentMessageOrderByCreatedAtAsc(Message parent);
     long countByRecipientAndIsReadFalse(User recipient);
+
+    /** ¿Esta persona ya me había escrito? Entonces le puedo responder. */
+    boolean existsBySenderAndRecipient(User sender, User recipient);
 }
