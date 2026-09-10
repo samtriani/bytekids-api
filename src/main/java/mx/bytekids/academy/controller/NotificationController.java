@@ -28,10 +28,12 @@ public class NotificationController {
     private final UserService userService;
 
     @GetMapping
-    @Operation(summary = "Notificaciones del usuario autenticado")
-    public ResponseEntity<ApiResponse<List<Notification>>> myNotifications() {
+    @Operation(summary = "Notificaciones del usuario autenticado, de la mas reciente a la mas vieja")
+    public ResponseEntity<ApiResponse<List<Notification>>> myNotifications(
+            @RequestParam(defaultValue = "20") int limit) {
         var user = userService.findByUsername(SecurityUtils.currentUsername());
-        return ResponseEntity.ok(ApiResponse.ok(notificationService.findByRecipient(user.getId())));
+        return ResponseEntity.ok(ApiResponse.ok(
+                notificationService.findByRecipient(user.getId(), limit)));
     }
 
     @GetMapping("/unread-count")
