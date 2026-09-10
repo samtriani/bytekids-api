@@ -5,6 +5,7 @@ import mx.bytekids.academy.dto.submission.ReviewRequest;
 import mx.bytekids.academy.dto.submission.SubmissionRequest;
 import mx.bytekids.academy.dto.submission.SubmissionResponse;
 import mx.bytekids.academy.entity.*;
+import mx.bytekids.academy.entity.enums.NotificationType;
 import mx.bytekids.academy.entity.enums.SubmissionStatus;
 import mx.bytekids.academy.entity.enums.XpReason;
 import mx.bytekids.academy.exception.ResourceNotFoundException;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,7 @@ public class SubmissionService {
     private final ClassroomRepository           classroomRepository;
     private final ClassroomEnrollmentRepository enrollmentRepository;
     private final XpEventRepository             xpEventRepository;
+    private final NotificationService           notificationService;
 
     public Submission findById(UUID id) {
         return submissionRepository.findById(id)
@@ -97,6 +100,7 @@ public class SubmissionService {
             // asi que para cuando el maestro califique ya se rompio y el logro
             // se pierde para siempre.
             achievementChecker.checkAndAward(studentId);
+            avisarAlMaestro(student, content, guardada);
         }
         return SubmissionResponse.from(guardada);
     }
@@ -121,7 +125,53 @@ public class SubmissionService {
             otorgarXpUnaVez(submission, submission.getStudent().getId(), reviewerId);
         }
 
+        avisarAlAlumno(submission, reviewer);
+
         return SubmissionResponse.from(submissionRepository.save(submission));
+    }
+
+    /**
+     * Al maestro de ESA materia en ESE salon, no a todos los del alumno.
+     *
+     * Un nino inscrito en dos salones tiene dos maestros, y avisarle al de
+     * la otra materia de una entrega que no le toca revisar es ruido que
+     * termina con la campanita silenciada.
+     */
+    private void avisarAlMaestro(User student, Content content, Submission entrega) {
+        UUID materiaId = content.getSubject() != null ? content.getSubject().getId() : null;
+
+        List<User> maestros = new ArrayList<>();
+        for (var inscripcion : enrollmentRepository.findByStudentAndIsActiveTrue(student)) {
+            var salon = inscripcion.getClassroom();
+            if (salon == null || salon.getTeacher() == null) continue;
+            boolean daEstaMateria = materiaId == null || salon.getSubjects().stream()
+                    .anyMatch(m -> m.getId().equals(materiaId));
+            if (daEstaMateria) maestros.add(salon.getTeacher());
+        }
+
+        notificationService.avisarATodos(maestros, student, NotificationType.calificacion,
+                student.getDisplayName() + " entreg\u00f3 una actividad",
+                content.getTitle() + " \u00b7 est\u00e1 esperando tu revisi\u00f3n",
+                entrega.getId(), "entrega");
+    }
+
+    /**
+     * El texto del alumno cambia con el resultado, y cuando hay que ajustar
+     * NO dice "rechazada": el nino lee el rojo y no el comentario, y lo que
+     * ense\u00f1amos es que equivocarse es parte de entrenar.
+     */
+    private void avisarAlAlumno(Submission entrega, User revisor) {
+        String titulo = switch (entrega.getStatus()) {
+            case aprobado   -> "\u00a1Tu actividad qued\u00f3 aprobada!";
+            case rechazado  -> "Tu maestro te pidi\u00f3 un ajuste";
+            default         -> "Tu maestro revis\u00f3 tu trabajo";
+        };
+        String cuerpo = entrega.getContent().getTitle()
+                + (entrega.getTeacherFeedback() != null && !entrega.getTeacherFeedback().isBlank()
+                   ? " \u00b7 " + entrega.getTeacherFeedback() : "");
+
+        notificationService.avisar(entrega.getStudent(), revisor, NotificationType.calificacion,
+                titulo, cuerpo, entrega.getContent().getId(), "actividad");
     }
 
     /**

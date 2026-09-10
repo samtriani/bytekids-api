@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mx.bytekids.academy.entity.AchievementDefinition;
 import mx.bytekids.academy.entity.User;
+import mx.bytekids.academy.entity.enums.NotificationType;
 import mx.bytekids.academy.entity.enums.ContentType;
 import mx.bytekids.academy.entity.enums.UserRole;
 import mx.bytekids.academy.entity.enums.SubmissionStatus;
@@ -33,6 +34,7 @@ public class AchievementCheckerService {
     private final SubmissionRepository            submissionRepo;
     private final ProgressService                 progressService;
     private final UserService                     userService;
+    private final NotificationService             notificationService;
 
     /**
      * Evalúa todas las definiciones de logros no obtenidas por el alumno
@@ -102,6 +104,12 @@ public class AchievementCheckerService {
                 if (met) {
                     achievementService.award(studentId, def.getId());
                     log.info("🏆 Logro desbloqueado: '{}' para alumno {}", def.getTitle(), studentId);
+                    // Un logro que nadie ve no premia nada. Va sin remitente:
+                    // no se lo dio una persona, se lo gano el.
+                    notificationService.avisar(student, null,
+                            NotificationType.logro_desbloqueado,
+                            "🏆 ¡Desbloqueaste " + def.getTitle() + "!",
+                            def.getDescription(), def.getId(), "logro");
                 }
             } catch (Exception e) {
                 log.warn("No se pudo evaluar logro '{}': {}", def.getTitle(), e.getMessage());
