@@ -471,6 +471,37 @@ es. Si aparece: `rm -rf node_modules && npm ci`, sin nada más corriendo.
 Nota aparte: en esta máquina `npm ci` a veces no crea `node_modules/.bin`. Si
 `ng` no se reconoce, `node node_modules/@angular/cli/bin/ng.js build` funciona.
 
+### La actividad de la semana se salía de su tarjeta (15-sep)
+
+Reportado al revisar `/student/progress` con datos reales. El alto de cada barra
+era `xp/180*100`: **180 XP dados por sentados como techo** de la gráfica. Un día
+de 395 XP daba 219% de alto y, como el contenedor no recortaba, la barra se
+salía de la tarjeta y se encimaba sobre la gráfica de XP por materia.
+
+Lo que importa del caso: **el número fijo fallaba de los dos lados**. Por arriba
+se desbordaba; por abajo, una semana floja —tres días de 20 XP— se habría visto
+como puras rayitas planas. Lo que esa gráfica debe contar es cómo se repartió el
+esfuerzo entre los días, no qué tanto se parece a una cifra elegida a mano.
+
+El arreglo va en tres capas:
+
+1. Cada barra se mide contra **el mejor día de esa misma semana**, con 8% de
+   piso para que un día de poco XP siga siendo visible.
+2. El cálculo se hace **al recibir los datos**, no en la plantilla: un método
+   dentro de `[style]` se reevalúa en cada ciclo de detección de cambios. Mismo
+   criterio que ya estaba escrito en `mission-body.ts`.
+3. `.day-bar-wrap` lleva `overflow:hidden` como red de seguridad. Si el cálculo
+   vuelve a salirse de rango, la barra se recorta dentro de su columna en vez de
+   invadir la tarjeta de arriba.
+
+Se revisó si el patrón se repetía en otra pantalla: el `week-grid` de
+`/admin/schedule` es una rejilla de calendario, sin relación.
+
+**Criterio para lo que venga:** una barra cuyo alto salga de un divisor fijo es
+una bomba de tiempo — funciona hasta que un alumno rebasa el número que alguien
+escribió a mano. Si la escala no puede salir de los propios datos, por lo menos
+que el contenedor recorte.
+
 ### Lo que NO se tocó y hay que decidir
 
 - **Angular 17 está fuera de soporte.** `npm audit` reporta 8 vulnerabilidades
