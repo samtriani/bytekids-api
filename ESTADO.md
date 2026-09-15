@@ -374,9 +374,12 @@ cortas y parecidas entre sí.
 - **Lee `Fly-Client-IP`.** Sin eso `getRemoteAddr()` devuelve siempre la IP del
   proxy de Fly y *todos* compartirían un contador: el primero en fallar diez
   veces dejaría fuera al salón entero.
-- **Es en memoria a propósito.** Hoy corre una máquina. Con dos seguiría
-  funcionando, con el doble de margen efectivo — degradación aceptable, no un
-  agujero. Mover a almacén compartido cuando se escale, no antes.
+- **Es en memoria a propósito, y Fly tiene DOS máquinas.** Cada una lleva su
+  contador, así que el umbral efectivo es el doble: con 10 configurados hacen
+  falta ~20 intentos para quedar fuera de las dos. Sigue convirtiendo miles de
+  combinaciones por minuto en unas decenas por cuarto de hora, que es el punto.
+  Si quieres el número exacto, baja `LOGIN_MAX_INTENTOS` a la mitad; un contador
+  exacto de verdad pide Redis y una consulta más en el camino crítico del login.
 
 **Ojo con el interceptor.** `esTransitorio()` incluía el **429** en la lista de
 errores a reintentar, así que el freno se habría saboteado solo: cinco
