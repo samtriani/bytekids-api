@@ -46,21 +46,29 @@ public class SubmissionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Entrega", id));
     }
 
+    /** Para el alumno: su propio texto, completo, porque lo reenvia desde ahi. */
     public List<SubmissionResponse> findByStudent(UUID studentId) {
         User student = userService.findById(studentId);
         return submissionRepository.findByStudentOrderBySubmittedAtDesc(student)
                 .stream().map(SubmissionResponse::from).toList();
     }
 
+    /** Para el maestro: el mismo listado, con el texto acotado. */
+    public List<SubmissionResponse> findByStudentResumen(UUID studentId) {
+        User student = userService.findById(studentId);
+        return submissionRepository.findByStudentOrderBySubmittedAtDesc(student)
+                .stream().map(SubmissionResponse::resumen).toList();
+    }
+
     public List<SubmissionResponse> findByContent(UUID contentId) {
         Content content = contentService.findById(contentId);
         return submissionRepository.findByContentOrderBySubmittedAtDesc(content)
-                .stream().map(SubmissionResponse::from).toList();
+                .stream().map(SubmissionResponse::resumen).toList();
     }
 
     public List<SubmissionResponse> findPending() {
         return submissionRepository.findByStatusOrderBySubmittedAtDesc(SubmissionStatus.enviado)
-                .stream().map(SubmissionResponse::from).toList();
+                .stream().map(SubmissionResponse::resumen).toList();
     }
 
     @Transactional
