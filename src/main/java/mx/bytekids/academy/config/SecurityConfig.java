@@ -2,6 +2,7 @@ package mx.bytekids.academy.config;
 
 import lombok.RequiredArgsConstructor;
 import mx.bytekids.academy.security.JwtAuthFilter;
+import mx.bytekids.academy.security.LoginRateLimitFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,14 +35,20 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final LoginRateLimitFilter loginRateLimitFilter;
     private final UserDetailsService userDetailsService;
 
     @Value("${app.cors.allowed-origins:http://localhost:4200}")
     private String allowedOrigins;
 
+    // Solo health: Fly lo consulta sin credenciales para saber si la maquina
+    // responde. El comodin "/actuator/**" abarcaba cualquier endpoint futuro,
+    // asi que el dia que alguien ampliara management.endpoints.exposure quedaba
+    // publico sin que nadie tocara este archivo.
     private static final String[] PUBLIC_ENDPOINTS = {
             "/auth/login",
-            "/actuator/**",
+            "/actuator/health",
+            "/actuator/health/**",
             "/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"
@@ -71,6 +78,11 @@ public class SecurityConfig {
                                               "No hay sesión activa")))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
+                // Antes del de JWT: /auth/login es publico, asi que el freno
+                // tiene que actuar sin depender de que haya sesion. Al heredar
+                // de OncePerRequestFilter no importa que Spring Boot tambien lo
+                // auto-registre por ser @Component: no cuenta dos veces.
+                .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

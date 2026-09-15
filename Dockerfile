@@ -4,7 +4,11 @@ WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline -q
 COPY src ./src
-RUN mvn package -DskipTests -q
+# Las pruebas SI corren aqui. Iban con -DskipTests desde que src/test estaba
+# vacio, o sea que saltarselas no costaba nada; ahora que hay pruebas, dejarlo
+# asi significaria que el despliegue no verifica nada. Si una falla, la imagen
+# no se construye y la version rota nunca llega a Fly.
+RUN mvn package -q
 
 # Stage 2: runtime
 FROM eclipse-temurin:21-jre-alpine

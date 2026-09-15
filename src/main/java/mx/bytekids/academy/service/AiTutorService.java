@@ -49,15 +49,45 @@ public class AiTutorService {
         log.info("🤖 ByteBot LLM → {} | URL: {} | Modelo: {}", provider, aiBaseUrl, aiModel);
     }
 
+    /**
+     * Tope de caracteres por mensaje. El historial ya estaba acotado a
+     * {@link #MAX_TURNOS} turnos, pero cada turno era de largo libre: pegar un
+     * archivo entero en el chat se traducia en tokens facturados por Groq y en
+     * una peticion que el modelo rechaza por contexto. Se corta en el borde en
+     * vez de rechazar la peticion porque el que pega de mas suele ser un nino,
+     * y un error rojo no le dice que hacer.
+     */
+    private static final int MAX_CARACTERES = 4000;
+
+    /** Turnos de conversacion que se le reenvian al modelo. */
+    private static final int MAX_TURNOS = 10;
+
+    private static String recortar(String texto) {
+        if (texto == null) return "";
+        return texto.length() <= MAX_CARACTERES ? texto : texto.substring(0, MAX_CARACTERES);
+    }
+
     public String chat(User user, List<Map<String, String>> history, String message) {
         String systemPrompt = buildSystemPrompt(user);
 
         List<Map<String, String>> messages = new ArrayList<>();
         messages.add(Map.of("role", "system", "content", systemPrompt));
 
-        int start = Math.max(0, history.size() - 10);
-        messages.addAll(history.subList(start, history.size()));
-        messages.add(Map.of("role", "user", "content", message));
+        // history llega del cliente y puede venir nula: un POST con solo
+        // {"message":"hola"} tiraba un NullPointerException aqui, y como esta
+        // linea esta ARRIBA del try el error se escapaba como un 500 en vez de
+        // caer en el mensaje amable de abajo.
+        List<Map<String, String>> previos = history != null ? history : List.of();
+        int start = Math.max(0, previos.size() - MAX_TURNOS);
+        // Cada turno tambien se recorta: el historial lo arma el cliente, asi
+        // que acotar solo el numero de turnos dejaba abierta la otra mitad.
+        for (Map<String, String> turno : previos.subList(start, previos.size())) {
+            if (turno == null) continue;
+            String rol = turno.get("role");
+            if (!"user".equals(rol) && !"assistant".equals(rol)) continue;
+            messages.add(Map.of("role", rol, "content", recortar(turno.get("content"))));
+        }
+        messages.add(Map.of("role", "user", "content", recortar(message)));
 
         try {
             String reply = callLlm(messages);
