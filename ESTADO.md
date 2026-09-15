@@ -502,6 +502,36 @@ una bomba de tiempo — funciona hasta que un alumno rebasa el número que algui
 escribió a mano. Si la escala no puede salir de los propios datos, por lo menos
 que el contenedor recorte.
 
+### Los enlaces del temario no fijan idioma (15-sep)
+
+Reportado desde un celular: el Quick, Draw! del temario principiante abre en
+inglés. No es el navegador del alumno haciendo algo raro — el enlace está
+guardado **sin parámetro de idioma**, así que Google decide según el navegador,
+y en un teléfono con el sistema en inglés al niño le toca en inglés.
+
+El parámetro correcto es **`?locale=es`**, no `?lang=es`. No es suposición: el
+sitio declara `<link rel="alternate" hreflang="es"
+href="https://quickdraw.withgoogle.com/?locale=es">`, y verificado el 15-sep
+sin parámetro responde *"Can a neural net..."* y con él *"¿Puede una red
+neuronal..."*.
+
+Script: **`sql/2026-09-15_quickdraw_en_espanol.sql`**. Busca por dominio y no
+por `order_index`, para encontrar todas las piezas que lo usen en las dos
+materias y no romperse si alguien reordena el temario. Idempotente.
+
+**Lo de fondo, que es más grande que este enlace:** la pieza 1 ya resolvía este
+mismo problema pidiéndole al alumno *"si te aparece en inglés, cambia el idioma
+hasta abajo de la página"*. O sea que el patrón ya se conocía y se estaba
+tapando con una instrucción. Le carga a un niño de nueve años una tarea que no
+es la de la clase, y en celular ese selector queda al final de un scroll largo.
+**Si el enlace puede llegar ya en español, que llegue.**
+
+**Los otros enlaces quedaron sin tocar** —Teachable Machine, code.org, ML for
+Kids, Scratch— porque no se pudo confirmar su parámetro: arman la página con
+JavaScript y ninguna declara versión en español en su cabecera. Inventarles un
+`?lang=es` podría dejar un enlace roto, que es peor que uno en inglés. Para
+saberlo hay que abrir cada uno en un navegador configurado en inglés y ver.
+
 ### Lo que NO se tocó y hay que decidir
 
 - **Angular 17 está fuera de soporte.** `npm audit` reporta 8 vulnerabilidades
