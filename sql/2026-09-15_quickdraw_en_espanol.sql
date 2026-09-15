@@ -110,7 +110,16 @@ ORDER BY s.name, c.order_index;
 --     al alumno "si te aparece en ingles, cambia el idioma abajo", esa linea
 --     ya sobra y ahora confunde mas de lo que ayuda.
 --
---  3. NO se tocaron los otros enlaces del temario --Teachable Machine,
+--  3. OJO: el temario INTERMEDIO usa el EXPLORADOR de Quick, Draw!
+--     (quickdraw.withgoogle.com/data), que es otra pagina. Como este script
+--     busca por dominio, a esa tambien le agrega el parametro. Se comprobo
+--     que NO la rompe --responde 200-- pero no se pudo confirmar que la
+--     traduzca: el explorador arma su contenido con JavaScript. En el peor
+--     caso el parametro se ignora y queda como estaba. Si al abrirlo sigue
+--     en ingles, no es que el script fallara: es que esa pagina no soporta
+--     el parametro.
+--
+--  4. NO se tocaron los otros enlaces del temario --Teachable Machine,
 --     code.org, ML for Kids, Scratch-- porque no pude confirmar cual es su
 --     parametro de idioma: son aplicaciones que arman la pagina con
 --     JavaScript y, a diferencia de Quick, Draw!, ninguna declara una version
