@@ -33,11 +33,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * {@code VENTANA} minutos sin fallar, el contador se reinicia solo.
  *
  * <h3>Por que en memoria y no en Redis</h3>
- * Hoy corre una sola maquina en Fly ({@code min_machines_running = 0}, una
- * instancia). Un contador en memoria la cubre entera. El dia que haya dos
- * maquinas esto seguira funcionando pero con el doble de margen efectivo, que
- * es una degradacion aceptable y no un agujero: hay que moverlo a un almacen
- * compartido cuando se escale, no antes.
+ * Fly tiene <b>dos</b> maquinas para esta app, y cada una lleva su propio
+ * contador: el umbral efectivo es el doble del configurado (con 10, hacen
+ * falta ~20 intentos para quedar fuera de las dos). Es una degradacion
+ * aceptable, no un agujero — sigue convirtiendo un ataque de miles de
+ * combinaciones por minuto en unas decenas por cuarto de hora.
+ *
+ * Se deja en memoria a proposito: un contador exacto necesitaria Redis o una
+ * tabla, o sea una pieza de infraestructura nueva y una consulta mas en el
+ * camino critico del login, para un ataque que hoy nadie esta haciendo. Si se
+ * quiere el numero exacto sin eso, baja {@code LOGIN_MAX_INTENTOS} a la mitad.
+ * Cuando la app escale de verdad, esto se mueve a un almacen compartido.
  *
  * <h3>La IP detras del proxy</h3>
  * Fly termina TLS y reenvia, asi que {@code getRemoteAddr()} devuelve siempre
