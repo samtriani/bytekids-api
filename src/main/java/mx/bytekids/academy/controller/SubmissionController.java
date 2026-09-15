@@ -48,7 +48,7 @@ public class SubmissionController {
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @Operation(summary = "Entregas de un alumno específico")
     public ResponseEntity<ApiResponse<List<SubmissionResponse>>> byStudent(@PathVariable UUID studentId) {
-        return ResponseEntity.ok(ApiResponse.ok(submissionService.findByStudent(studentId)));
+        return ResponseEntity.ok(ApiResponse.ok(submissionService.findByStudentResumen(studentId)));
     }
 
     @GetMapping("/content/{contentId}")

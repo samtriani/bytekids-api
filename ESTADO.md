@@ -604,6 +604,40 @@ salía como `<appid>/<appid>` y 8x8 rechazaba los tokens. Es casi seguro que
 por eso las videollamadas nunca habían funcionado. Se detectó el 7-sep porque
 `JAAS_APP_ID` y `JAAS_KEY_ID` tenían **el mismo digest** en `flyctl secrets list`.
 
+### Y cuidado con lo que el alumno te manda a ti (15-sep)
+
+La trampa de arriba mira hacia afuera. Esta mira hacia adentro, y ya costó una
+pantalla: un alumno se recargó en una tecla y mandó una sola *palabra* de miles
+de caracteres. Al abrir esa entrega en la Libreta, **la pestaña se congelaba
+entera**: no se podía escribir la nota, ni la retroalimentación, ni hacer
+scroll. La entrega de al lado, con texto normal, abría bien.
+
+La culpa era `overflow-wrap: anywhere` en la caja del texto. Obliga al navegador
+a buscar puntos de corte carácter por carácter y —lo que de verdad duele— hace
+que el texto participe en el **cálculo de ancho mínimo** del contenedor, así que
+cada reacomodo del modal vuelve a pagar el recorrido completo. Con una palabra
+de miles de caracteres, deja de terminar.
+
+Se arregló en tres capas, porque ninguna basta sola:
+1. Se pintan máximo 4000 caracteres, avisando cuántos se ocultaron. **Se corta
+   al pintar, no en la base**: la entrega original se conserva.
+2. `word-break: break-all`, que corta igual sin arrastrar ese cálculo.
+3. `contain: content` en la caja, para aislar su acomodo del resto del modal.
+
+Y en el backend, `@Size(max = 10000)` en `codeSubmitted`, que antes no tenía
+ningún tope — igual que `MessageRequest`, que se acotó el mismo día.
+
+**La regla que queda:** todo campo de texto libre que llene un niño acaba
+pintado en una pantalla de la maestra. Antes de renderizarlo completo,
+pregúntate qué pasa si trae cien mil caracteres sin un solo espacio.
+
+**Y la lección de diagnóstico, que vale aparte:** lo que destrabó el caso no fue
+leer código, fue la comparación del usuario —"la de Axel sí me deja"— y el
+detalle de que **no podía ni enfocar el campo de la nota**. Eso último movió el
+momento de la falla de "al aprobar" a "al abrir", que era otra investigación
+completamente distinta. Con la pestaña congelada, la captura de pantalla muestra
+el modal **a medio pintar**, así que el texto se veía corto cuando no lo era.
+
 ### Cuidado con lo que se le manda al alumno
 Dos fugas ya ocurridas: `expected_output` visible en el workspace, y `isCorrect` que habría viajado en las opciones del quiz. Antes de exponer un campo nuevo, pregúntate si contiene la respuesta.
 
