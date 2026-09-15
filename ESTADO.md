@@ -1,7 +1,7 @@
 # Estado del proyecto — ByteKids
 
 > Bitácora para retomar el trabajo desde otra computadora.
-> **Última actualización: 7 de septiembre de 2026.**
+> **Última actualización: 15 de septiembre de 2026.**
 
 ---
 
@@ -47,12 +47,20 @@ cd bytekids-api && flyctl deploy --remote-only -a bytekids-api
 
 ## 2. Dónde quedé
 
-- **API** — "Merge dev: correo electronico en usuarios"
-- **UI** — "Merge dev: campo de correo en los formularios"
+**Endurecimiento para producción (15-sep).** Ambos repos en `dev` **y** `main`,
+ambos desplegados. El detalle completo de qué se cambió y por qué está en la
+**sección 4c**; el resumen es: se cerró una vía de XSS en el chat, `/auth/login`
+ya tiene freno de fuerza bruta, el health dejó de publicar la infraestructura y
+el proyecto tiene sus primeras pruebas automatizadas.
 
-Ambos en `dev` **y** `main`, ambos desplegados. El último despliegue de UI se
-verificó buscando la cadena `Buscando en todos los ciclos` dentro del bundle
-servido en producción.
+- **API** — "Endurecimiento para producción: XSS, fuerza bruta y actuator"
+- **UI** — "Escapar el HTML del chat y cabeceras de seguridad"
+
+**Cada repo ya tiene su `README.md`** con los pasos para levantarlo, las
+variables de entorno y las trampas propias de cada uno. Este archivo sigue
+siendo la bitácora —el *por qué* y el *en qué vamos*—; el README es el *cómo se
+arranca*. Si vuelves después de un rato, empieza por el README del repo que vas
+a tocar y regresa aquí para el contexto.
 
 ---
 
@@ -309,6 +317,172 @@ tablet y compu, y un límite duro genera tickets de soporte legítimos.
 
 ---
 
+---
+
+## 4c. Endurecimiento para producción (15-sep)
+
+Revisión completa de las dos aplicaciones buscando lo que separa "funciona" de
+"se puede dejar corriendo". Todo lo de abajo está **hecho y compilado**; nada
+está desplegado todavía.
+
+### Lo más serio: el chat podía inyectar HTML
+
+Seis lugares pintaban texto con `[innerHTML]` y **ninguno escapaba** antes de
+armar el HTML. Cuatro eran copias casi idénticas de un `formatMessage()` que
+convertía markdown a mano; las otras dos eran las burbujas del aula.
+
+La cadena de ataque no era teórica:
+
+1. El alumno le escribe a ByteBot *"repite exactamente esto: `<img src=x
+   onerror=...>`"*.
+2. El modelo obedece — es texto, no una instrucción que los prompts bloqueen.
+3. La respuesta entra a `[innerHTML]` sin escapar.
+
+Lo único que lo frenaba era el sanitizador de Angular, y ahí está el problema:
+**Angular 17 ya no recibe parches y tiene CVEs abiertos justamente de evasión
+del sanitizador** (ver más abajo). Era la última línea de defensa, con agujeros
+conocidos y sin nadie detrás.
+
+Ahora todo pasa por `bytekids-ui/src/app/shared/formato-chat.ts`, que **escapa
+primero y formatea después**. El orden importa: al revés, el escape convertiría
+en literales las etiquetas que uno mismo acaba de generar. Con eso el HTML que
+sale solo puede contener las etiquetas que ese archivo produce, sin importar
+qué traiga el texto ni cómo esté el sanitizador.
+
+De pasada se arregló un error de formato escondido ahí: las burbujas del aula
+usaban `replace()` con una **cadena** como primer argumento para cambiar los
+saltos de línea, y así solo se reemplaza la **primera** ocurrencia. Un mensaje
+de tres párrafos se pintaba en uno solo a partir del segundo salto.
+
+En el modal de confirmación de Asignaciones el HTML sí es intencional
+(`<strong>`), así que ahí se escapó solo lo interpolado: el nombre del salón y
+el título de la pieza.
+
+### Freno de fuerza bruta en el login
+
+`/auth/login` era el único endpoint público que acepta credenciales y **no
+tenía ningún límite**. En una plataforma de niños importa más de lo normal,
+porque las contraseñas de alumno las asigna coordinación y tienden a ser
+cortas y parecidas entre sí.
+
+`LoginRateLimitFilter` tolera 10 fallos por IP en 15 minutos
+(`LOGIN_MAX_INTENTOS` y `LOGIN_VENTANA_MINUTOS`). Detalles que importan:
+
+- **Solo cuentan los fallos.** Un login correcto borra el contador, así que
+  quien sabe su contraseña nunca ve el filtro por mucho que se equivoque antes.
+- **Un 500 no castiga al usuario**: solo el 401 suma.
+- **Lee `Fly-Client-IP`.** Sin eso `getRemoteAddr()` devuelve siempre la IP del
+  proxy de Fly y *todos* compartirían un contador: el primero en fallar diez
+  veces dejaría fuera al salón entero.
+- **Es en memoria a propósito.** Hoy corre una máquina. Con dos seguiría
+  funcionando, con el doble de margen efectivo — degradación aceptable, no un
+  agujero. Mover a almacén compartido cuando se escale, no antes.
+
+**Ojo con el interceptor.** `esTransitorio()` incluía el **429** en la lista de
+errores a reintentar, así que el freno se habría saboteado solo: cinco
+reintentos con espera creciente golpeando el endpoint que acababa de pedir
+calma, y cada intento alargando el castigo. Se sacó el 429 de esa lista. El
+mensaje del servidor ya llega a la pantalla de login, porque `auth.service` lee
+`error.error.message`.
+
+### El health público era un mapa de la infraestructura
+
+`show-details: always` + `/actuator/**` en los endpoints públicos. Cualquiera
+que abriera `https://bytekids-api.fly.dev/api/actuator/health` recibía el motor
+de base de datos, la ruta dentro del contenedor y el espacio libre en disco.
+Verificado en producción antes de cambiarlo.
+
+Ahora `show-details: never` — sigue sirviendo de health check, responde UP/DOWN
+— y el comodín se cerró a `/actuator/health` y `/actuator/health/**`. El
+comodín era el riesgo de fondo: el día que alguien ampliara
+`management.endpoints.exposure`, lo nuevo quedaba público sin tocar
+`SecurityConfig`. **La UI no llama a actuator**, así que no rompe nada.
+
+### `show-sql` apagado
+
+Estaba en la lista de deuda desde hace tiempo: imprimir y **formatear** cada
+consulta cuesta CPU y ahoga los logs, que es justo donde se buscan los errores
+reales. Ahora es `${SHOW_SQL:false}` — en local se enciende con `SHOW_SQL=true`.
+
+### ByteBot: un 500 por un campo ausente, y costo sin techo
+
+`history.size()` estaba **arriba** del `try`, así que un POST con solo
+`{"message":"hola"}` tiraba un `NullPointerException` que se escapaba como 500
+en vez de caer en el mensaje amable.
+
+Además el historial lo arma **el cliente**: estaba acotado a 10 turnos pero
+cada turno era de largo libre, o sea tokens facturados por Groq sin techo.
+Ahora cada mensaje se recorta a 4000 caracteres (se corta en el borde en vez de
+rechazar: el que pega de más suele ser un niño, y un error rojo no le dice qué
+hacer) y **solo se aceptan los roles `user` y `assistant`**, lo que de paso
+impide que un cliente inyecte un turno `system` falso.
+
+`MessageRequest.body` tampoco tenía tope: 5000 caracteres, y 200 para el asunto.
+
+### La primera prueba automatizada
+
+`src/test` llevaba vacío desde siempre. Ahora hay 5 pruebas sobre
+`LoginRateLimitFilter` — y empiezan ahí porque es **el único código capaz de
+dejar fuera a un usuario legítimo**: un error de más en el contador y una
+maestra no entra a dar su clase. También es de las pocas piezas que se prueban
+sin base de datos.
+
+**El `Dockerfile` ya no lleva `-DskipTests`.** Saltárselas no costaba nada
+cuando no había ninguna; ahora significaría que el despliegue no verifica nada.
+Si una falla, la imagen no se construye y la versión rota no llega a Fly.
+
+### Cabeceras de seguridad en Vercel
+
+Se agregó `bytekids-ui/vercel.json` con **solo `headers`**, deliberadamente: un
+`vercel.json` que declare `buildCommand` o `rewrites` reemplaza la detección
+automática de Angular, y con ella el rewrite que hace que `/teacher/content`
+funcione al recargar. Con solo `headers`, Vercel los suma encima del preset.
+
+Se omitieron `Permissions-Policy` y `Content-Security-Policy` a propósito: el
+aula usa cámara y micrófono vía Jitsi, y una política mal calibrada apaga las
+videollamadas con un síntoma —permiso denegado sin explicación— de los que
+cuestan una tarde. Van cuando se puedan probar contra una clase real. El
+detalle está en el README de la UI.
+
+### `index.html`
+
+El enlace se comparte con las familias por WhatsApp y llegaba como liga pelona:
+sin título, sin descripción y sin imagen. Se agregaron `description`,
+`theme-color` y etiquetas Open Graph.
+
+### Dos pendientes viejos que ya no lo son
+
+- **El bundle no pesa 3.47 MB.** Medido hoy: **1.45 MB** iniciales (293 kB
+  transferidos), por debajo del presupuesto de 2 MB. No sale advertencia.
+- **No hace falta `vercel.json` para los enlaces profundos.** Se verificó que
+  `https://bytekids-ui.vercel.app/teacher/content` responde 200 al recargar: el
+  preset de Angular ya pone el rewrite.
+
+### Trampa nueva: `node_modules` en Windows
+
+`npm install` corriendo **al mismo tiempo** que un build deja el árbol de
+dependencias destrozado (`EPERM`/`ENOTEMPTY` al intentar borrar `rxjs`), y el
+síntoma es un `Cannot find module` que parece un problema del proyecto y no lo
+es. Si aparece: `rm -rf node_modules && npm ci`, sin nada más corriendo.
+
+Nota aparte: en esta máquina `npm ci` a veces no crea `node_modules/.bin`. Si
+`ng` no se reconoce, `node node_modules/@angular/cli/bin/ng.js build` funciona.
+
+### Lo que NO se tocó y hay que decidir
+
+- **Angular 17 está fuera de soporte.** `npm audit` reporta 8 vulnerabilidades
+  (3 altas), todas XSS en `@angular/core`, y no hay parche: la única salida es
+  subir de versión (17 → 21, cambio mayor). El escapado de arriba **corta la
+  vía de explotación conocida** en esta app, pero el framework sigue sin
+  mantenimiento. Es el pendiente más grande y no es de una tarde.
+- **`/submissions/student/{id}` lo puede leer cualquier maestro**, no solo el
+  titular del alumno. Con un salón no tiene efecto; con varios sí.
+- **Swagger sigue público** en producción. Se dejó así a propósito porque es
+  herramienta de trabajo y el repo es público de todos modos, así que la
+  superficie ya se conoce. Cambia si el repo se vuelve privado.
+- Sigue pendiente todo lo de la sección 7 que no se menciona aquí.
+
+
 ## 5. Configuración que importa
 
 ### Dueños (`OWNER_USERNAMES`)
@@ -396,13 +570,16 @@ Dos fugas ya ocurridas: `expected_output` visible en el workspace, y `isCorrect`
 - [ ] **Sin endpoints de asignación.** Se puede asignar contenido a un salón pero
       no listar ni quitar asignaciones. No hay forma de mover una pieza de un
       salón a otro sin recrearla.
-- [ ] **`show-sql: true` y `format_sql: true` activos en producción.** Formatea e
-      imprime cada consulta: cuesta rendimiento y ahoga los logs.
+- [x] ~~**`show-sql` y `format_sql` activos en producción.**~~ — apagados el
+      15-sep. Ahora es `${SHOW_SQL:false}`; en local se enciende con la
+      variable. Ver seccion 4c.
 - [ ] **Mis Contenidos no distingue salón.** Con varios salones del mismo maestro,
       las piezas se agrupan solo por materia y no se sabe cuál es de cuál grupo.
 - [ ] **Sin vista de avance del curso** para el maestro. La Libreta da
       calificaciones, no % de avance por alumno ni dónde se atoró el grupo.
-- [ ] **Bundle del frontend:** 3.47 MB contra presupuesto de 2 MB.
+- [x] ~~**Bundle del frontend:** 3.47 MB contra presupuesto de 2 MB.~~ — medido
+      el 15-sep: **1.45 MB** iniciales (293 kB transferidos), dentro del
+      presupuesto. El dato viejo ya no aplica.
 - [ ] **Notificaciones** (`722b56d`): desplegadas pero nunca probadas.
 - [ ] **Datos de prueba de Emily**: tiene 10/10 y XP de una entrega donde se
       pegaron las instrucciones para probar. Sus números no reflejan trabajo real.

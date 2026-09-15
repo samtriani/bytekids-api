@@ -29,7 +29,10 @@ spring:
       pool-name: ByteKidsPool
 
   jpa:
-    show-sql: true
+    # Apagado en produccion: imprimir y formatear CADA consulta cuesta CPU y
+    # ahoga los logs, que es justo donde se buscan los errores reales. Para
+    # depurar en local: SHOW_SQL=true.
+    show-sql: ${SHOW_SQL:false}
     hibernate:
       ddl-auto: none
       naming:
@@ -40,7 +43,7 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
-        format_sql: true
+        format_sql: ${SHOW_SQL:false}
 
 app:
   cors:
@@ -50,6 +53,12 @@ app:
     # (admin) y director. Separar con comas. Se cambia en caliente con:
     #   flyctl secrets set OWNER_USERNAMES="samuel.partida,otro.usuario"
     owner-usernames: ${OWNER_USERNAMES:samuel.partida}
+    login:
+      # Freno de fuerza bruta en /auth/login. Solo cuentan los intentos
+      # fallidos y un login correcto borra el contador, asi que 10 no le
+      # estorba a nadie que sepa su contrasena. Ver LoginRateLimitFilter.
+      max-intentos: ${LOGIN_MAX_INTENTOS:10}
+      ventana-minutos: ${LOGIN_VENTANA_MINUTOS:15}
   jwt:
     # Minimo 32 caracteres o la app no arranca; 64+ para que use HS512.
     secret: ${JWT_SECRET}
@@ -75,7 +84,14 @@ management:
         include: health
   endpoint:
     health:
-      show-details: always
+      # 'always' exponia a cualquier visitante el motor de base de datos, la
+      # ruta dentro del contenedor y el espacio libre en disco: este endpoint
+      # es publico porque Fly necesita consultarlo sin credenciales. Con
+      # 'never' sigue sirviendo de health check —responde UP/DOWN— y deja de
+      # ser un mapa gratis de la infraestructura.
+      show-details: never
+      probes:
+        enabled: true
 
 springdoc:
   api-docs:
