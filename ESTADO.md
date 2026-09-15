@@ -532,6 +532,57 @@ JavaScript y ninguna declara versión en español en su cabecera. Inventarles un
 `?lang=es` podría dejar un enlace roto, que es peor que uno en inglés. Para
 saberlo hay que abrir cada uno en un navegador configurado en inglés y ver.
 
+### Teachable Machine no corre en tablet: son 5 piezas (15-sep)
+
+Reportado porque la pieza 2 del principiante no abría en la tablet. **No es un
+fallo de carga: Google bloquea los móviles a propósito** y muestra *"Sorry...
+Teachable Machine isn't supported here :("*. El
+[reporte oficial](https://github.com/googlecreativelab/teachablemachine-community/issues/172)
+lleva abierto desde 2021 sin respuesta. No hay ajuste que lo arregle.
+
+Y al revisar las guías del maestro, **son cinco las piezas que dependen de esa
+herramienta**, no una:
+
+| | Pieza | Entrena |
+|---|---|---|
+| Principiante | 2. Enséñale a ver frutas | imagen |
+| Principiante | 8. Entrena un clasificador de animales | imagen |
+| Intermedio | 2. Enséñale a escuchar | audio |
+| Intermedio | 3. El experimento del ruido | audio |
+| Intermedio | 9. Una IA que lee tu cuerpo | pose |
+
+**La sustituta: Machine Learning for Kids.** Probada en la tablet el 15-sep,
+funciona. Lo que la deja parada sobre las demás:
+
+- **Los proyectos de imagen y de sonido no piden ninguna API key.** Verificado
+  en las cadenas del propio producto: *"Images, numbers and sound projects
+  don't require API Keys"*. Solo los de **texto** necesitan llave de watsonx —
+  tenlo presente si algún día se agrega una pieza de texto.
+- **La cuenta de maestro crea los usuarios de los alumnos en bloque y no pide
+  correo de los niños.** Con LFPDPPP de por medio ésa es la razón principal,
+  no un extra.
+
+**Se descartó la app de Teachable Machine de la App Store:** no es de Google,
+es de un tercero (Robocar Ltd). Una app no oficial que procesa video de niños
+no entra, por más que ahorre trabajo.
+
+**Trampa:** la traducción al español de ML4Kids está incompleta y en partes
+desactualizada — quedan textos en inglés, alguno con erratas, y pantallas de
+ayuda que aún hablan de API keys de IBM Watson, dado de baja en 2021.
+
+Primer script: **`sql/2026-09-15_frutas_en_ml4kids.sql`** (solo la pieza 2).
+Cambia `url` e `instructions`; no toca tipo, XP, guía del maestro ni
+asignaciones. **Requiere crear antes las cuentas** de maestro y alumnos.
+
+**La pieza 9 del intermedio no se puede mudar:** ML4Kids no tiene proyectos de
+*pose*. Esa necesita otra solución o correrse en computadora. Decidirlo antes
+de llegar a esa sesión.
+
+**El criterio que no se negocia al adaptar cualquiera de estas:** la pieza 2
+existe para que el alumno le enseñe su mano al modelo y descubra que contesta
+"plátano" igual — que **no puede decir "no sé"**. Si una adaptación pierde ese
+momento, perdió la clase, por más que el entrenamiento funcione.
+
 ### Lo que NO se tocó y hay que decidir
 
 - **Angular 17 está fuera de soporte.** `npm audit` reporta 8 vulnerabilidades
