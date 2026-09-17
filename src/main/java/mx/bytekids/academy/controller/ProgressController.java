@@ -104,4 +104,21 @@ public class ProgressController {
             @RequestParam(defaultValue = "10") int limit) {
         return ResponseEntity.ok(ApiResponse.ok(progressService.getLeaderboard(limit)));
     }
+
+    /**
+     * El ranking que ve un alumno: SOLO su salon.
+     *
+     * Existe aparte de /leaderboard porque ese es global, y ensenarle a un
+     * nino los nombres completos de menores de otros grupos no es algo que
+     * deba depender de que el cliente se acuerde de mandar un parametro.
+     */
+    @GetMapping("/leaderboard/mi-salon")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Operation(summary = "Ranking de XP dentro de mis salones")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> miSalon(
+            @RequestParam(defaultValue = "5") int limit) {
+        var alumno = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok(
+                progressService.getLeaderboardDeMisSalones(alumno.getId(), limit)));
+    }
 }
