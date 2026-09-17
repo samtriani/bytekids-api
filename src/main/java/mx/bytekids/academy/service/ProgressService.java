@@ -23,6 +23,7 @@ public class ProgressService {
     private final DailyActivityRepository dailyActivityRepository;
     private final StudentSubjectProgressRepository subjectProgressRepository;
     private final UserService userService;
+    private final ClassroomEnrollmentRepository enrollmentRepository;
     private final SubjectService subjectService;
 
     public Integer getTotalXp(UUID studentId) {
@@ -114,8 +115,27 @@ public class ProgressService {
         dailyActivityRepository.save(activity);
     }
 
+    /**
+     * El ranking que ve un ALUMNO: solo su salon.
+     *
+     * Va aqui y no como parametro del endpoint a proposito. Un parametro se
+     * puede omitir, y omitirlo significaria ensenarle a un nino los nombres
+     * completos de menores de otros grupos. El servidor sabe quien pregunta.
+     */
+    public List<Map<String, Object>> getLeaderboardDeMisSalones(UUID studentId, int limit) {
+        User alumno = userService.findById(studentId);
+        List<UUID> salones = enrollmentRepository.findByStudentAndIsActiveTrue(alumno)
+                .stream().map(i -> i.getClassroom().getId()).toList();
+        if (salones.isEmpty()) return List.of();
+        return armarRanking(
+                xpEventRepository.findTopStudentsEnSalones(salones, PageRequest.of(0, limit)));
+    }
+
     public List<Map<String, Object>> getLeaderboard(int limit) {
-        List<Object[]> rows = xpEventRepository.findTopStudents(PageRequest.of(0, limit));
+        return armarRanking(xpEventRepository.findTopStudents(PageRequest.of(0, limit)));
+    }
+
+    private List<Map<String, Object>> armarRanking(List<Object[]> rows) {
         List<Map<String, Object>> result = new ArrayList<>();
         int rank = 1;
         for (Object[] row : rows) {

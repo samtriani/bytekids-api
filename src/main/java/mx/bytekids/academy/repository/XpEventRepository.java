@@ -23,4 +23,17 @@ public interface XpEventRepository extends JpaRepository<XpEvent, UUID> {
            "GROUP BY e.student.id, e.student.displayName, e.student.initials " +
            "ORDER BY SUM(e.amount) DESC")
     List<Object[]> findTopStudents(Pageable pageable);
+
+    /**
+     * Los mejores DENTRO de unos salones. El ranking que ve un alumno tiene
+     * que ser el de su grupo: el global le ensena nombres completos de
+     * menores de otras clases, que ademas no le dicen nada.
+     */
+    @Query("SELECT e.student.id, e.student.displayName, e.student.initials, SUM(e.amount) " +
+           "FROM XpEvent e WHERE e.student.role = 'student' " +
+           "AND e.student.id IN (SELECT i.student.id FROM ClassroomEnrollment i " +
+           "                     WHERE i.classroom.id IN :salones AND i.isActive = true) " +
+           "GROUP BY e.student.id, e.student.displayName, e.student.initials " +
+           "ORDER BY SUM(e.amount) DESC")
+    List<Object[]> findTopStudentsEnSalones(List<UUID> salones, Pageable pageable);
 }

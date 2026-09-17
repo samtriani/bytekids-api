@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -45,6 +46,23 @@ public class AchievementController {
     public ResponseEntity<ApiResponse<List<StudentAchievement>>> myAchievements() {
         var student = userService.findByUsername(SecurityUtils.currentUsername());
         return ResponseEntity.ok(ApiResponse.ok(achievementService.findEarnedByStudent(student.getId())));
+    }
+
+    /**
+     * Lo ultimo que desbloquearon los companeros del alumno, de su salon.
+     *
+     * Devuelve solo nombre, medalla y fecha: es un muro de reconocimiento, no
+     * el expediente de nadie. Lo que mueve a un nino es ver que a su
+     * companero le fue bien.
+     */
+    @GetMapping("/mi-salon/recientes")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Operation(summary = "Logros recientes de mis companeros de salon")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> recientesDeMiSalon(
+            @RequestParam(defaultValue = "8") int limit) {
+        var alumno = userService.findByUsername(SecurityUtils.currentUsername());
+        return ResponseEntity.ok(ApiResponse.ok(
+                achievementService.recientesEnMisSalones(alumno.getId(), limit)));
     }
 
     @GetMapping("/students/{studentId}")
