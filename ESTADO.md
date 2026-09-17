@@ -589,6 +589,18 @@ momento, perdió la clase, por más que el entrenamiento funcione.
 las cuatro piezas que faltaban del principiante. **Sin correr todavía**:
 necesita las cuentas de ML4Kids igual que el anterior.
 
+**El orden para aplicarlo**, con respaldo primero:
+
+1. `sql/2026-09-17_respaldo_principiante.sql` — copia las 12 piezas a la
+   tabla `respaldo_principiante_20260917`. Solo lee y crea esa tabla: los
+   pasos de deshacer y de tirar el respaldo van comentados. Repetirlo **no**
+   pisa la foto original, que es la que vale.
+2. `sql/2026-09-15_frutas_en_ml4kids.sql` — pieza 2.
+3. `sql/2026-09-17_pulir_principiante.sql` — piezas 7, 8, 10 y 12.
+
+Para volver atrás, el PASO 4 del respaldo: un `UPDATE ... FROM` que casa por
+`id`, así que no depende de títulos ni del orden.
+
 | Pieza | Qué se hizo |
 |---|---|
 | **8** · Clasificador de animales | Se muda a ML4Kids. Última pieza del principiante que dependía de Teachable Machine. |
