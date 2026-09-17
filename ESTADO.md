@@ -1,7 +1,7 @@
 # Estado del proyecto — ByteKids
 
 > Bitácora para retomar el trabajo desde otra computadora.
-> **Última actualización: 15 de septiembre de 2026.**
+> **Última actualización: 17 de septiembre de 2026.**
 
 ---
 
@@ -582,6 +582,49 @@ de llegar a esa sesión.
 existe para que el alumno le enseñe su mano al modelo y descubra que contesta
 "plátano" igual — que **no puede decir "no sé"**. Si una adaptación pierde ese
 momento, perdió la clase, por más que el entrenamiento funcione.
+
+### El principiante queda completo para tablet (17-sep)
+
+`sql/2026-09-17_pulir_principiante.sql`. Continúa el script del 15-sep y cierra
+las cuatro piezas que faltaban del principiante. **Sin correr todavía**:
+necesita las cuentas de ML4Kids igual que el anterior.
+
+| Pieza | Qué se hizo |
+|---|---|
+| **8** · Clasificador de animales | Se muda a ML4Kids. Última pieza del principiante que dependía de Teachable Machine. |
+| **7** · Los datos son la comida | Era un enlace suelto. Ahora es una exploración guiada sobre el proyecto de frutas que el niño ya tiene. |
+| **10** · Chatbots | Decía "explora la plataforma". Ahora entra por el tutorial oficial y sale conociendo los cuatro bloques que la pieza 11 le va a pedir. |
+| **12** · Proyecto final | Reescrito entero. |
+
+**La corrección que conviene no perder:** se había pensado arrancar la pieza 7
+con un proyecto de **texto** en ML4Kids. No se puede — los de texto son los
+únicos que piden API key de watsonx. Se queda en imágenes, que además es lo que
+el niño ya usó en la pieza 2.
+
+**Sobre el proyecto final.** El problema no era el nivel, era el enunciado.
+Pedía "identifica un problema real de tu salón" y la lista decía "entrené el
+modelo" y "revisé si tiene sesgo": a un niño de nueve años eso no le dice qué
+hacer, le dice que ya debería saberlo. Ahora:
+
+- Se le dan **tres proyectos concretos** para escoger. Diseñar desde cero es la
+  parte más difícil del trabajo, no la más fácil, y no es lo que la materia
+  enseñó.
+- Cada punto de la lista dice la **acción**, no el concepto: "entrené el
+  modelo" pasó a "le di a Entrenar nuevo modelo y esperé".
+- Scratch queda como añadido **opcional**. Exigir las dos herramientas juntas
+  era buena parte de lo que lo hacía inalcanzable.
+
+**Se descartó cambiar estas piezas por actividades de Code.org** (se propuso un
+proyecto de Music Lab). Esas corren en tablet, pero no entrenan un modelo con
+ejemplos: la pieza 2 y la 8 existen para que el niño ponga los ejemplos y
+descubra que la máquina no puede decir "no sé". Cambiarlas salvaría la tablet
+y perdería la clase.
+
+**Lo que sigue bloqueado: solo el intermedio.** Piezas 2 y 3 (audio) se pueden
+mudar igual — ML4Kids tiene proyectos de sonido y tampoco piden API key. La 9
+(pose) no: hay que decidirle otra salida o correrla en computadora. El PASO 7
+del script nuevo es la consulta que las lista; mientras devuelva filas, queda
+trabajo.
 
 ### Lo que NO se tocó y hay que decidir
 
