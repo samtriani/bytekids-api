@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -60,6 +61,22 @@ public class UserController {
             @Valid @RequestBody CambioContrasenaRequest request) {
         userService.cambiarMiContrasena(SecurityUtils.currentUsername(), request);
         return ResponseEntity.ok(ApiResponse.ok("Contrasena actualizada", null));
+    }
+
+    /**
+     * Escoger el roboticito propio. Sin rol: lo usan los cinco.
+     *
+     * El cuerpo es {"avatar": "bot-luna"}; mandarlo vacio lo quita y la
+     * pantalla vuelve a las iniciales. La lista de validos la tiene el
+     * servidor, no el cliente.
+     */
+    @PutMapping("/me/avatar")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Escoger el avatar propio")
+    public ResponseEntity<ApiResponse<UserResponse>> cambiarMiAvatar(
+            @RequestBody Map<String, String> cuerpo) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                userService.cambiarMiAvatar(SecurityUtils.currentUsername(), cuerpo.get("avatar"))));
     }
 
     @GetMapping("/{id}")

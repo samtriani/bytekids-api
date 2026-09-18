@@ -34,6 +34,7 @@ public class AuthService {
                 .displayName(user.getDisplayName())
                 .role(user.getRole().name())
                 .owner(ownershipService.isOwner(user.getUsername()))
+                .avatarUrl(user.getAvatarUrl())
                 .build();
     }
 }

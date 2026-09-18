@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -138,5 +139,52 @@ public class UserService {
 
         user.setPasswordHash(passwordEncoder.encode(peticion.getNueva()));
         userRepository.save(user);
+    }
+
+    /**
+     * Los avatares que existen. La lista vive AQUI, en el servidor.
+     *
+     * Que la pantalla solo ofrezca doce no es una regla: avatar_url se pinta
+     * en las pantallas de otros usuarios --el muro del salon, la lista de
+     * contactos-- asi que sin validar, cualquiera con una sesion podria
+     * meter ahi lo que quisiera y hacerselo llegar a un menor.
+     *
+     * Tiene que coincidir con ROBOTICITOS en el front
+     * (bytekids-ui/src/app/shared/roboticitos.ts).
+     */
+    private static final Set<String> AVATARES = Set.of(
+            "bot-chip",
+            "bot-nova",
+            "bot-pixel",
+            "bot-volt",
+            "bot-domo",
+            "bot-hex",
+            "bot-bit",
+            "bot-radar",
+            "bot-luna",
+            "bot-mecha",
+            "bot-tuerca",
+            "bot-byte");
+
+    /**
+     * Escoger el roboticito propio. Sin rol: lo usan los cinco.
+     *
+     * Se resuelve por el username del token y no por un id recibido, igual
+     * que el cambio de contrasena: no debe existir forma de cambiarle el
+     * avatar a otra persona.
+     *
+     * Un avatar vacio o nulo lo quita, y la pantalla vuelve a las iniciales.
+     */
+    @Transactional
+    public UserResponse cambiarMiAvatar(String username, String avatar) {
+        User user = findByUsername(username);
+        String elegido = (avatar == null || avatar.isBlank()) ? null : avatar.trim();
+
+        if (elegido != null && !AVATARES.contains(elegido)) {
+            throw new BusinessException("Ese avatar no existe");
+        }
+
+        user.setAvatarUrl(elegido);
+        return UserResponse.from(userRepository.save(user));
     }
 }

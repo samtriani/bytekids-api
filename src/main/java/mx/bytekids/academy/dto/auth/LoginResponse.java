@@ -15,4 +15,11 @@ public class LoginResponse {
     private String role;
     /** true si puede crear/modificar cuentas de coordinador y director. */
     private boolean owner;
+
+    /**
+     * El roboticito que escogio, o null si nunca escogio. Viaja en el login
+     * para que el front no tenga que pedir /users/me en cada pantalla solo
+     * para saber que dibujar en la barra.
+     */
+    private String avatarUrl;
 }
