@@ -1,6 +1,7 @@
 package mx.bytekids.academy.service;
 
 import lombok.RequiredArgsConstructor;
+import mx.bytekids.academy.dto.user.CambioContrasenaRequest;
 import mx.bytekids.academy.dto.user.UserRequest;
 import mx.bytekids.academy.dto.user.UserResponse;
 import mx.bytekids.academy.entity.User;
@@ -110,6 +111,32 @@ public class UserService {
         User user = findById(id);
         ownershipService.requireOwnerToModify(user, user.getRole());
         user.setIsActive(false);
+        userRepository.save(user);
+    }
+
+    /**
+     * Cambiar la contrasena PROPIA.
+     *
+     * Es el unico camino por el que un usuario que no es coordinador puede
+     * tocar su contrasena: update() esta detras de hasRole('ADMIN'), asi que
+     * hasta hoy un maestro, un papa o un nino dependian de que alguien de
+     * coordinacion se la cambiara a mano.
+     *
+     * Se resuelve por el username del token y NO por un id recibido, para que
+     * no exista forma de apuntar a otra cuenta.
+     */
+    @Transactional
+    public void cambiarMiContrasena(String username, CambioContrasenaRequest peticion) {
+        User user = findByUsername(username);
+
+        if (!passwordEncoder.matches(peticion.getActual(), user.getPasswordHash())) {
+            throw new BusinessException("Tu contrasena actual no es correcta");
+        }
+        if (passwordEncoder.matches(peticion.getNueva(), user.getPasswordHash())) {
+            throw new BusinessException("La nueva contrasena tiene que ser distinta de la actual");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(peticion.getNueva()));
         userRepository.save(user);
     }
 }

@@ -128,6 +128,10 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
 ## Deuda conocida
 
 - Sin registro de consentimiento ni de privacidad para menores.
+- **Cambiar la contraseña no invalida los tokens ya emitidos.** No hay
+  lista negra y el JWT dura 7 días, así que quien tuviera una sesión abierta
+  con la contraseña vieja sigue dentro hasta que ese token expire. Para
+  echar a alguien de verdad hoy hay que desactivar la cuenta.
 - Los tests son uno solo (`LoginRateLimitFilterTest`): hay arranque, no red.
 - El evaluador de logros no implementa `ai_conversations`, así que el logro
   "AI Explorer" es inalcanzable por ahora.

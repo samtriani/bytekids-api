@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.bytekids.academy.dto.common.ApiResponse;
+import mx.bytekids.academy.dto.user.CambioContrasenaRequest;
 import mx.bytekids.academy.dto.user.UserRequest;
 import mx.bytekids.academy.dto.user.UserResponse;
 import mx.bytekids.academy.entity.ParentStudent;
@@ -42,6 +43,23 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> me() {
         String username = SecurityUtils.currentUsername();
         return ResponseEntity.ok(ApiResponse.ok(UserResponse.from(userService.findByUsername(username))));
+    }
+
+    /**
+     * Cambiar la contrasena propia. Sin rol: la usan los cinco.
+     *
+     * No lleva id en la ruta a proposito. El unico PUT que escribia
+     * contrasenas era /users/{id}, restringido a ADMIN, y eso dejaba a
+     * maestros, familias y alumnos sin ninguna forma de cambiar la suya
+     * --incluida la que se les mando por mensaje el primer dia--.
+     */
+    @PutMapping("/me/password")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Cambiar la contrasena propia")
+    public ResponseEntity<ApiResponse<Void>> cambiarMiContrasena(
+            @Valid @RequestBody CambioContrasenaRequest request) {
+        userService.cambiarMiContrasena(SecurityUtils.currentUsername(), request);
+        return ResponseEntity.ok(ApiResponse.ok("Contrasena actualizada", null));
     }
 
     @GetMapping("/{id}")
