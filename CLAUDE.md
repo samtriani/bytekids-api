@@ -157,8 +157,12 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   la edad y la dirección del alumno siguen viajando dentro de esas respuestas.
   La mayoría llegan solo a quien es su dueño o al personal, pero hay que
   pasarlas a DTOs como se hizo con `MessageResponse`.
-- El evaluador de logros no implementa `ai_conversations`, así que el logro
-  "AI Explorer" es inalcanzable por ahora.
+- El evaluador de logros no implementa `ai_conversations`: ByteBot no guarda
+  las conversaciones. "AI Explorer" se apaga con
+  `sql/2026-09-29_apagar_ai_explorer.sql`. Si agregas un `condition_type`
+  nuevo, va en `AchievementCheckerService.evaluate()` Y en la lista de la
+  verificación de ese script: un logro con condición desconocida no truena,
+  simplemente nadie lo gana nunca.
 - Las notificaciones son dentro de la plataforma: no hay correo. Si el niño no
   entra, no se entera — y al familiar solo le llegan mensajes, no las
   calificaciones ni los logros de su hijo.
