@@ -113,6 +113,24 @@ curl -s -o /dev/null -w "%{http_code}\n" https://bytekids-api.fly.dev/api/notifi
 
 ---
 
+### Nunca devuelvas una entidad que traiga un `User` de otra persona
+
+Hasta el 29-sep, `/messages/*` devolvía la entidad `Message` con el `User`
+completo de las dos personas, **incluido el hash de la contraseña**: un
+alumno que abría su bandeja recibía el de su maestra, más correo, edad y
+dirección.
+
+Quedó cerrado en dos capas:
+
+- `User.passwordHash` lleva `@JsonIgnore`. Cubre cualquier entidad cruda que
+  todavía salga por la API.
+- Los mensajes salen por `MessageResponse`, que de cada persona solo trae
+  nombre, rol, iniciales y robot. Tampoco el `username`: es media credencial.
+
+`UserSerializacionTest` lo cuida, y usa el **Jackson 3** (`tools.jackson`)
+que usa Spring MVC. En el classpath también está el Jackson 2 que trae jjwt:
+probar con ese no prueba nada.
+
 ### El texto de una entrega se acota según quién pregunta
 
 `SubmissionResponse.from()` devuelve el texto completo — el alumno lo necesita
@@ -132,7 +150,13 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   lista negra y el JWT dura 7 días, así que quien tuviera una sesión abierta
   con la contraseña vieja sigue dentro hasta que ese token expire. Para
   echar a alguien de verdad hoy hay que desactivar la cuenta.
-- Los tests son uno solo (`LoginRateLimitFilterTest`): hay arranque, no red.
+- Los tests son dos clases (`LoginRateLimitFilterTest`,
+  `UserSerializacionTest`): hay arranque, no red.
+- **Todavía hay 13 tipos de entidad que salen crudos** (notificaciones,
+  intentos de quiz, logros, avance, XP...). El hash ya no sale, pero el correo,
+  la edad y la dirección del alumno siguen viajando dentro de esas respuestas.
+  La mayoría llegan solo a quien es su dueño o al personal, pero hay que
+  pasarlas a DTOs como se hizo con `MessageResponse`.
 - El evaluador de logros no implementa `ai_conversations`, así que el logro
   "AI Explorer" es inalcanzable por ahora.
 - Las notificaciones son dentro de la plataforma: no hay correo. Si el niño no

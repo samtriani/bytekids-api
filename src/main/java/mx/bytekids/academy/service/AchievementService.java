@@ -91,6 +91,7 @@ public class AchievementService {
                     m.put("studentId",   sa.getStudent().getId());
                     m.put("displayName", sa.getStudent().getDisplayName());
                     m.put("initials",    sa.getStudent().getInitials());
+                    m.put("avatarUrl",   sa.getStudent().getAvatarUrl());
                     m.put("esMio",       sa.getStudent().getId().equals(studentId));
                     m.put("title",       sa.getAchievement().getTitle());
                     m.put("icon",        sa.getAchievement().getIcon());

@@ -144,6 +144,8 @@ public class ProgressService {
             entry.put("displayName", row[1]);
             entry.put("initials", row[2] != null ? row[2] : "");
             entry.put("totalXp", ((Number) row[3]).intValue());
+            // Al final de la fila a proposito: row[3] es el XP y hay quien lo lee.
+            entry.put("avatarUrl", row.length > 4 ? row[4] : null);
             entry.put("rank", rank++);
             result.add(entry);
         }

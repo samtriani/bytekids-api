@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mx.bytekids.academy.dto.common.ApiResponse;
 import mx.bytekids.academy.dto.message.ContactoResponse;
+import mx.bytekids.academy.dto.message.MessageResponse;
 import mx.bytekids.academy.dto.message.MessageRequest;
 import mx.bytekids.academy.entity.Message;
 import mx.bytekids.academy.security.SecurityUtils;
@@ -34,25 +35,25 @@ public class MessageController {
 
     @GetMapping("/inbox")
     @Operation(summary = "Bandeja de entrada")
-    public ResponseEntity<ApiResponse<List<Message>>> inbox() {
+    public ResponseEntity<ApiResponse<List<MessageResponse>>> inbox() {
         var user = userService.findByUsername(SecurityUtils.currentUsername());
-        return ResponseEntity.ok(ApiResponse.ok(messageService.findInbox(user.getId())));
+        return ResponseEntity.ok(ApiResponse.ok(aRespuesta(messageService.findInbox(user.getId()))));
     }
 
     @GetMapping("/sent")
     @Operation(summary = "Mensajes enviados")
-    public ResponseEntity<ApiResponse<List<Message>>> sent() {
+    public ResponseEntity<ApiResponse<List<MessageResponse>>> sent() {
         var user = userService.findByUsername(SecurityUtils.currentUsername());
-        return ResponseEntity.ok(ApiResponse.ok(messageService.findSent(user.getId())));
+        return ResponseEntity.ok(ApiResponse.ok(aRespuesta(messageService.findSent(user.getId()))));
     }
 
     @GetMapping("/thread/{parentId}")
     @Operation(summary = "Hilo de respuestas de un mensaje")
-    public ResponseEntity<ApiResponse<List<Message>>> thread(@PathVariable UUID parentId) {
+    public ResponseEntity<ApiResponse<List<MessageResponse>>> thread(@PathVariable UUID parentId) {
         // El servicio verifica que quien pregunta sea parte del hilo.
         var user = userService.findByUsername(SecurityUtils.currentUsername());
         return ResponseEntity.ok(ApiResponse.ok(
-                messageService.findThread(parentId, user.getId())));
+                aRespuesta(messageService.findThread(parentId, user.getId()))));
     }
 
     @GetMapping("/contactos")
@@ -64,10 +65,11 @@ public class MessageController {
 
     @PostMapping
     @Operation(summary = "Enviar mensaje")
-    public ResponseEntity<ApiResponse<Message>> send(@Valid @RequestBody MessageRequest req) {
+    public ResponseEntity<ApiResponse<MessageResponse>> send(@Valid @RequestBody MessageRequest req) {
         var sender = userService.findByUsername(SecurityUtils.currentUsername());
         return ResponseEntity.status(201)
-                .body(ApiResponse.ok("Mensaje enviado", messageService.send(req, sender.getId())));
+                .body(ApiResponse.ok("Mensaje enviado",
+                        MessageResponse.from(messageService.send(req, sender.getId()))));
     }
 
     @PutMapping("/{id}/read")
@@ -76,5 +78,13 @@ public class MessageController {
         var user = userService.findByUsername(SecurityUtils.currentUsername());
         messageService.markAsRead(id, user.getId());
         return ResponseEntity.ok(ApiResponse.ok("Mensaje marcado como leído", null));
+    }
+
+    /**
+     * Nunca la entidad: Message trae el User completo de las dos personas.
+     * Ver MessageResponse.
+     */
+    private static List<MessageResponse> aRespuesta(List<Message> mensajes) {
+        return mensajes.stream().map(MessageResponse::from).toList();
     }
 }

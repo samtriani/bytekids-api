@@ -18,9 +18,9 @@ public interface XpEventRepository extends JpaRepository<XpEvent, UUID> {
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM XpEvent e WHERE e.student = :student")
     Integer sumXpByStudent(User student);
 
-    @Query("SELECT e.student.id, e.student.displayName, e.student.initials, SUM(e.amount) " +
+    @Query("SELECT e.student.id, e.student.displayName, e.student.initials, SUM(e.amount), e.student.avatarUrl " +
            "FROM XpEvent e WHERE e.student.role = 'student' " +
-           "GROUP BY e.student.id, e.student.displayName, e.student.initials " +
+           "GROUP BY e.student.id, e.student.displayName, e.student.initials, e.student.avatarUrl " +
            "ORDER BY SUM(e.amount) DESC")
     List<Object[]> findTopStudents(Pageable pageable);
 
@@ -29,11 +29,11 @@ public interface XpEventRepository extends JpaRepository<XpEvent, UUID> {
      * que ser el de su grupo: el global le ensena nombres completos de
      * menores de otras clases, que ademas no le dicen nada.
      */
-    @Query("SELECT e.student.id, e.student.displayName, e.student.initials, SUM(e.amount) " +
+    @Query("SELECT e.student.id, e.student.displayName, e.student.initials, SUM(e.amount), e.student.avatarUrl " +
            "FROM XpEvent e WHERE e.student.role = 'student' " +
            "AND e.student.id IN (SELECT i.student.id FROM ClassroomEnrollment i " +
            "                     WHERE i.classroom.id IN :salones AND i.isActive = true) " +
-           "GROUP BY e.student.id, e.student.displayName, e.student.initials " +
+           "GROUP BY e.student.id, e.student.displayName, e.student.initials, e.student.avatarUrl " +
            "ORDER BY SUM(e.amount) DESC")
     List<Object[]> findTopStudentsEnSalones(List<UUID> salones, Pageable pageable);
 }

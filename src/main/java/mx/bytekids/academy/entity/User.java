@@ -1,5 +1,6 @@
 package mx.bytekids.academy.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import mx.bytekids.academy.entity.enums.UserRole;
@@ -23,6 +24,13 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
+    /**
+     * NUNCA sale por la API. Varias rutas devuelven entidades crudas con un
+     * User adentro, y en los mensajes ese User es otra persona: sin esto, un
+     * alumno que abria su bandeja recibia el hash de su maestra. Lo cuida
+     * UserSerializacionTest.
+     */
+    @JsonIgnore
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
