@@ -1142,6 +1142,50 @@ FROM nueva, (VALUES
        ('Verdadero', true, 1),
        ('Falso', false, 2)) AS v(texto, correcta, pos);
 
+-- ============================================================================
+--  PASO 3-B - LOS LOGROS DEL CURSO
+--  Se crean o se actualizan por titulo. Los de tipo subject_content los
+--  evalua el backend desde el 29-sep; con un backend anterior simplemente
+--  no se otorgan, no truenan.
+-- ============================================================================
+
+INSERT INTO achievement_definitions
+  (title, description, icon, xp_reward, category, rarity, condition_type, condition_value)
+VALUES
+  ('¡Hola, IA!',
+   'Diste tu primer paso en Mi Primera IA. Ya sabes que una IA aprende de ejemplos.',
+   '👋', 10, 'especial', 'comun', 'subject_missions',
+   '{"subject": "Mi Primera IA", "count": 1}'),
+  ('Entrevistador de IA',
+   'Entrevistaste a una inteligencia artificial y descubriste que no lo sabe todo.',
+   '🎤', 20, 'social', 'comun', 'subject_content',
+   '{"subject": "Mi Primera IA", "title": "Misión 1: Entrevista a una IA"}'),
+  ('Entrenador de IA',
+   'Entrenaste tu propia IA desde cero y descubriste su secreto: el sesgo.',
+   '🧠', 30, 'programacion', 'poco_comun', 'subject_content',
+   '{"subject": "Mi Primera IA", "title": "Misión 2: Entrena tu Detector de Caritas"}'),
+  ('Detective en casa',
+   'Encontraste la IA escondida en tu casa y entrevistaste a tu familia.',
+   '🔍', 20, 'social', 'poco_comun', 'subject_content',
+   '{"subject": "Mi Primera IA", "title": "Investigación: La IA en mi casa"}'),
+  ('Inventor de IA',
+   'Inventaste una inteligencia artificial para ayudar a alguien. ¡Eres creador de tecnología!',
+   '🚀', 40, 'proyectos', 'raro', 'subject_content',
+   '{"subject": "Mi Primera IA", "title": "Proyecto final: Mi IA para ayudar"}'),
+  ('Graduado de Mi Primera IA',
+   'Terminaste las 9 actividades de Mi Primera IA. ¡Te ganaste tu certificado de ByteKids!',
+   '🎓', 50, 'especial', 'epico', 'subject_missions',
+   '{"subject": "Mi Primera IA", "count": 9}')
+ON CONFLICT (title) DO UPDATE
+  SET description     = EXCLUDED.description,
+      icon            = EXCLUDED.icon,
+      xp_reward       = EXCLUDED.xp_reward,
+      category        = EXCLUDED.category,
+      rarity          = EXCLUDED.rarity,
+      condition_type  = EXCLUDED.condition_type,
+      condition_value = EXCLUDED.condition_value,
+      is_active       = true;
+
 COMMIT;
 
 
@@ -1174,6 +1218,24 @@ WHERE s.name = 'Mi Primera IA'
 GROUP BY c.title, q.order_index
 HAVING count(*) FILTER (WHERE o.is_correct) <> 1;
 -- (Esta ultima debe salir VACIA.)
+
+-- Los 6 logros. En la columna "pieza_existe", los de subject_content deben
+-- decir true: si alguno dice false, el titulo no casa y nadie lo va a ganar.
+SELECT a.title, a.icon, a.condition_type,
+       a.condition_value ->> 'title' AS pieza,
+       a.condition_value ->> 'count' AS cuantas,
+       CASE WHEN a.condition_type = 'subject_content'
+            THEN EXISTS (SELECT 1 FROM content c JOIN subjects s ON s.id = c.subject_id
+                         WHERE s.name = a.condition_value ->> 'subject'
+                           AND c.title = a.condition_value ->> 'title')
+       END AS pieza_existe
+FROM achievement_definitions a
+WHERE a.condition_value ->> 'subject' = 'Mi Primera IA' AND a.is_active
+ORDER BY a.xp_reward;
+
+-- Los ninos que YA hicieron piezas antes de correr esto no reciben los
+-- logros al instante: la revision corre la proxima vez que entregan algo o
+-- les aprueban algo. Como el curso aun no se lanza, no hace falta mas.
 
 -- ============================================================================
 --  PASO 5 - PARA QUE LOS NINOS LO VEAN

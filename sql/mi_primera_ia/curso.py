@@ -30,8 +30,8 @@ DECISIONES DE DISENO (las que no se ven en el texto)
     boton "Pedir ayuda a ByteBot" del workspace ya abre el chat con el titulo y
     la descripcion de la actividad, asi que no hace falta programar nada.
 
-  * XP: el curso completo suma 500, justo lo que pide el Nivel 2. Terminar el
-    curso = subir de nivel el mismo dia del certificado.
+  * XP: las 9 piezas suman 500, justo lo que pide el Nivel 2, y los logros
+    agregan otros 170. Quien termina el curso ya es Nivel 2.
 
   * Cada pieza sigue el mismo ritmo, para que el nino sepa siempre donde esta:
     HOY VAS A PODER -> hacer -> PAUSA PARA PENSAR -> LO QUE TE LLEVAS -> que sigue.
@@ -811,6 +811,42 @@ Si ByteKids manda la invitación a "IA para Niños (Principiante)", que sea al p
 
 
 # ════════════════════════════════════════════════════════════════════════════
+#  LOS LOGROS
+#
+#  Dos tipos de condicion:
+#   - subject_missions: cuantas piezas aprobadas lleva en la materia. Sirve
+#     para "la primera" y "todas".
+#   - subject_content: una pieza concreta aprobada. Es la que permite que
+#     "Entrevistador de IA" se gane con la entrevista y no con la segunda
+#     actividad que el maestro le apruebe. Necesita el backend del 29-sep.
+#
+#  El primero se gana en los primeros 20 minutos A PROPOSITO: el nino que
+#  entra a un curso gratis decide en el primer rato si le gusta. Una medalla
+#  temprana le dice "aqui se gana cosas".
+# ════════════════════════════════════════════════════════════════════════════
+LOGROS = [
+    dict(titulo='¡Hola, IA!', icono='👋', xp=10, categoria='especial', rareza='comun',
+         descripcion='Diste tu primer paso en Mi Primera IA. Ya sabes que una IA aprende de ejemplos.',
+         tipo='subject_missions', cond={'count': 1}),
+    dict(titulo='Entrevistador de IA', icono='🎤', xp=20, categoria='social', rareza='comun',
+         descripcion='Entrevistaste a una inteligencia artificial y descubriste que no lo sabe todo.',
+         tipo='subject_content', cond={'title': 'Misión 1: Entrevista a una IA'}),
+    dict(titulo='Entrenador de IA', icono='🧠', xp=30, categoria='programacion', rareza='poco_comun',
+         descripcion='Entrenaste tu propia IA desde cero y descubriste su secreto: el sesgo.',
+         tipo='subject_content', cond={'title': 'Misión 2: Entrena tu Detector de Caritas'}),
+    dict(titulo='Detective en casa', icono='🔍', xp=20, categoria='social', rareza='poco_comun',
+         descripcion='Encontraste la IA escondida en tu casa y entrevistaste a tu familia.',
+         tipo='subject_content', cond={'title': 'Investigación: La IA en mi casa'}),
+    dict(titulo='Inventor de IA', icono='🚀', xp=40, categoria='proyectos', rareza='raro',
+         descripcion='Inventaste una inteligencia artificial para ayudar a alguien. ¡Eres creador de tecnología!',
+         tipo='subject_content', cond={'title': 'Proyecto final: Mi IA para ayudar'}),
+    dict(titulo='Graduado de Mi Primera IA', icono='🎓', xp=50, categoria='especial', rareza='epico',
+         descripcion='Terminaste las 9 actividades de Mi Primera IA. ¡Te ganaste tu certificado de ByteKids!',
+         tipo='subject_missions', cond={'count': 9}),
+]
+
+
+# ════════════════════════════════════════════════════════════════════════════
 #  VALIDACION: que el curso cumpla lo que promete antes de escribir nada
 # ════════════════════════════════════════════════════════════════════════════
 def validar():
@@ -836,6 +872,18 @@ def validar():
                     assert len(q['opciones']) == 4, 'cuatro opciones: ' + q['texto']
         else:
             assert not p['quiz']
+    # Cada logro atado a una pieza tiene que nombrar una pieza que exista:
+    # un titulo mal escrito es un logro que nadie puede ganar, y no avisa.
+    titulos = {p['titulo'] for p in PIEZAS}
+    for lg in LOGROS:
+        assert lg['tipo'] in ('subject_missions', 'subject_content')
+        assert lg['categoria'] in ('programacion', 'racha', 'proyectos', 'social', 'especial')
+        assert lg['rareza'] in ('comun', 'poco_comun', 'raro', 'epico', 'legendario')
+        if lg['tipo'] == 'subject_content':
+            assert lg['cond']['title'] in titulos, 'logro con pieza inexistente: ' + lg['titulo']
+        else:
+            assert 1 <= lg['cond']['count'] <= len(PIEZAS)
+    assert len({lg['titulo'] for lg in LOGROS}) == len(LOGROS)
     # ByteBot debe aparecer en por lo menos 6 piezas.
     con_bytebot = [p['orden'] for p in PIEZAS if 'ByteBot' in p['instrucciones']
                    and p['tipo'] != 'quiz']
@@ -994,6 +1042,38 @@ FROM nueva, (VALUES
            ml=lit(m['name']), titl=lit(p['titulo']), ops=ops))
 
     w('''
+-- ============================================================================
+--  PASO 3-B - LOS LOGROS DEL CURSO
+--  Se crean o se actualizan por titulo. Los de tipo subject_content los
+--  evalua el backend desde el 29-sep; con un backend anterior simplemente
+--  no se otorgan, no truenan.
+-- ============================================================================
+
+INSERT INTO achievement_definitions
+  (title, description, icon, xp_reward, category, rarity, condition_type, condition_value)
+VALUES
+''')
+    filas = []
+    for lg in LOGROS:
+        cond = dict(subject=m['name'], **lg['cond'])
+        filas.append('  (%s,\n   %s,\n   %s, %d, %s, %s, %s,\n   %s)' % (
+            lit(lg['titulo']), lit(lg['descripcion']), lit(lg['icono']), lg['xp'],
+            lit(lg['categoria']), lit(lg['rareza']), lit(lg['tipo']),
+            lit(json.dumps(cond, ensure_ascii=False))))
+    w(',\n'.join(filas))
+    w('''
+ON CONFLICT (title) DO UPDATE
+  SET description     = EXCLUDED.description,
+      icon            = EXCLUDED.icon,
+      xp_reward       = EXCLUDED.xp_reward,
+      category        = EXCLUDED.category,
+      rarity          = EXCLUDED.rarity,
+      condition_type  = EXCLUDED.condition_type,
+      condition_value = EXCLUDED.condition_value,
+      is_active       = true;
+''')
+
+    w('''
 COMMIT;
 
 
@@ -1027,6 +1107,24 @@ GROUP BY c.title, q.order_index
 HAVING count(*) FILTER (WHERE o.is_correct) <> 1;
 -- (Esta ultima debe salir VACIA.)
 
+-- Los 6 logros. En la columna "pieza_existe", los de subject_content deben
+-- decir true: si alguno dice false, el titulo no casa y nadie lo va a ganar.
+SELECT a.title, a.icon, a.condition_type,
+       a.condition_value ->> 'title' AS pieza,
+       a.condition_value ->> 'count' AS cuantas,
+       CASE WHEN a.condition_type = 'subject_content'
+            THEN EXISTS (SELECT 1 FROM content c JOIN subjects s ON s.id = c.subject_id
+                         WHERE s.name = a.condition_value ->> 'subject'
+                           AND c.title = a.condition_value ->> 'title')
+       END AS pieza_existe
+FROM achievement_definitions a
+WHERE a.condition_value ->> 'subject' = %s AND a.is_active
+ORDER BY a.xp_reward;
+
+-- Los ninos que YA hicieron piezas antes de correr esto no reciben los
+-- logros al instante: la revision corre la proxima vez que entregan algo o
+-- les aprueban algo. Como el curso aun no se lanza, no hace falta mas.
+
 -- ============================================================================
 --  PASO 5 - PARA QUE LOS NINOS LO VEAN
 --  Desde la plataforma, no desde aqui:
@@ -1034,7 +1132,7 @@ HAVING count(*) FILTER (WHERE o.is_correct) <> 1;
 --    2. Asignale la materia "Mi Primera IA" y a su maestro (o a ti).
 --    3. Crea las cuentas de los ninos e inscribelos en ese salon.
 -- ============================================================================
-''' % (lit(m['name']), lit(m['name']), lit(m['name'])))
+''' % (lit(m['name']), lit(m['name']), lit(m['name']), lit(m['name'])))
     return ''.join(out)
 
 
@@ -1089,7 +1187,18 @@ def generar_html():
                      dif=p['dificultad'], tit=e(p['titulo']), desc=e(p['descripcion']), extra=extra,
                      inst=e(p['instrucciones']), guia=e(p['notas_maestro'])))
 
-    return PAGINA % dict(filas=''.join(filas), piezas=''.join(piezas),
+    RAREZA = {'comun': 'Común', 'poco_comun': 'Poco común', 'raro': 'Raro', 'epico': 'Épico', 'legendario': 'Legendario'}
+    logros = []
+    for lg in LOGROS:
+        como = ('Al aprobar «%s»' % lg['cond']['title'] if lg['tipo'] == 'subject_content'
+                else ('Al aprobar su primera actividad' if lg['cond']['count'] == 1
+                      else 'Al aprobar las %d actividades' % lg['cond']['count']))
+        logros.append('<li class="logro"><span class="logro-ico">%s</span><div><b>%s</b>'
+                      '<span class="logro-meta">%s · +%d XP</span><p>%s</p><small>%s</small></div></li>'
+                      % (lg['icono'], e(lg['titulo']), RAREZA[lg['rareza']], lg['xp'],
+                         e(lg['descripcion']), e(como)))
+    return PAGINA % dict(filas=''.join(filas), piezas=''.join(piezas), logros=''.join(logros),
+                         xp_logros=sum(lg['xp'] for lg in LOGROS),
                          desc=e(MATERIA['description']),
                          total_min=sum(p['minutos'] for p in PIEZAS),
                          total_xp=sum(p['xp'] for p in PIEZAS))
@@ -1142,6 +1251,11 @@ summary:focus-visible{outline:2px solid var(--gu-tx);outline-offset:2px}
 .quiz{margin:0;padding-left:22px;display:grid;gap:12px}.quiz p{margin:0 0 4px;font-weight:700;color:var(--tx1)}
 .ops{margin:0;padding-left:18px;font-size:.88rem;color:var(--tx3)}.ops li.ok{color:var(--ok);font-weight:700}
 .ops li.ok::after{content:"  ✓ correcta"}
+.logros{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.logro{display:flex;gap:12px;background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:14px}
+.logro-ico{font-size:1.9rem;line-height:1}.logro b{font-family:'Nunito',sans-serif;color:var(--tx1)}
+.logro-meta{display:block;font-size:.74rem;color:var(--oro);font-weight:700}
+.logro p{margin:4px 0;font-size:.86rem}.logro small{color:var(--tx3);font-size:.76rem}
 </style>
 <div class="wrap">
   <span class="eyebrow">ByteKids Academy · curso gratuito</span>
@@ -1150,7 +1264,7 @@ summary:focus-visible{outline:2px solid var(--gu-tx);outline-offset:2px}
   <div class="datos">
     <span class="dato"><b>9</b> piezas</span>
     <span class="dato"><b>%(total_min)d</b> minutos en total</span>
-    <span class="dato"><b>%(total_xp)d</b> XP · justo el Nivel 2</span>
+    <span class="dato"><b>%(total_xp)d</b> XP de actividades + <b>%(xp_logros)d</b> de logros · terminas en Nivel 2</span>
     <span class="dato">De <b>8 a 12</b> años · computadora o tablet</span>
   </div>
   <h2 style="font-size:1.1rem;margin-bottom:10px">El recorrido</h2>
@@ -1159,6 +1273,8 @@ summary:focus-visible{outline:2px solid var(--gu-tx);outline-offset:2px}
     <tbody>%(filas)s</tbody>
   </table></div>
   %(piezas)s
+  <h2 style="font-size:1.1rem;margin:30px 0 10px">Los logros del curso</h2>
+  <ul class="logros">%(logros)s</ul>
 </div>
 '''
 

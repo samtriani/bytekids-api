@@ -181,6 +181,15 @@ public class AchievementCheckerService {
                         .anyMatch(sp -> sp.getLevel() >= requiredLevel);
             }
 
+            // Una pieza concreta aprobada: {"subject": "...", "title": "..."}.
+            // Los conteos de arriba no alcanzan para un logro con nombre de
+            // actividad: el orden en que el maestro aprueba no es el orden
+            // del temario.
+            case "subject_content" ->
+                submissionRepo.existsApprovedByStudentAndContent(
+                        student, SubmissionStatus.aprobado,
+                        cond.path("subject").asText(""), cond.path("title").asText(""));
+
             case "project_count" ->
                 submissionRepo.countApprovedByStudentAndType(
                         student, SubmissionStatus.aprobado, ContentType.proyecto)

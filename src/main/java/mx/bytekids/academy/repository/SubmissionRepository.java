@@ -31,4 +31,17 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
     long countApprovedByStudentAndType(@Param("student") User student,
                                        @Param("status") SubmissionStatus status,
                                        @Param("contentType") ContentType contentType);
+
+    /**
+     * Si el alumno tiene aprobada UNA pieza en particular, por materia y
+     * titulo. Es para los logros atados a una actividad --"Entrevistador de
+     * IA" se gana con la entrevista, no con la segunda actividad que salga--.
+     * Materia + titulo porque es lo que es estable entre bases: los id no.
+     */
+    @Query("SELECT COUNT(s) > 0 FROM Submission s WHERE s.student = :student AND s.status = :status " +
+           "AND s.content.subject.name = :subjectName AND s.content.title = :title")
+    boolean existsApprovedByStudentAndContent(@Param("student") User student,
+                                              @Param("status") SubmissionStatus status,
+                                              @Param("subjectName") String subjectName,
+                                              @Param("title") String title);
 }
