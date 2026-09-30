@@ -14,6 +14,16 @@ import java.util.UUID;
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
     List<Notification> findByRecipientOrderByCreatedAtDesc(User recipient);
 
+    /**
+     * De estas referencias, cuales ya aviso este remitente con este tipo.
+     * Sirve para saber que logros ya felicito un maestro sin una tabla nueva:
+     * la felicitacion ES la notificacion. Si la purga de 30 dias la borra, el
+     * logro se puede volver a felicitar, que para algo de hace un mes esta bien.
+     */
+    @Query("SELECT n.referenceId FROM Notification n WHERE n.sender = :sender " +
+           "AND n.referenceType = :tipo AND n.referenceId IN :ids")
+    List<UUID> referenciasEnviadas(User sender, String tipo, java.util.Collection<UUID> ids);
+
     /** Las mas recientes primero, acotadas: el panel no necesita el historial. */
     List<Notification> findByRecipientOrderByCreatedAtDesc(User recipient, Pageable pageable);
 
