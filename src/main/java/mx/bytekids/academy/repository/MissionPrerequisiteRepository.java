@@ -16,4 +16,9 @@ public interface MissionPrerequisiteRepository extends JpaRepository<MissionPrer
         WHERE mp.mission = :mission
         """)
     List<Content> findPrerequisitesByMission(Content mission);
+
+    /** Los requisitos de muchas actividades de un jalon, con el requisito ya cargado. */
+    @Query("SELECT mp FROM MissionPrerequisite mp JOIN FETCH mp.prerequisite JOIN FETCH mp.mission " +
+           "WHERE mp.mission IN :misiones")
+    List<MissionPrerequisite> conRequisitos(java.util.Collection<Content> misiones);
 }

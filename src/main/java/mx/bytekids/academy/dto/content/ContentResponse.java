@@ -42,6 +42,14 @@ public class ContentResponse {
      */
     private Boolean basePlan;
 
+    /**
+     * Solo para el alumno: si la actividad esta bloqueada y que tiene que
+     * terminar antes. Null para el personal. Lo llena DesbloqueoService.
+     */
+    private Boolean bloqueada;
+    private String requiere;
+    private UUID requiereId;
+
     public static ContentResponse from(Content c) {
         return ContentResponse.builder()
                 .id(c.getId()).title(c.getTitle()).description(c.getDescription())

@@ -24,7 +24,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "Contenido (Misiones / Proyectos / Quizzes)")
 public class ContentController {
-
+
+    private final mx.bytekids.academy.service.DesbloqueoService desbloqueoService;
     private final ContentService contentService;
     private final UserService userService;
 
@@ -59,7 +60,14 @@ public class ContentController {
     @GetMapping("/{id}")
     @Operation(summary = "Obtener contenido por ID")
     public ResponseEntity<ApiResponse<ContentResponse>> findById(@PathVariable UUID id) {
-        return ResponseEntity.ok(ApiResponse.ok(ContentResponse.from(contentService.findById(id))));
+        var content = contentService.findById(id);
+        var respuesta = ContentResponse.from(content);
+        // El alumno que entra directo por la URL ve el candado, no la actividad.
+        if (SecurityUtils.hasRole("STUDENT")) {
+            var alumno = userService.findByUsername(SecurityUtils.currentUsername());
+            ContentService.conDesbloqueo(respuesta, desbloqueoService.loQueFalta(alumno, content).orElse(null));
+        }
+        return ResponseEntity.ok(ApiResponse.ok(respuesta));
     }
 
     @PostMapping

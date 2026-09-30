@@ -30,7 +30,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class QuizService {
-
+
+    private final DesbloqueoService desbloqueoService;
     private final QuizQuestionRepository questionRepository;
     private final QuizOptionRepository optionRepository;
     private final QuizAttemptRepository attemptRepository;
@@ -161,6 +162,7 @@ public class QuizService {
                                      Map<UUID, UUID> answers, UUID assignmentId) {
         Content content = contentService.findById(contentId);
         User student = userService.findById(studentId);
+        desbloqueoService.exigirDesbloqueada(student, content);
 
         if (content.getType() != mx.bytekids.academy.entity.enums.ContentType.quiz) {
             throw new BusinessException("El contenido no es un quiz");
