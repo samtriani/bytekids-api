@@ -71,6 +71,16 @@ estaría del lado que no se ve.
 Alumno → alumno no existe como regla. Es la forma de no abrir un chat libre
 entre menores: no basta con que la pantalla no lo ofrezca.
 
+### La Comunidad del maestro se acota a SUS salones
+
+`ComunidadService` decide qué salones ve cada quien: un maestro, los que
+tiene como titular (`classroom.teacher`, la misma regla que usa
+`MessageService`); coordinación y dirección, todos. Pedir el id de un salón
+ajeno da 403. `ComunidadServiceTest` lo cuida.
+
+La felicitación ES la notificación (`referenceType = "felicitacion"`): para
+saber si ya se felicitó un logro se busca esa notificación, sin tabla nueva.
+
 ### Las notificaciones van en su propia transacción
 
 `NotificationService.avisar()` y `avisarATodos()` usan `REQUIRES_NEW`.
@@ -150,8 +160,8 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   lista negra y el JWT dura 7 días, así que quien tuviera una sesión abierta
   con la contraseña vieja sigue dentro hasta que ese token expire. Para
   echar a alguien de verdad hoy hay que desactivar la cuenta.
-- Los tests son dos clases (`LoginRateLimitFilterTest`,
-  `UserSerializacionTest`): hay arranque, no red.
+- Los tests son tres clases (`LoginRateLimitFilterTest`,
+  `UserSerializacionTest`, `ComunidadServiceTest`): hay arranque, no red.
 - **Todavía hay 13 tipos de entidad que salen crudos** (notificaciones,
   intentos de quiz, logros, avance, XP...). El hash ya no sale, pero el correo,
   la edad y la dirección del alumno siguen viajando dentro de esas respuestas.
