@@ -1143,6 +1143,24 @@ FROM nueva, (VALUES
        ('Falso', false, 2)) AS v(texto, correcta, pos);
 
 -- ============================================================================
+--  PASO 3-A - EL ORDEN: CADA PIEZA PIDE LA ANTERIOR
+--  Usa mission_prerequisites (la lee DesbloqueoService desde el 30-sep).
+--  Una mision se desbloquea al ENTREGAR la anterior; un quiz, al aprobarlo.
+--  El id va explicito con gen_random_uuid(): la entidad lo genera en Java y
+--  no hay que suponer que la columna tenga default.
+-- ============================================================================
+
+INSERT INTO mission_prerequisites (id, mission_id, prerequisite_id)
+SELECT gen_random_uuid(), actual.id, anterior.id
+FROM content actual
+JOIN content anterior ON anterior.subject_id = actual.subject_id
+                     AND anterior.order_index = actual.order_index - 1
+JOIN subjects s ON s.id = actual.subject_id
+WHERE s.name = 'Mi Primera IA'
+  AND actual.is_active AND anterior.is_active
+ON CONFLICT (mission_id, prerequisite_id) DO NOTHING;
+
+-- ============================================================================
 --  PASO 3-B - LOS LOGROS DEL CURSO
 --  Se crean o se actualizan por titulo. Los de tipo subject_content los
 --  evalua el backend desde el 29-sep; con un backend anterior simplemente
@@ -1218,6 +1236,15 @@ WHERE s.name = 'Mi Primera IA'
 GROUP BY c.title, q.order_index
 HAVING count(*) FILTER (WHERE o.is_correct) <> 1;
 -- (Esta ultima debe salir VACIA.)
+
+-- El orden: deben salir 8 filas, de la 2 pidiendo la 1 hasta la 9 pidiendo la 8.
+SELECT m.order_index AS pieza, p.order_index AS pide_la, m.title
+FROM mission_prerequisites mp
+JOIN content m ON m.id = mp.mission_id
+JOIN content p ON p.id = mp.prerequisite_id
+JOIN subjects s ON s.id = m.subject_id
+WHERE s.name = 'Mi Primera IA'
+ORDER BY m.order_index;
 
 -- Los 6 logros. En la columna "pieza_existe", los de subject_content deben
 -- decir true: si alguno dice false, el titulo no casa y nadie lo va a ganar.

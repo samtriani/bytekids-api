@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AiTutorService {
 
+    private final LimiteByteBotService             limite;
     private final StudentSubjectProgressRepository progressRepo;
     private final ClassroomRepository              classroomRepo;
     private final ParentStudentRepository          parentStudentRepo;
@@ -67,7 +68,23 @@ public class AiTutorService {
         return texto.length() <= MAX_CARACTERES ? texto : texto.substring(0, MAX_CARACTERES);
     }
 
+    /**
+     * Lo que contesta ByteBot cuando el alumno ya uso sus mensajes del dia.
+     * Sin contador ni regano: es ByteBot cansado, no una puerta cerrada. Y
+     * le da al nino que hacer mientras tanto.
+     */
+    static final String SIN_BATERIA =
+            "¡Uf! Hoy ya platicamos muchísimo y se me acabó la batería 🔋😴. "
+          + "Me recargo a medianoche.\n\n"
+          + "Mientras tanto, tú puedes: vuelve a leer las instrucciones, inténtalo "
+          + "a tu manera (¡seguro te sale!) o escríbele a tu maestro o maestra en **Mensajes**. "
+          + "¡Mañana seguimos! 🚀";
+
     public String chat(User user, List<Map<String, String>> history, String message) {
+        // Antes de armar nada: si ya no le quedan mensajes hoy, no se llama al
+        // modelo (que es justo lo que cuesta).
+        if (!limite.puedeHablar(user)) return SIN_BATERIA;
+
         String systemPrompt = buildSystemPrompt(user);
 
         List<Map<String, String>> messages = new ArrayList<>();
@@ -100,6 +117,9 @@ public class AiTutorService {
                         user.getUsername());
                 return "Eso no te lo puedo compartir, pero con gusto te ayudo con tu clase 😊";
             }
+            // Se cuenta solo lo que el modelo SI contesto: un error tecnico no
+            // le gasta un mensaje al nino.
+            limite.contar(user);
             return reply;
         } catch (Exception e) {
             // Incluye modelo y URL: un 404 aqui casi siempre significa que el

@@ -17,6 +17,7 @@ import mx.bytekids.academy.repository.ContentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +26,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ContentService {
-
+
+    private final DesbloqueoService desbloqueoService;
     private final ContentRepository           contentRepository;
     private final ContentAssignmentRepository  assignmentRepository;
     private final SubjectService               subjectService;
@@ -354,13 +356,28 @@ public class ContentService {
     public List<ContentResponse> findForStudent(UUID studentId) {
         User student = userService.findById(studentId);
         Set<UUID> seen = new HashSet<>();
-        return assignmentRepository.findAllAssignmentsForStudent(student)
+        List<Content> actividades = assignmentRepository.findAllAssignmentsForStudent(student)
                 .stream()
                 .map(ContentAssignment::getContent)
                 .filter(c -> Boolean.TRUE.equals(c.getIsPublished()) && Boolean.TRUE.equals(c.getIsActive()))
                 .filter(c -> seen.add(c.getId()))
-                .map(ContentResponse::from)
                 .toList();
+
+        // Una consulta para todas, no una por actividad.
+        Map<UUID, Content> bloqueadas = desbloqueoService.bloqueadas(student, actividades);
+        return actividades.stream()
+                .map(c -> conDesbloqueo(ContentResponse.from(c), bloqueadas.get(c.getId())))
+                .toList();
+    }
+
+    /** Marca la respuesta con lo que le falta al alumno; null = abierta. */
+    public static ContentResponse conDesbloqueo(ContentResponse r, Content falta) {
+        r.setBloqueada(falta != null);
+        if (falta != null) {
+            r.setRequiere(falta.getTitle());
+            r.setRequiereId(falta.getId());
+        }
+        return r;
     }
 
     @Transactional

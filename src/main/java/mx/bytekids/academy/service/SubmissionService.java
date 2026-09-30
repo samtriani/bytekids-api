@@ -28,7 +28,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class SubmissionService {
-
+
+    private final DesbloqueoService desbloqueoService;
     private final SubmissionRepository          submissionRepository;
     private final ContentAssignmentRepository   assignmentRepository;
     private final ContentService                contentService;
@@ -75,6 +76,7 @@ public class SubmissionService {
     public SubmissionResponse submit(SubmissionRequest req, UUID studentId) {
         User student = userService.findById(studentId);
         Content content = contentService.findById(req.getContentId());
+        desbloqueoService.exigirDesbloqueada(student, content);
 
         ContentAssignment assignment = null;
         if (req.getAssignmentId() != null) {

@@ -81,6 +81,32 @@ ajeno da 403. `ComunidadServiceTest` lo cuida.
 La felicitación ES la notificación (`referenceType = "felicitacion"`): para
 saber si ya se felicitó un logro se busca esa notificación, sin tabla nueva.
 
+### El orden de las actividades: `DesbloqueoService`
+
+Usa `mission_prerequisites`. Sin filas, todo abierto: los cursos de paga y
+las misiones lanzadas en clase no cambian. Mi Primera IA trae una fila por
+pieza (la genera `sql/mi_primera_ia/curso.py`).
+
+Un prerrequisito cuenta como hecho al **entregarlo** (un quiz, al
+aprobarlo), no al aprobarlo el maestro: si no, un niño que entrega el
+viernes se queda atorado el fin de semana. La aprobación manda en logros y
+certificado. La misma regla alimenta el feed, `GET /content/{id}` y las dos
+entregas (`SubmissionService.submit`, `QuizService.submitAttempt`).
+
+### El certificado se pide y se entrega
+
+`CertificadoService`. Se puede pedir con **todas** las actividades de la
+materia aprobadas; lo entrega un maestro de sus salones o coordinación, y
+entonces le llega al alumno y a su familia. El alumno y la familia no lo ven
+antes de entregarse. Tabla `certificados`, folio único sin 0/O/1/I/L.
+
+### ByteBot tiene tope diario para alumnos
+
+`LimiteByteBotService`: 25 mensajes al día (`app.ai.limite-diario-alumno`),
+hora de México, en la tabla `ai_uso_diario`. Sin contador visible: al
+acabarse, ByteBot contesta `AiTutorService.SIN_BATERIA`. Si la tabla no
+existe, deja pasar: un tope que tumba a ByteBot es peor que no tener tope.
+
 ### Las notificaciones van en su propia transacción
 
 `NotificationService.avisar()` y `avisarATodos()` usan `REQUIRES_NEW`.
@@ -160,8 +186,9 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   lista negra y el JWT dura 7 días, así que quien tuviera una sesión abierta
   con la contraseña vieja sigue dentro hasta que ese token expire. Para
   echar a alguien de verdad hoy hay que desactivar la cuenta.
-- Los tests son tres clases (`LoginRateLimitFilterTest`,
-  `UserSerializacionTest`, `ComunidadServiceTest`): hay arranque, no red.
+- 27 pruebas en 6 clases, sobre todo reglas de acceso y de negocio
+  (comunidad, desbloqueo, certificados, tope de ByteBot). No hay pruebas de
+  integración contra la base.
 - **Todavía hay 13 tipos de entidad que salen crudos** (notificaciones,
   intentos de quiz, logros, avance, XP...). El hash ya no sale, pero el correo,
   la edad y la dirección del alumno siguen viajando dentro de esas respuestas.
