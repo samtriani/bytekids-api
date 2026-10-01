@@ -152,6 +152,55 @@ public class FamiliaService {
                 materias, logros, certificados, clases, xpReciente);
     }
 
+    /** Tope del texto de una entrega: un proyecto cabe de sobra. */
+    private static final int MAX_TEXTO = 8000;
+
+    /**
+     * Lo que entrego un hijo: la entrega mas reciente de cada actividad, con
+     * lo que escribio y lo que le dijo su maestro. Los materiales no salen
+     * (solo se marcan como vistos) y los quizzes van sin texto (no tienen).
+     *
+     * Solo de un hijo de quien pregunta: se busca entre SUS hijos, asi que un
+     * id ajeno da 403 aunque exista.
+     */
+    @Transactional(readOnly = true)
+    public List<mx.bytekids.academy.dto.familia.TrabajoResponse> trabajos(String username, UUID hijoId) {
+        User papa = userService.findByUsername(username);
+        User hijo = parentStudentRepository.findChildrenByParent(papa).stream()
+                .filter(h -> h.getId().equals(hijoId)).findFirst()
+                .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException("Ese no es tu hijo"));
+
+        // La mas reciente de cada actividad: vienen de la mas nueva a la mas vieja.
+        Map<UUID, Submission> ultima = new LinkedHashMap<>();
+        for (Submission s : submissionRepository.findByStudentOrderBySubmittedAtDesc(hijo)) {
+            Content c = s.getContent();
+            if (c == null || c.getType() == mx.bytekids.academy.entity.enums.ContentType.material) continue;
+            if (s.getStatus() == SubmissionStatus.borrador) continue;
+            ultima.putIfAbsent(c.getId(), s);
+        }
+
+        return ultima.values().stream().map(s -> {
+            Content c = s.getContent();
+            boolean esQuiz = c.getType() == mx.bytekids.academy.entity.enums.ContentType.quiz;
+            String estado = s.getStatus() == SubmissionStatus.aprobado ? "aprobada"
+                          : s.getStatus() == SubmissionStatus.rechazado ? "corregir" : "revision";
+            String texto = esQuiz || s.getCodeSubmitted() == null ? null
+                    : (s.getCodeSubmitted().length() > MAX_TEXTO ? s.getCodeSubmitted().substring(0, MAX_TEXTO) + "…" : s.getCodeSubmitted());
+            return new mx.bytekids.academy.dto.familia.TrabajoResponse(
+                    c.getId(), c.getTitle(), c.getType() != null ? c.getType().name() : "mision",
+                    c.getSubject() != null ? c.getSubject().getName() : null,
+                    c.getSubject() != null ? c.getSubject().getColor() : null,
+                    c.getOrderIndex() == null ? 0 : c.getOrderIndex(),
+                    estado, s.getScore() == null ? null : s.getScore().intValue(), texto, s.getTeacherFeedback(),
+                    s.getReviewedBy() != null ? s.getReviewedBy().getDisplayName() : null,
+                    s.getSubmittedAt(), s.getReviewedAt());
+        })
+        // Por materia y en el orden del temario: como el camino.
+        .sorted(Comparator.comparing((mx.bytekids.academy.dto.familia.TrabajoResponse t) -> String.valueOf(t.materia()))
+                .thenComparingInt(mx.bytekids.academy.dto.familia.TrabajoResponse::orden))
+        .toList();
+    }
+
     /** El camino de una materia: la misma lectura que ve el nino en Mi Progreso. */
     private Materia materia(UUID materiaId, List<ContentResponse> piezas, Map<UUID, SubmissionStatus> estadoDe) {
         List<ContentResponse> ordenadas = piezas.stream()

@@ -33,4 +33,11 @@ public class FamiliaController {
     public ResponseEntity<ApiResponse<List<HijoResponse>>> hijos() {
         return ResponseEntity.ok(ApiResponse.ok(familiaService.misHijos(SecurityUtils.currentUsername())));
     }
+
+    @GetMapping("/hijos/{hijoId}/trabajos")
+    @Operation(summary = "Lo que entregó un hijo, con la calificación y el comentario del maestro")
+    public ResponseEntity<ApiResponse<List<mx.bytekids.academy.dto.familia.TrabajoResponse>>> trabajos(
+            @org.springframework.web.bind.annotation.PathVariable java.util.UUID hijoId) {
+        return ResponseEntity.ok(ApiResponse.ok(familiaService.trabajos(SecurityUtils.currentUsername(), hijoId)));
+    }
 }
