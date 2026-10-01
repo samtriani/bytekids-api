@@ -12,6 +12,7 @@ import mx.bytekids.academy.exception.ResourceNotFoundException;
 import mx.bytekids.academy.repository.ClassroomEnrollmentRepository;
 import mx.bytekids.academy.repository.ClassroomRepository;
 import mx.bytekids.academy.repository.ContentAssignmentRepository;
+import mx.bytekids.academy.repository.ParentStudentRepository;
 import mx.bytekids.academy.repository.SubmissionRepository;
 import mx.bytekids.academy.repository.XpEventRepository;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class SubmissionService {
-
+
     private final DesbloqueoService desbloqueoService;
     private final SubmissionRepository          submissionRepository;
     private final ContentAssignmentRepository   assignmentRepository;
@@ -41,6 +42,7 @@ public class SubmissionService {
     private final XpEventRepository             xpEventRepository;
     private final NotificationService           notificationService;
     private final ClassroomService              classroomService;
+    private final ParentStudentRepository       parentStudentRepository;
 
     public Submission findById(UUID id) {
         return submissionRepository.findById(id)
@@ -137,6 +139,7 @@ public class SubmissionService {
         }
 
         avisarAlAlumno(submission, reviewer);
+        avisarALaFamilia(submission, reviewer);
 
         return SubmissionResponse.from(submissionRepository.save(submission));
     }
@@ -180,6 +183,55 @@ public class SubmissionService {
 
         notificationService.avisar(entrega.getStudent(), revisor, NotificationType.calificacion,
                 titulo, cuerpo, entrega.getContent().getId(), "actividad");
+    }
+
+    /**
+     * La familia se entera el mismo dia de como le fue a su hijo, para que lo
+     * platiquen esa tarde. La referencia es el HIJO: la campanita lleva a
+     * "Sus trabajos" de ese hijo. Igual que con el alumno, un ajuste no se
+     * anuncia como "rechazado".
+     */
+    private void avisarALaFamilia(Submission entrega, User revisor) {
+        User hijo = entrega.getStudent();
+        List<User> familia = parentStudentRepository.findByStudent(hijo).stream()
+                .map(ParentStudent::getParent).toList();
+        if (familia.isEmpty()) return;
+
+        String nombre = hijo.getDisplayName() == null || hijo.getDisplayName().isBlank()
+                ? "tu hijo" : hijo.getDisplayName().trim().split("\\s+")[0];
+        String quien = revisor.getDisplayName() == null || revisor.getDisplayName().isBlank()
+                ? "Su maestro" : revisor.getDisplayName().trim();
+        String actividad = "«" + entrega.getContent().getTitle() + "»";
+
+        String titulo = switch (entrega.getStatus()) {
+            case aprobado  -> "✅ " + quien + " aprobó " + actividad + " de " + nombre;
+            case rechazado -> "✏️ " + quien + " le pidió un ajuste a " + nombre;
+            default        -> "📝 " + quien + " revisó " + actividad + " de " + nombre;
+        };
+
+        StringBuilder cuerpo = new StringBuilder();
+        if (entrega.getStatus() == SubmissionStatus.rechazado) cuerpo.append(actividad);
+        if (entrega.getScore() != null) {
+            if (!cuerpo.isEmpty()) cuerpo.append(" · ");
+            cuerpo.append("Calificación: ").append(sobreDiez(entrega.getScore())).append("/10");
+        }
+        String fb = entrega.getTeacherFeedback();
+        if (fb != null && !fb.isBlank()) {
+            fb = fb.strip();
+            if (fb.length() > 140) fb = fb.substring(0, 140).strip() + "…";
+            if (!cuerpo.isEmpty()) cuerpo.append(" · ");
+            cuerpo.append("“").append(fb).append("”");
+        }
+        if (cuerpo.isEmpty()) cuerpo.append("Toca para ver lo que entregó.");
+
+        notificationService.avisarATodos(familia, revisor, NotificationType.calificacion,
+                titulo, cuerpo.toString(), hijo.getId(), "trabajo_hijo");
+    }
+
+    /** Igual que la pantalla: 0-100 en la base, sobre 10 y sin ".0" colgando. */
+    static String sobreDiez(short score) {
+        double n = Math.round((double) score) / 10.0;
+        return n == Math.rint(n) ? String.valueOf((long) n) : String.format(java.util.Locale.ROOT, "%.1f", n);
     }
 
     /**
