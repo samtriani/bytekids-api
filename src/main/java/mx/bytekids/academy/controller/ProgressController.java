@@ -26,6 +26,7 @@ public class ProgressController {
 
     private final ProgressService progressService;
     private final UserService userService;
+    private final mx.bytekids.academy.service.AccesoAlumnoService acceso;
 
     @GetMapping("/me/xp")
     @PreAuthorize("hasRole('STUDENT')")
@@ -73,6 +74,7 @@ public class ProgressController {
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','PARENT')")
     @Operation(summary = "XP total de un alumno")
     public ResponseEntity<ApiResponse<Map<String, Integer>>> studentXp(@PathVariable UUID studentId) {
+        acceso.exigirPuedeVer(studentId);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("totalXp", progressService.getTotalXp(studentId))));
     }
 
@@ -80,6 +82,7 @@ public class ProgressController {
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','PARENT')")
     @Operation(summary = "Racha actual de un alumno")
     public ResponseEntity<ApiResponse<Map<String, Integer>>> studentStreak(@PathVariable UUID studentId) {
+        acceso.exigirPuedeVer(studentId);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("streak", progressService.getCurrentStreak(studentId))));
     }
 
@@ -87,6 +90,7 @@ public class ProgressController {
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','PARENT')")
     @Operation(summary = "Progreso por materia de un alumno")
     public ResponseEntity<ApiResponse<List<StudentSubjectProgress>>> studentSubjects(@PathVariable UUID studentId) {
+        acceso.exigirPuedeVer(studentId);
         return ResponseEntity.ok(ApiResponse.ok(progressService.getSubjectProgress(studentId)));
     }
 
@@ -94,6 +98,7 @@ public class ProgressController {
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','PARENT')")
     @Operation(summary = "Actividad diaria de un alumno")
     public ResponseEntity<ApiResponse<List<DailyActivity>>> studentActivity(@PathVariable UUID studentId) {
+        acceso.exigirPuedeVer(studentId);
         return ResponseEntity.ok(ApiResponse.ok(progressService.getWeekActivity(studentId)));
     }
 

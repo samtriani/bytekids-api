@@ -25,6 +25,7 @@ import java.util.UUID;
 public class AchievementController {
 
     private final AchievementService achievementService;
+    private final mx.bytekids.academy.service.AccesoAlumnoService acceso;
     private final AchievementCheckerService achievementChecker;
     private final UserService userService;
 
@@ -69,6 +70,7 @@ public class AchievementController {
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER','PARENT')")
     @Operation(summary = "Logros de un alumno")
     public ResponseEntity<ApiResponse<List<StudentAchievement>>> studentAchievements(@PathVariable UUID studentId) {
+        acceso.exigirPuedeVer(studentId);
         return ResponseEntity.ok(ApiResponse.ok(achievementService.findEarnedByStudent(studentId)));
     }
 

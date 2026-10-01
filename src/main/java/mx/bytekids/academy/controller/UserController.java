@@ -31,6 +31,7 @@ public class UserController {
 
     private final UserService userService;
     private final ParentStudentRepository parentStudentRepository;
+    private final mx.bytekids.academy.service.AccesoAlumnoService acceso;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR')")
@@ -143,6 +144,9 @@ public class UserController {
     @PreAuthorize("hasAnyRole('ADMIN','DIRECTOR','PARENT')")
     @Operation(summary = "Alumnos vinculados a un padre")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getStudents(@PathVariable UUID parentId) {
+        // Antes cualquier papa podia pedir los hijos de otro, con su correo,
+        // edad y direccion.
+        acceso.exigirEsElMismoPapa(parentId);
         User parent = userService.findById(parentId);
         List<UserResponse> students = parentStudentRepository.findChildrenByParent(parent)
                 .stream()

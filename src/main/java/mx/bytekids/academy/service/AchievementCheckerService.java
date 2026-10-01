@@ -36,6 +36,7 @@ public class AchievementCheckerService {
     private final ProgressService                 progressService;
     private final UserService                     userService;
     private final NotificationService             notificationService;
+    private final mx.bytekids.academy.repository.ParentStudentRepository parentStudentRepository;
 
     /**
      * Evalúa todas las definiciones de logros no obtenidas por el alumno
@@ -131,6 +132,7 @@ public class AchievementCheckerService {
      */
     private void avisarDeLogros(User student, List<AchievementDefinition> nuevos) {
         if (nuevos.isEmpty()) return;
+        avisarALaFamilia(student, nuevos);
 
         if (nuevos.size() == 1) {
             AchievementDefinition d = nuevos.get(0);
@@ -145,6 +147,26 @@ public class AchievementCheckerService {
         notificationService.avisar(student, null, NotificationType.logro_desbloqueado,
                 "🏆 ¡Desbloqueaste " + nuevos.size() + " logros!",
                 nombres, null, "logro");
+    }
+
+    /**
+     * La familia tambien se entera. Antes al papa solo le llegaban mensajes:
+     * ni los logros ni el avance de su hijo, y es el papa quien decide si el
+     * nino sigue. Una sola notificacion aunque caigan varios logros juntos.
+     */
+    private void avisarALaFamilia(User student, List<AchievementDefinition> nuevos) {
+        List<User> familia = parentStudentRepository.findByStudent(student).stream()
+                .map(mx.bytekids.academy.entity.ParentStudent::getParent).toList();
+        if (familia.isEmpty()) return;
+        String nombre = student.getDisplayName() == null ? "Tu hijo" : student.getDisplayName().trim().split("\\s+")[0];
+        String titulo = nuevos.size() == 1
+                ? "🏆 ¡" + nombre + " ganó «" + nuevos.get(0).getTitle() + "»!"
+                : "🏆 ¡" + nombre + " ganó " + nuevos.size() + " logros!";
+        String cuerpo = nuevos.size() == 1
+                ? nuevos.get(0).getDescription()
+                : nuevos.stream().map(AchievementDefinition::getTitle).collect(Collectors.joining(", "));
+        notificationService.avisarATodos(familia, null, NotificationType.logro_desbloqueado,
+                titulo, cuerpo, student.getId(), "logro_hijo");
     }
 
     private boolean evaluate(AchievementDefinition def, User student, UUID studentId,
