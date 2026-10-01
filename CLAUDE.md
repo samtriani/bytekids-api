@@ -198,7 +198,7 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   lista negra y el JWT dura 7 días, así que quien tuviera una sesión abierta
   con la contraseña vieja sigue dentro hasta que ese token expire. Para
   echar a alguien de verdad hoy hay que desactivar la cuenta.
-- 27 pruebas en 6 clases, sobre todo reglas de acceso y de negocio
+- 37 pruebas en 9 clases, sobre todo reglas de acceso y de negocio
   (comunidad, desbloqueo, certificados, tope de ByteBot). No hay pruebas de
   integración contra la base.
 - **Todavía hay 13 tipos de entidad que salen crudos** (notificaciones,
@@ -213,5 +213,7 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   verificación de ese script: un logro con condición desconocida no truena,
   simplemente nadie lo gana nunca.
 - Las notificaciones son dentro de la plataforma: no hay correo. Si el niño no
-  entra, no se entera — y al familiar solo le llegan mensajes, no las
-  calificaciones ni los logros de su hijo.
+  entra, no se entera. A la familia le llegan los logros de su hijo, su
+  certificado y cada calificación (`SubmissionService.avisarALaFamilia`,
+  `referenceType "trabajo_hijo"` con el id del hijo), pero solo dentro de la
+  plataforma.
