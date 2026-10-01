@@ -71,6 +71,18 @@ estaría del lado que no se ve.
 Alumno → alumno no existe como regla. Es la forma de no abrir un chat libre
 entre menores: no basta con que la pantalla no lo ofrezca.
 
+### Quién puede ver a qué niño: `AccesoAlumnoService`
+
+Toda ruta que reciba el id de un alumno pasa por `exigirPuedeVer(id)`:
+coordinación y dirección, cualquiera; un alumno, a sí mismo; un papá, a sus
+hijos; un maestro, a los alumnos de sus salones. Hasta el 30-sep,
+`/progress/students/{id}/…`, `/achievements/students/{id}` y
+`/users/{papá}/students` solo revisaban el rol. **Si agregas una ruta con
+`{studentId}`, ponle esta revisión.**
+
+Para la familia, mejor todavía: `/familia/hijos` no recibe ids y devuelve
+los hijos de quien pregunta. Es lo que usa todo el módulo de papás.
+
 ### La Comunidad del maestro se acota a SUS salones
 
 `ComunidadService` decide qué salones ve cada quien: un maestro, los que
