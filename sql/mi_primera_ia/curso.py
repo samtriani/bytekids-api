@@ -34,7 +34,18 @@ DECISIONES DE DISENO (las que no se ven en el texto)
     agregan otros 170. Quien termina el curso ya es Nivel 2.
 
   * Cada pieza sigue el mismo ritmo, para que el nino sepa siempre donde esta:
-    HOY VAS A PODER -> hacer -> PAUSA PARA PENSAR -> LO QUE TE LLEVAS -> que sigue.
+    HOY VAS A PODER -> PASO 1, 2, 3... -> LO QUE TE LLEVAS -> RETO EXTRA -> que sigue.
+
+  * Es para 8 a 12 anos, y se escribe para el de 8. La base cabe en 15-25
+    minutos (la mision 2, en 35) y pide a lo mas 2 o 3 respuestas cortas.
+    Lo que antes era obligatorio y pesado paso al "⭐ RETO EXTRA" del final:
+    opcional, para los grandes, y NUNCA suma ni resta calificacion. El
+    certificado solo pide la base. Sin checklist: repetia la entrega y el
+    nino veia tres listas de tareas donde habia una.
+
+  * Las piezas que mandan fuera (Quick Draw, Oceanos, ML4Kids) dicen cuando
+    termina lo de afuera y traen "🔙 REGRESA A BYTEKIDS". El boton del enlace
+    sale al final del paso que dice "enlace" (seccionDelEnlace en la UI).
 """
 import io
 import os
@@ -70,54 +81,49 @@ PIEZAS.append(dict(
     url='https://quickdraw.withgoogle.com/?locale=es', recurso='enlace',
     instrucciones='''¡Bienvenido a MI PRIMERA IA! 🤖
 
-Soy ByteBot y voy a acompañarte en todo el curso. En 9 pasos vas a descubrir qué es la inteligencia artificial, le vas a enseñar algo a una máquina con tus propias manos y vas a inventar tu propia IA. Al final te ganas tu certificado de ByteKids Academy. 🎓
+Soy ByteBot y voy a acompañarte en todo el curso. En 9 pasos vas a descubrir qué es la inteligencia artificial, vas a entrenar una con tus propias manos y al final ganas tu certificado de ByteKids Academy. 🎓
 
 HOY VAS A PODER...
-✔ Explicar con tus palabras qué es la inteligencia artificial.
-✔ Encontrar la IA que se esconde en cosas que usas todos los días.
+✔ Decir con tus palabras qué es la inteligencia artificial.
+✔ Encontrar la IA que usas todos los días.
 
-PRIMERO, UN RETO (5 minutos)
-Se abre en otra pestaña. Esta de ByteKids se queda abierta, esperándote.
-1. Abre el enlace con el botón 🚀 que está al final de esta parte. Se llama Quick, Draw!
-2. Dale a "¡Vamos a dibujar!". Te va a pedir que dibujes algo en 20 segundos.
-3. Mientras dibujas, la computadora intenta ADIVINAR qué es.
-4. Juega UNA ronda completa: son 6 dibujos.
-5. 🏁 Cuando veas tus 6 dibujos al final, ¡reto cumplido!
+PASO 1 · JUEGA CONTRA UNA IA (5 min)
+1. Abre el enlace con el botón 🚀 que está al final de este paso. Se llama Quick, Draw!
+2. Dale a "¡Vamos a dibujar!" y dibuja lo que te pida.
+3. Mientras dibujas, la computadora intenta ADIVINAR qué es. ¡Rápido!
+4. 🏁 Juega UNA ronda: son 6 dibujos.
+
+Se abre en otra pestaña. Esta de ByteKids se queda aquí esperándote.
 
 🔙 REGRESA A BYTEKIDS
-Cierra la pestaña del juego y vuelve aquí. Lo mejor viene ahora: vas a descubrir CÓMO adivinó tus dibujos. (Después, si quieres, juegas otra ronda.)
+¿Ya viste tus 6 dibujos? Vuelve aquí: ahora vas a descubrir CÓMO los adivinó.
 
-PAUSA PARA PENSAR 🤔 (ya de regreso)
-¿Cómo supo la computadora que tu garabato era un gato? Nadie estaba viendo tu dibujo...
-Piénsalo un momento antes de seguir leyendo.
+PASO 2 · EL TRUCO DE LA IA
+¿Cómo supo que tu garabato era un gato? 🤔 Nadie estaba viendo tu dibujo...
 
-LO QUE ACABA DE PASAR
-Esa computadora vio MILLONES de dibujos hechos por personas de todo el mundo. Vio tantos gatos —chuecos, gordos, con bigotes, sin bigotes— que aprendió cómo se ve un gato cuando alguien lo dibuja rápido.
+Esa computadora vio MILLONES de dibujos de personas de todo el mundo. Vio tantos gatos que aprendió cómo se dibuja un gato.
+Nadie le explicó "un gato tiene bigotes". Lo descubrió sola, VIENDO EJEMPLOS.
 
-Nadie le escribió "un gato tiene orejas puntiagudas y bigotes". Lo descubrió ella sola, VIENDO EJEMPLOS.
+👉 Eso es la inteligencia artificial: un programa que APRENDE DE EJEMPLOS.
 
-Eso es la inteligencia artificial:
-👉 Programas que aprenden de ejemplos para hacer cosas que antes solo podíamos hacer las personas: reconocer, adivinar, recomendar, platicar.
+PASO 3 · ¿PROGRAMA NORMAL O IA?
+📋 Programa normal: hace siempre lo mismo. Una calculadora nunca aprende nada nuevo.
+🧠 Inteligencia artificial: aprende de ejemplos y encuentra el patrón ella sola.
 
-UN PROGRAMA NORMAL vs. UNA IA
-📋 Programa normal: sigue instrucciones. Una calculadora hace exactamente lo que alguien le escribió para cada botón. Siempre hace lo mismo y nunca aprende nada nuevo.
-🧠 Inteligencia artificial: aprende de ejemplos. En vez de darle todas las reglas, le damos muchos ejemplos y ella encuentra el patrón.
-
-LA IA ESTÁ ESCONDIDA EN TU DÍA
+Y la IA está escondida en tu día:
 ▸ YouTube te recomienda videos → aprendió de lo que ya viste.
-▸ Un celular se desbloquea con la cara → aprendió cómo es esa cara.
 ▸ El teclado adivina tu siguiente palabra → aprendió de millones de mensajes.
-▸ Un filtro te pone orejas de perrito → una IA encontró dónde están tus ojos y tu nariz.
-▸ Le hablas a un asistente de voz → una IA convierte tu voz en palabras.
+▸ Un filtro te pone orejas de perrito → encontró dónde están tus ojos y tu nariz.
 
-💬 ByteBot dice: "Yo también soy una IA. Aprendí leyendo muchísimos textos, por eso puedo platicar contigo. Pero aprender de ejemplos no es lo mismo que saberlo todo... eso lo vas a comprobar tú en la siguiente actividad."
-
-PARA CERRAR (no se entrega, es para ti)
-1. ¿Cuál de tus dibujos adivinó más rápido? ¿Cuál le costó más? ¿Por qué crees?
-2. Piensa en una cosa que usas diario y que crees que tiene IA.
+💬 ByteBot dice: "Yo también soy una IA: aprendí leyendo muchísimos textos. Pero aprender de ejemplos no es lo mismo que saberlo todo... eso lo vas a comprobar tú en la siguiente misión."
 
 LO QUE TE LLEVAS HOY
 La IA no es magia: es un programa que aprendió viendo muchos, muchos ejemplos.
+
+⭐ RETO EXTRA (si quieres más)
+▸ Juega otra ronda. ¿Qué dibujo adivinó más rápido? ¿Cuál le costó más? ¿Por qué crees?
+▸ Busca en tu casa una cosa que creas que tiene IA. Más adelante en el curso la vas a necesitar.
+No es obligatorio: es para los que se quedaron con ganas.
 
 ¿QUÉ SIGUE?
 Vas a entrevistar a una inteligencia artificial de verdad. A mí. 😉''',
@@ -125,7 +131,10 @@ Vas a entrevistar a una inteligencia artificial de verdad. A mí. 😉''',
     notas_maestro='''OBJETIVO
 Que el niño distinga "programa que sigue instrucciones" de "programa que aprende de ejemplos". Todo el curso se para sobre esa idea.
 
-TIEMPO: 20 minutos. ES MATERIAL: se consulta, no se califica.
+TIEMPO: 15 a 20 minutos. ES MATERIAL: se consulta, no se califica.
+
+PARA 8 A 12 AÑOS
+El curso se escribió para que un niño de 8 lo termine solo: frases cortas, un paso a la vez y poco que escribir. Los de 10 a 12 encuentran al final un ⭐ Reto extra opcional. El reto nunca suma ni resta calificación.
 
 POR QUÉ QUICK, DRAW!
 Corre en tablet, no pide cuenta y la IA "piensa en voz alta" mientras el niño dibuja: se ve el aprendizaje funcionando en tiempo real. Es el mejor gancho de 5 minutos que existe para este tema.
@@ -141,7 +150,7 @@ Quick, Draw! guarda los dibujos, sin nombre, en una colección pública de Googl
 
 # ── 2 ─────────────────────────────────────────────────────────────────────
 PIEZAS.append(dict(
-    orden=2, tipo='mision', dificultad='facil', minutos=30, xp=75,
+    orden=2, tipo='mision', dificultad='facil', minutos=20, xp=75,
     titulo='Misión 1: Entrevista a una IA',
     descripcion=('Hoy eres periodista y tu entrevistado es una inteligencia artificial: '
                  'ByteBot. Tu misión es descubrir qué sabe, qué no sabe y qué hace cuando '
@@ -149,76 +158,68 @@ PIEZAS.append(dict(
     url='', recurso='',
     instrucciones='''Hoy eres PERIODISTA 🎤 y vas a entrevistar a una inteligencia artificial: a mí, ByteBot.
 
-Los buenos periodistas no se creen todo lo que les dicen: preguntan, comparan y anotan. Esa es tu misión.
+Tu misión: descubrir si ByteBot lo sabe TODO.
 
 HOY VAS A PODER...
-✔ Platicar con una IA y hacerle buenas preguntas.
+✔ Hacerle buenas preguntas a una IA.
 ✔ Descubrir qué hace una IA cuando no sabe algo.
 
-CÓMO ENTRAS A LA ENTREVISTA
-Dale al botón "🤖 Pedir ayuda a ByteBot". Se abre el chat conmigo. Lo que escribes para entregar va aquí, en esta actividad.
-Ten esta pantalla y el chat a la mano: vas a ir y venir.
+PASO 1 · ADIVINA PRIMERO 🤔
+¿Tú crees que ByteBot sabe todo? Piénsalo y escribe SÍ o NO en tu respuesta.
+No hay respuesta mala: los científicos siempre adivinan antes de probar.
 
-ANTES DE EMPEZAR: PREDICE ✍️
-Anota en tu entrega: ¿crees que ByteBot sabe TODO? Sí o no, y por qué.
-No hay respuesta mala: es tu predicción. Los científicos siempre predicen antes de probar.
-
-PARTE 1 · LAS 5 PREGUNTAS DEL PERIODISTA
-Hazme estas preguntas, una por una. Puedes escribirlas igualito o con tus palabras:
-1. ¿Qué eres y cómo aprendiste lo que sabes?
+PASO 2 · ENTREVÍSTAME
+Dale al botón 🤖 de ByteBot: el chat se abre aquí al lado. Pregúntame:
+1. ¿Qué eres y cómo aprendiste?
 2. ¿Qué cosas NO puedes hacer?
-3. ¿Me explicas qué es la inteligencia artificial como si tuviera 8 años?
-4. ¿En qué se parece tu forma de aprender a la de un niño? ¿En qué es diferente?
-5. Una pregunta tuya, de lo que quieras: dinosaurios, el espacio, futbol, animales...
+3. Una pregunta tuya, de lo que quieras: dinosaurios, el espacio, futbol...
 
-PARTE 2 · LA PREGUNTA TRAMPA 🕵️
-Los mejores periodistas ponen a prueba a su entrevistado. Escoge UNA:
-A) Algo que yo no puedo saber: "¿Qué desayuné hoy?" o "¿De qué color es mi cuarto?"
-B) Algo que pasó apenas: "¿Quién ganó el partido de ayer?"
-C) Una cuenta con truco: "¿Cuántas patas hay entre tres gallinas y dos perros?" ... y revisa TÚ si la cuenta está bien. (Pista: hazla tú primero en una hoja.)
+PASO 3 · LA PREGUNTA TRAMPA 🕵️
+Ahora ponme a prueba. Pregúntame algo que YO no puedo saber:
+"¿Qué desayuné hoy?" o "¿De qué color es mi cuarto?"
+Fíjate bien: ¿te dije que no sabía... o inventé algo?
 
-Observa con lupa: ¿dije que no sabía? ¿Inventé algo? ¿Me equivoqué? ¿Sonaba muy seguro?
+PASO 4 · TU REPORTAJE (esto es lo que entregas)
+Cortito y con tus palabras:
+1. Antes de la entrevista, ¿creías que ByteBot sabía todo? Sí o No.
+2. ¿Qué pasó con tu pregunta trampa?
+3. Ahora: ¿ByteBot sabe todo? ¿Qué vas a hacer cuando una IA te diga algo importante?
 
-PARTE 3 · TU REPORTAJE (esto es lo que entregas)
-Escríbelo con tus palabras, no copies mis respuestas completas:
-1. Tu predicción: ¿creías que ByteBot sabía todo?
-2. Las 2 respuestas mías que más te gustaron, y por qué.
-3. Qué pregunta trampa hiciste y qué pasó.
-4. La gran conclusión: después de la entrevista, ¿ByteBot sabe todo? ¿Qué vas a hacer tú cuando una IA te conteste algo importante?
+💬 ByteBot dice: "Te cuento un secreto: yo aprendí de textos. No veo tu casa ni sé qué pasó hoy. Por eso a veces no sé... ¡y a veces invento aunque suene muy seguro! Revisa siempre."
 
-💬 ByteBot dice: "Te cuento un secreto: yo aprendí de textos. No vivo en tu casa, no veo por la ventana y no sé qué pasó hoy. Por eso hay cosas que no sé, y a veces me equivoco aunque suene muy seguro. Un buen usuario de IA siempre revisa."
-
-REGLA DE ORO DE HOY 🔒
-Nunca le des a una IA tu nombre completo, tu dirección, tu escuela, tu teléfono ni fotos tuyas. Para esta entrevista no necesitas ninguno.
+REGLA DE ORO 🔒
+No le digas a una IA tu nombre completo, dónde vives, tu escuela ni tu teléfono. Para esta entrevista no necesitas ninguno.
 
 LO QUE TE LLEVAS HOY
-Una IA puede ser muy útil y muy simpática, y aun así equivocarse. Sonar seguro no es lo mismo que tener razón.
+Una IA puede sonar muy segura y aun así equivocarse. Por eso siempre revisas.
+
+⭐ RETO EXTRA (para detectives avanzados)
+▸ Pregúntame: "¿Cuántas patas hay entre tres gallinas y dos perros?" Haz tú la cuenta en una hoja. ¿Le atiné?
+▸ Pregúntame quién ganó un partido de ayer. ¿Qué te contesté?
+▸ Agrega a tu reportaje cuál fue mi mejor respuesta y por qué.
+No es obligatorio y no cambia tu calificación.
 
 ¿QUÉ SIGUE?
 Un quiz rápido para ver si ya tienes ojo de detective de IA.''',
-    checklist=[
-        'Escribí mi predicción antes de empezar',
-        'Le hice a ByteBot las 5 preguntas del periodista',
-        'Hice una pregunta trampa y observé qué pasó',
-        'Escogí las 2 respuestas que más me gustaron y dije por qué',
-        'Escribí mi conclusión con mis palabras',
-        'No compartí ningún dato personal en el chat',
-    ],
+    checklist=[],
     notas_maestro='''OBJETIVO
 Que el niño compruebe por sí mismo que una IA puede no saber, inventar o equivocarse, y que saque la conclusión de que hay que revisar. No se la decimos: la descubre.
 
-TIEMPO: 30 minutos.
+TIEMPO: 15 a 20 minutos.
 
 CÓMO CALIFICAR (sobre 10, se aprueba con 7)
-- Predicción escrita: 1
-- Dos respuestas favoritas con un "por qué" propio: 2
-- Pregunta trampa descrita + qué observó: 3
-- Conclusión: menciona revisar, comprobar o preguntar a un adulto: 4
+- Respondió su predicción (Sí o No): 1
+- Contó qué pasó con su pregunta trampa: 4
+- Su conclusión menciona revisar, comprobar o preguntarle a un adulto: 5
+El ⭐ Reto extra NO suma puntos. Si lo hizo, felicítalo en el comentario.
+
+QUÉ ESPERAR SEGÚN LA EDAD
+Un niño de 8 puede contestar con una oración por pregunta, y está perfecto. No le pidas más de lo que pide la actividad. Un niño de 12 probablemente escriba más y haga el reto: no lo compares con el de 8.
 
 QUÉ HACER SI...
 - Copió respuestas enteras de ByteBot: "Pedir correcciones" con: "¡Qué buena entrevista! Ahora cuéntamelo con TUS palabras, como se lo contarías a un amigo."
 - Su conclusión es "ByteBot sabe todo": no lo repruebes. "Pedir correcciones" con: "¿Y qué pasó con tu pregunta trampa? Vuelve a leer lo que te contestó y cuéntame si cambias de opinión."
-- ByteBot contestó bien la pregunta trampa (por ejemplo, dijo "no puedo saberlo"): ¡también vale! La conclusión correcta es "una buena IA reconoce lo que no sabe, pero no todas lo hacen".
+- ByteBot contestó bien la pregunta trampa (dijo "no puedo saberlo"): ¡también vale! La conclusión correcta es "una buena IA reconoce lo que no sabe, pero no todas lo hacen".
 
 CUIDADO
 Si en la entrega aparece un dato personal (dirección, escuela, nombre completo), recuérdaselo con cariño en el comentario. No es para regañar: es la regla de oro del curso.
@@ -236,13 +237,12 @@ PIEZAS.append(dict(
     descripcion=('8 preguntas rápidas para ver si ya tienes ojo de detective: ¿esto usa '
                  'inteligencia artificial, o solo sigue instrucciones?'),
     url='', recurso='',
-    instrucciones='''¡Hora de poner a prueba tu ojo de detective! 🔍
+    instrucciones='''¡Hora de probar tu ojo de detective! 🔍
 
-La pista para todas las preguntas es la misma:
+La pista para todas las preguntas:
 👉 ¿Aprende de ejemplos, o solo sigue instrucciones?
 
-Son 8 preguntas. Lee con calma: algunas tienen trampa.
-Se aprueba con 6 de 8, y si no te sale a la primera puedes volver a intentarlo. Equivocarse también es aprender.''',
+Son 8 preguntas. Pasas con 6. Y si no sale a la primera, ¡lo intentas otra vez! Equivocarse también es aprender.''',
     checklist=[],
     notas_maestro='''OBJETIVO
 Comprobar las dos ideas de las piezas 1 y 2: la IA aprende de ejemplos, y puede equivocarse.
@@ -255,7 +255,7 @@ QUÉ IDEA EQUIVOCADA ATACA CADA DISTRACTOR
 - P7, "el semáforo que cambia cada 60 segundos": es un temporizador, sigue una instrucción fija.
 
 SI UN NIÑO REPRUEBA DOS VECES
-Escríbele antes del tercer intento: "Vuelve a leer la parte UN PROGRAMA NORMAL vs. UNA IA de la actividad 1. Ahí está la llave de casi todas."''',
+Escríbele antes del tercer intento: "Vuelve a leer el PASO 3 de la actividad 1, ¿programa normal o IA? Ahí está la llave de casi todas."''',
     quiz=[
         dict(tipo='opcion_multiple', texto='¿Cuál de estos USA inteligencia artificial?', opciones=[
             ('Una calculadora', False),
@@ -302,60 +302,50 @@ PIEZAS.append(dict(
                  'de un gato: viendo muchos ejemplos. Hoy lo pruebas con tarjetas y luego '
                  'entrenas a una IA para limpiar el océano.'),
     url='https://studio.code.org/s/oceans', recurso='enlace',
-    instrucciones='''Hoy descubres el secreto de cómo aprende una IA. Y además... ¡entrenas una por primera vez! 🐟
+    instrucciones='''Hoy descubres el secreto de cómo aprende una IA. Y además... ¡entrenas una! 🐟
 
 HOY VAS A PODER...
 ✔ Explicar qué son los DATOS, las ETIQUETAS y el ENTRENAMIENTO.
 ✔ Entrenar una IA con tus propias manos.
 
-PRIMERO, SIN COMPUTADORA: EL JUEGO DE LAS TARJETAS (10 min)
-Necesitas una hoja, tijeras (o solo dobleces) y un lápiz.
-1. Haz 8 tarjetitas y dibuja una cosa en cada una: 4 que se comen (manzana, pan, pizza, plátano) y 4 que no (zapato, lápiz, pelota, llave).
-2. En otra hoja escribe dos títulos: SE COME y NO SE COME.
-3. Acomoda cada tarjeta debajo de su título.
+PASO 1 · EL JUEGO DE LAS TARJETAS (sin computadora, 5 min)
+1. Haz 6 tarjetitas y dibuja una cosa en cada una: 3 que se comen (manzana, pan, pizza) y 3 que no (zapato, lápiz, pelota).
+2. Sepáralas en dos montones: "se come" y "no se come".
 
-¡Listo! Acabas de hacer exactamente lo que hace una persona cuando le enseña a una IA.
+¡Listo! Acabas de hacer lo mismo que hace una persona cuando le enseña a una IA.
 
-LAS 3 PALABRAS MÁGICAS DE LA IA
-📦 DATOS: los ejemplos que le enseñas. Tus 8 tarjetas son tus datos.
-🏷️ ETIQUETAS: el nombre del grupo de cada ejemplo. "Se come" y "No se come" son tus etiquetas.
-🏋️ ENTRENAR: cuando la máquina mira todos los ejemplos con su etiqueta y busca el patrón. Es como estudiar para un examen.
+PASO 2 · LAS PALABRAS MÁGICAS
+📦 DATOS: los ejemplos que le enseñas. Tus tarjetas son tus datos.
+🏷️ ETIQUETAS: el nombre de cada grupo. "Se come" y "no se come" son tus etiquetas.
+🏋️ ENTRENAR: la máquina mira los ejemplos y busca el patrón. Como estudiar para un examen.
+🔮 PREDECIR: le enseñas algo NUEVO y ella adivina en qué grupo va.
 
-Y hay una cuarta palabra:
-🔮 PREDECIR: cuando la IA ya aprendió, le enseñas algo NUEVO que nunca vio y ella dice a qué grupo cree que pertenece.
-
-PAUSA PARA PENSAR 🤔
-Si le enseñaras una tarjeta nueva con una galleta, ¿en qué columna la pondría una IA que aprendió de tus tarjetas? ¿Y si le enseñas una piedra que parece pan? 😏
-
-AHORA, CON COMPUTADORA: IA PARA LOS OCÉANOS (15 min)
-Antes de abrir el enlace, lee hasta el final de esta parte. El juego se abre en otra pestaña, y esta de ByteKids se queda abierta esperándote.
-1. Abre el enlace con el botón 🚀 que está al final de esta parte. Si sale en inglés, busca el selector de idioma (casi siempre hasta abajo de la página) y escoge "Español".
-2. Mira el video corto del principio.
-3. Van a pasar peces y basura. Tu trabajo es decirle a la IA cuál es "pez" y cuál "no es pez". ¡Estás ETIQUETANDO DATOS!
-4. Cuando hayas etiquetado bastantes, dale a continuar y mira cómo TU IA limpia el océano sola.
-5. 🏁 TU META: cuando veas a TU IA limpiar el océano por primera vez, ¡lo lograste! Ahí termina tu misión en el océano.
+PASO 3 · ENTRENA UNA IA DE VERDAD (15 min)
+1. Abre el enlace con el botón 🚀 que está al final de este paso. Si sale en inglés, busca el idioma hasta abajo de la página y escoge "Español".
+2. Van a pasar peces y basura. Tú le dices a la IA cuál es "pez" y cuál "no es pez". ¡Estás ETIQUETANDO DATOS!
+3. Dale a continuar y mira cómo TU IA limpia el océano sola.
+4. 🏁 TU META: cuando tu IA limpie el océano por primera vez, ¡lo lograste!
 
 ⏰ Son 15 minutos. Pon una alarma o pídele a alguien de tu casa que te avise.
+Se abre en otra pestaña. Esta de ByteKids se queda aquí esperándote.
 
 🔙 REGRESA A BYTEKIDS
-Cuando tu IA limpie el océano, cierra esa pestaña y vuelve aquí. Te esperan tres cosas:
-▸ Dos preguntas de detective sobre lo que hizo tu IA.
-▸ ByteBot, que quiere saber cómo te fue.
-▸ Tus 25 XP: se ganan aquí, con el botón "Ya lo vi". En el océano no cuentan.
+Cuando tu IA limpie el océano, vuelve aquí. Te esperan una pregunta de detective, ByteBot y tus 25 XP: se ganan aquí, con el botón "Ya lo vi". En el océano no cuentan.
 
 PAUSA PARA PENSAR 🤔 (ya de regreso)
-▸ Cuando le diste pocos ejemplos, ¿se equivocaba más o menos?
-▸ ¿Tu IA sacó del agua algún pez por error? ¿Por qué crees que pasó?
+¿Tu IA sacó algún pez del agua por error? ¿Por qué crees que pasó?
 
-💬 ByteBot dice: "¡Ya volviste! Dale al botón de ByteBot y cuéntame: ¿tu IA sacó algún pez del agua por error? Escríbeme qué pasó y lo investigamos juntos. Y si quieres otra explicación, pregúntame: ¿qué son los datos de entrenamiento? Explícamelo como si tuviera 7 años."
+💬 ByteBot dice: "¡Ya volviste! Dale al botón de ByteBot y cuéntame qué hizo tu IA. Lo investigamos juntos."
 
 LO QUE TE LLEVAS HOY
 Una IA es tan buena como sus ejemplos.
 Pocos ejemplos → aprende poco.
 Ejemplos variados → aprende mejor.
 
-¿QUIERES SEGUIR JUGANDO?
-¡Claro que sí! Ya que le diste "Ya lo vi", puedes regresar a IA para los Océanos y seguir con las siguientes partes. Más adelante se pone muy interesante: la IA tiene que aprender cosas que no son tan fáciles de decidir. 😏
+⭐ RETO EXTRA (si quieres más)
+▸ Ya que le diste "Ya lo vi", regresa a IA para los Océanos y sigue con las siguientes partes. Más adelante la IA tiene que aprender cosas que no son tan fáciles de decidir. 😏
+▸ Si a la IA de tus tarjetas le enseñas una galleta, ¿en qué montón la pondría? ¿Y una piedra que parece pan?
+No es obligatorio: es para los que se quedaron con ganas.
 
 ¿QUÉ SIGUE?
 Vas a entrenar TU PROPIA IA desde cero, con dibujos tuyos. Ve preparando tus colores. 🖍️''',
@@ -363,13 +353,16 @@ Vas a entrenar TU PROPIA IA desde cero, con dibujos tuyos. Ve preparando tus col
     notas_maestro='''OBJETIVO
 Vocabulario base del curso: datos, etiquetas, entrenar, predecir. La misión 2 y el quiz 2 lo dan por sabido.
 
-TIEMPO: 25 minutos. ES MATERIAL: no se califica.
+TIEMPO: 20 a 25 minutos. ES MATERIAL: no se califica.
 
 POR QUÉ EMPEZAR SIN COMPUTADORA
 La actividad de tarjetas hace que el niño SEA la máquina antes de usarla. Cuando después etiqueta peces, ya sabe qué está haciendo y por qué. Es la diferencia entre seguir pasos y entender.
 
 IA PARA LOS OCÉANOS (Code.org)
-Es gratis, no pide cuenta y tiene videos en español. Es el mismo recurso que citamos en la guía del Principiante. Si una familia pregunta: más adelante el juego pide clasificar peces por cosas de opinión, y ahí asoma el sesgo que vemos en la pieza 8. Es un buen puente.
+Es gratis, no pide cuenta y tiene videos en español. Más adelante el juego pide clasificar peces por cosas de opinión, y ahí asoma el sesgo que vemos en la pieza 8. Por eso seguir jugando está en el ⭐ Reto extra.
+
+LA META DE REGRESO
+Un alumno se quedó jugando el océano una y otra vez sin volver. Por eso la actividad le da una meta clara ("cuando tu IA limpie el océano por primera vez") y una razón para regresar. Si en clase ves a alguien que no vuelve, recuérdale que su XP se gana en ByteKids.
 
 PREGUNTAS QUE VAN A LLEGAR
 - "¿La galleta sí se come?" → justo: depende de los ejemplos que le diste. Si nunca vio una galleta, adivina por lo que se le parece.
@@ -379,119 +372,102 @@ PREGUNTAS QUE VAN A LLEGAR
 
 # ── 5 ─────────────────────────────────────────────────────────────────────
 PIEZAS.append(dict(
-    orden=5, tipo='mision', dificultad='medio', minutos=45, xp=75,
+    orden=5, tipo='mision', dificultad='medio', minutos=35, xp=75,
     titulo='Misión 2: Entrena tu Detector de Caritas',
     descripcion=('Hoy creas tu primera inteligencia artificial desde cero: una IA que '
                  'reconoce si una carita dibujada está feliz o triste. Tú la entrenas, tú la '
                  'pones a prueba y tú descubres su secreto.'),
     url=ML4KIDS, recurso='enlace',
-    instrucciones='''Esta es LA misión del curso. Hoy creas una inteligencia artificial de verdad, desde cero, con tus propias manos. 🧠✨
+    instrucciones='''Esta es LA misión del curso. Hoy creas una inteligencia artificial de verdad, con tus propias manos. 🧠✨
 
 Tu IA va a mirar una carita dibujada y va a decir si está FELIZ 😊 o TRISTE 😢.
 
 HOY VAS A PODER...
-✔ Entrenar una IA con tus propios datos.
-✔ Ponerla a prueba como un científico.
+✔ Entrenar una IA con tus propios dibujos.
 ✔ Descubrir un secreto que tienen TODAS las IAs.
 
-PARTE 1 · PREPARA TUS DATOS (15 min)
-Necesitas: hojas blancas, un plumón o crayola AZUL y uno ROJO.
-1. Corta o dobla hojas para hacer 20 tarjetas del tamaño de tu mano.
-2. En 10 tarjetas dibuja caritas FELICES 😊, todas con el color AZUL.
-3. En otras 10 dibuja caritas TRISTES 😢, todas con el color ROJO.
-4. Dibújalas grandes, que llenen la tarjeta. Pueden ser distintas: redondas, cuadradas, con pelo, sin pelo...
+PASO 1 · DIBUJA TUS DATOS (10 min)
+Necesitas: hojas, un color AZUL y uno ROJO.
+1. Haz 12 tarjetas del tamaño de tu mano.
+2. En 6 tarjetas dibuja caritas FELICES 😊, todas en AZUL.
+3. En las otras 6 dibuja caritas TRISTES 😢, todas en ROJO.
 
 ¿Por qué azul y rojo? Es parte del experimento. Confía en mí. 😉
-Y guarda más hojas y tus colores: los vas a necesitar al final.
 
-⚠️ IMPORTANTE: tu IA solo va a ver DIBUJOS. Nunca le enseñes tu cara ni la de otra persona.
+⚠️ Tu IA solo va a ver DIBUJOS. Nunca le enseñes tu cara ni la de otra persona.
 
-PARTE 2 · ARMA TU PROYECTO (5 min)
-Machine Learning for Kids se abre en otra pestaña. Vas a ir y venir: aquí lees el paso, allá lo haces. Esta pestaña de ByteKids no la cierres.
-1. Abre el enlace con el botón 🚀 que está al final de esta parte (Machine Learning for Kids).
-2. Escoge "Pruébalo ahora" para entrar sin registrarte. Si te pide usuario, pídeselo a tu maestra en Mensajes.
-3. Dale a "Añadir un nuevo proyecto". Nombre: Detector de caritas. Tipo: reconocer IMÁGENES. Créalo y ábrelo.
-4. Entra a "Entrenar".
-5. Agrega dos etiquetas: feliz y triste.
+PASO 2 · ARMA TU PROYECTO (5 min)
+Vas a ir y venir: aquí lees el paso, allá lo haces. Esta pestaña de ByteKids no la cierres.
+1. Abre el enlace con el botón 🚀 que está al final de este paso.
+2. Escoge "Pruébalo ahora". Si te pide usuario, pídeselo a tu maestra en Mensajes.
+3. Dale a "Añadir un nuevo proyecto". Nombre: Detector de caritas. Tipo: IMÁGENES. Ábrelo.
+4. Entra a "Entrenar" y agrega dos etiquetas: feliz y triste.
 
-PARTE 3 · ENSÉÑALE (10 min)
-1. En la etiqueta "feliz", usa el botón de la cámara y enséñale tus 10 caritas AZULES, una por una. Una foto por tarjeta.
-2. En "triste", enséñale tus 10 caritas ROJAS.
-3. Ve a "Aprender & Probar" y dale a "Entrenar nuevo modelo". Espera a que termine: eso es ENTRENAR.
+PASO 3 · ENSÉÑALE (5 min)
+1. En "feliz", usa el botón de la cámara y enséñale tus 6 caritas AZULES, una por una.
+2. En "triste", enséñale tus 6 caritas ROJAS.
+3. Ve a "Aprender & Probar" y dale a "Entrenar nuevo modelo". Espera: ¡eso es ENTRENAR!
 
-⚠️ Esta forma de entrar no guarda tu proyecto para siempre. Anota tus resultados mientras avanzas.
+PASO 4 · LA PRUEBA SECRETA 🕵️ (5 min)
+Dibuja 2 caritas NUEVAS, con los colores al revés:
+🔴 Una carita FELIZ en ROJO.
+🔵 Una carita TRISTE en AZUL.
+Antes de enseñárselas, adivina: ¿qué va a contestar tu IA? Luego pruébalas y anota qué dijo.
 
-PARTE 4 · PREDICE Y PRUEBA, COMO CIENTÍFICO (10 min)
-Dibuja 4 caritas NUEVAS. Antes de enseñarle cada una, escribe qué crees que va a contestar. Luego pruébala y anota qué contestó.
-
-   Prueba                        | Yo predigo | La IA dijo
-   A) Carita feliz en AZUL       |            |
-   B) Carita triste en ROJO      |            |
-   C) Carita FELIZ en ROJO   🤔  |            |
-   D) Carita TRISTE en AZUL  🤔  |            |
-
-PAUSA PARA PENSAR 🤔
-Mira las pruebas C y D. ¿Qué pasó?
-Si tu IA se equivocó, pregúntate: ¿de verdad aprendió a ver SONRISAS... o aprendió otra cosa más fácil?
-
-EL SECRETO QUE DESCUBRISTE
-Todas tus caritas felices eran azules y todas las tristes rojas. Para la IA, fijarse en el COLOR era mucho más fácil que fijarse en la boca. Y como nunca vio una carita feliz roja, aprendió una trampa: "rojo = triste".
-
-¡Eso tiene nombre! Se llama SESGO: cuando una IA aprende algo equivocado porque sus ejemplos no eran variados. Le pasa a las IAs de verdad, y ahora ya sabes por qué.
-
-(¿Tu IA le atinó a todo? ¡Qué bien! Entonces tu IA sí se fijó en la boca. Pero quédate con la pregunta: ¿qué pudo haber salido mal?)
-
-PARTE 5 · ARRÉGLALA (5 min)
-1. Dibuja 5 caritas felices en ROJO y 5 tristes en AZUL.
-2. Agrégalas a sus etiquetas y vuelve a darle a "Entrenar nuevo modelo".
-3. Repite las pruebas C y D. ¿Mejoró?
+⚠️ Esta forma de entrar no guarda tu proyecto para siempre. Anota lo que contesta tu IA.
 
 🔙 REGRESA A BYTEKIDS
-Tu IA ya está entrenada, probada y arreglada. Ahora vuelve a esta pestaña: aquí escribes tu entrega y ganas tus 75 XP.
+Ya hiciste tu prueba secreta. Vuelve a esta pestaña: aquí escribes tu entrega y ganas tus 75 XP.
 
-TU ENTREGA
-Escribe aquí:
-1. Tu tabla de 4 pruebas, con lo que predijiste y lo que contestó la IA.
-2. ¿Qué pasó con las pruebas C y D?
-3. ¿Qué crees que aprendió tu IA en realidad?
-4. ¿Qué hiciste para arreglarla, y funcionó?
-5. En una frase: ¿qué es el SESGO?
+PASO 5 · TU ENTREGA
+Cortito y con tus palabras:
+1. ¿Qué contestó tu IA con la carita FELIZ ROJA? ¿Y con la TRISTE AZUL?
+2. ¿Por qué crees que pasó eso? ¿Se fijó en la boca... o en otra cosa?
 
-💬 ByteBot dice: "Si te atoras en cualquier paso, dale al botón de ByteBot y cuéntame en qué parte vas. Y si tu IA hizo algo rarísimo... ¡cuéntamelo también!"
+EL SECRETO QUE DESCUBRISTE
+Léelo cuando ya hayas escrito tu entrega. 🤫
+Tus caritas felices eran todas azules y las tristes, rojas. Para la IA era más fácil fijarse en el COLOR que en la boca. Por eso pensó: "rojo = triste".
+
+¡Eso tiene nombre! Se llama SESGO: cuando una IA aprende algo chueco porque sus ejemplos no eran variados. Le pasa a las IAs de verdad, y ahora ya sabes por qué.
+
+(¿Tu IA le atinó a todo? ¡Qué bien! Entonces sí se fijó en la boca. Pero ya sabes qué pudo haber salido mal.)
+
+💬 ByteBot dice: "Si te atoras en algún paso, dale al botón de ByteBot y cuéntame en qué parte vas. Y si tu IA hizo algo rarísimo... ¡cuéntamelo también!"
 
 LO QUE TE LLEVAS HOY
-Tú entrenaste una IA. Y descubriste lo más importante: una IA aprende EXACTAMENTE lo que le enseñas, hasta lo que no querías enseñarle.''',
-    checklist=[
-        'Dibujé 10 caritas felices en azul y 10 tristes en rojo',
-        'Creé mi proyecto de imágenes con las etiquetas feliz y triste',
-        'Le enseñé mis 20 tarjetas con la cámara',
-        'Le di a "Entrenar nuevo modelo" y esperé',
-        'Hice las 4 pruebas escribiendo primero mi predicción',
-        'Expliqué qué pasó con las caritas de color cambiado',
-        'Agregué caritas de colores mezclados y volví a entrenar',
-        'Escribí qué es el sesgo con mis palabras',
-    ],
+Una IA aprende EXACTAMENTE lo que le enseñas... hasta lo que no querías enseñarle.
+
+⭐ RETO EXTRA (para científicos valientes)
+▸ ARRÉGLALA: dibuja 3 caritas felices en ROJO y 3 tristes en AZUL, agrégalas a sus etiquetas y vuelve a darle a "Entrenar nuevo modelo". Repite tu prueba secreta. ¿Mejoró?
+▸ Agrega a tu entrega qué hiciste para arreglarla y si funcionó.
+▸ Explica en una frase qué es el SESGO.
+No es obligatorio y no cambia tu calificación.
+
+¿QUÉ SIGUE?
+Te conviertes en detective de IA... ¡en tu propia casa! 🔍''',
+    checklist=[],
     notas_maestro='''OBJETIVO
 Que el niño entrene un modelo real y DESCUBRA el sesgo por sí mismo. Es la pieza más importante del curso: si la vive bien, lo demás se entiende solo.
 
-TIEMPO: 45 minutos. Es la más larga; que no se haga en 10.
+TIEMPO: 30 a 35 minutos. Dibujar las 12 tarjetas es lo que más tarda.
 
 EL DISEÑO: UN ERROR PROVOCADO A PROPÓSITO
-Felices en azul y tristes en rojo es una trampa: con 10 ejemplos por lado, el color es el patrón más fácil de aprender, y la IA casi siempre se agarra de él. Las pruebas C y D lo destapan. Es aprendizaje por error productivo: el niño se equivoca en su predicción, busca la causa y la arregla. Eso se queda mucho más que una explicación.
+Felices en azul y tristes en rojo es una trampa: con pocos ejemplos por lado, el color es el patrón más fácil de aprender, y la IA casi siempre se agarra de él. La prueba secreta (feliz roja, triste azul) lo destapa. El niño se equivoca en su predicción, busca la causa, y eso se queda mucho más que una explicación.
 
-Si la IA de un niño le atinó a todo (puede pasar si dibujó bocas muy grandes y marcadas), NO es un fracaso: la entrega pide explicar "qué pudo haber salido mal". Evalúa el razonamiento, no el resultado.
+Son 6 tarjetas por etiqueta y no 10: para un niño de 8, dibujar 20 caritas antes de empezar se come la misión. Con 6 el sesgo de color aparece igual o más.
+
+Si la IA de un niño le atinó a todo (puede pasar si dibujó bocas muy grandes y marcadas), NO es un fracaso: evalúa el razonamiento, no el resultado.
 
 CÓMO CALIFICAR (sobre 10, se aprueba con 7)
-- Tabla con las 4 pruebas, con predicción Y resultado: 3
-- Explica qué pasó en C y D, o qué pudo pasar: 2
-- Dice qué aprendió "en realidad" la IA (color vs. boca): 2
-- Describe cómo la arregló y si funcionó: 2
-- Define sesgo con sus palabras: 1
+- Dice qué contestó la IA con las dos caritas de la prueba secreta: 4
+- Explica por qué cree que pasó (el color contra la boca), o qué pudo pasar: 6
+El ⭐ Reto extra (arreglarla y definir sesgo) NO suma puntos. Si lo hizo, felicítalo: es justo lo que hacen los científicos de IA.
 
 PROBLEMAS TÉCNICOS PROBABLES
 - "No me deja entrar": si "Pruébalo ahora" no aparece, créale cuenta de ML4Kids (como en el Principiante) y mándale usuario y contraseña por Mensajes.
 - "La cámara no prende": la tablet debe dar permiso de cámara al navegador. En iPad: Ajustes → Safari → Cámara → Permitir.
 - "Se borró mi proyecto": esa forma de entrar no guarda para siempre. Lo que se califica es la entrega escrita; no hace falta repetir el entrenamiento.
+- "No me deja entrenar": ML4Kids pide un mínimo de ejemplos por etiqueta. Si marca que faltan, que agregue una o dos caritas más del mismo color.
 
 CUIDADO CON LA PRIVACIDAD
 Si en una entrega se ve que el niño usó su cara en vez de dibujos, coméntaselo con cariño: la instrucción lo prohíbe a propósito.
@@ -504,7 +480,7 @@ PARA COMENTAR (ideas)
 
 # ── 6 ─────────────────────────────────────────────────────────────────────
 PIEZAS.append(dict(
-    orden=6, tipo='tarea', dificultad='facil', minutos=40, xp=60,
+    orden=6, tipo='tarea', dificultad='facil', minutos=25, xp=60,
     titulo='Investigación: La IA en mi casa',
     descripcion=('Conviértete en detective: encuentra la inteligencia artificial escondida '
                  'en tu casa, entrevista a un adulto de tu familia y descubre con ByteBot '
@@ -514,79 +490,63 @@ PIEZAS.append(dict(
 
 HOY VAS A PODER...
 ✔ Reconocer la IA en aparatos y apps de verdad.
-✔ Investigar como detective: buscar, preguntar y comprobar.
+✔ Investigar como detective: buscar y preguntar.
 
-PARTE 1 · LA BÚSQUEDA (15 min)
-Recorre tu casa con un adulto y encuentra 3 aparatos o apps que usen IA.
+PASO 1 · LA BÚSQUEDA (10 min)
+Recorre tu casa con un adulto y encuentra 2 cosas que usen IA.
 
 Pistas de detective. Tiene IA si...
-▸ Aprende de ti o de lo que te gusta.
-▸ Reconoce tu voz, tu cara o tu huella.
 ▸ Te recomienda cosas.
-▸ Adivina lo que vas a hacer o escribir.
+▸ Reconoce tu voz o tu cara.
+▸ Adivina lo que vas a escribir.
 
-Lugares donde casi siempre hay:
-📺 La tele o la app de videos (lo que te recomienda)
-📱 El celular (desbloqueo con cara, fotos que se agrupan solas por persona, el teclado)
+Busca aquí:
+📺 La tele o la app de videos
+📱 El celular
 🗣️ Un asistente de voz
 🗺️ El mapa que avisa del tráfico
-🌐 El traductor
-📧 El correo que separa el spam solito
 
-Para cada una anota:
-   Qué es  |  Qué hace con IA  |  ¿De qué ejemplos crees que aprendió?
-
-PARTE 2 · LA ENTREVISTA (10 min)
-Entrevista a un adulto de tu familia. Pregúntale:
+PASO 2 · LA ENTREVISTA (10 min)
+Pregúntale a un adulto de tu familia:
 1. ¿Qué inteligencia artificial usas en tu trabajo o en tu día?
-2. ¿En qué te ayuda?
-3. ¿Alguna vez se equivocó o hizo algo raro?
-⭐ Pregunta bonus: ¿Cómo crees que va a ser la IA cuando yo sea grande?
-Anota sus respuestas.
+2. ¿Alguna vez se equivocó o hizo algo raro?
+Anota lo que te diga.
 
-PARTE 3 · PREGÚNTALE A BYTEBOT (10 min)
-Escoge UNA de las 3 cosas que encontraste y pregúntame, con el botón de ByteBot:
-"¿Cómo aprendió [lo que encontraste] a [lo que hace]?"
-Ejemplo: "¿Cómo aprendió el mapa a saber dónde hay tráfico?"
-
-Luego escríbelo con TUS palabras, en 3 renglones máximo. Y contesta: ¿lo que te dije se parece a lo que tú habías pensado?
-
-TU ENTREGA
-1. Tu tabla con las 3 cosas que encontraste.
-2. Las respuestas de tu entrevista.
-3. Lo que aprendiste de ByteBot, con tus palabras, y si coincide con lo que pensabas.
+PASO 3 · TU ENTREGA
+Cortito y con tus palabras:
+1. Las 2 cosas con IA que encontraste, y qué hace cada una.
+2. Lo que te contestó el adulto.
 
 🔒 REGLA DE ORO: no mandes fotos de tu casa ni escribas tu dirección. No se necesitan.
 
 LO QUE TE LLEVAS HOY
 La IA no es cosa del futuro: ya vive en tu casa. Y ahora sabes reconocerla.
 
+⭐ RETO EXTRA (para detectives avanzados)
+▸ Encuentra una tercera cosa con IA. ¿De qué ejemplos crees que aprendió?
+▸ Pregúntame con el botón de ByteBot: "¿Cómo aprendió [lo que encontraste] a [lo que hace]?" Escríbelo con tus palabras.
+▸ Pregunta bonus para el adulto: "¿Cómo crees que va a ser la IA cuando yo sea grande?"
+No es obligatorio y no cambia tu calificación.
+
 ¿QUÉ SIGUE?
 Un quiz para comprobar que ya sabes cómo aprende una máquina.''',
-    checklist=[
-        'Encontré 3 cosas de mi casa que usan IA',
-        'Para cada una escribí qué hace y de qué ejemplos creo que aprendió',
-        'Entrevisté a un adulto de mi familia y anoté sus respuestas',
-        'Le pregunté a ByteBot cómo aprendió una de mis 3 cosas',
-        'Escribí la respuesta con mis palabras, sin copiar',
-        'No compartí fotos de mi casa ni mi dirección',
-    ],
+    checklist=[],
     notas_maestro='''OBJETIVO
 Llevar la IA del curso a la vida real del niño, y meter a la familia en el curso.
 
 ESTO ES MARKETING TAMBIÉN
 La entrevista hace que un papá o una mamá vea el curso funcionando y platique de IA con su hijo. Es el momento en que la familia decide si ByteKids vale la pena. Comenta estas entregas con especial cariño.
 
-TIEMPO: 40 minutos, que pueden repartirse en dos días.
+TIEMPO: 20 a 25 minutos, que pueden repartirse en dos días.
 
 CÓMO CALIFICAR (sobre 10, se aprueba con 7)
-- Tres hallazgos válidos, cada uno con "de qué ejemplos aprendió": 4
-- Entrevista con las 3 respuestas: 3
-- ByteBot explicado con sus palabras, más la comparación: 3
+- Dos hallazgos válidos, cada uno con lo que hace: 5
+- La entrevista, con lo que contestó el adulto: 5
+El ⭐ Reto extra NO suma puntos. Si lo hizo, felicítalo.
 
 QUÉ HACER SI...
-- Pone algo que no es IA (el microondas, el foco): no lo cuentes, pero explícale por qué con la pista "¿aprende o sigue instrucciones?". Si le quedan 2 válidos, pide correcciones para que busque el tercero.
-- Copió a ByteBot tal cual: pide correcciones: "Cuéntamelo como se lo explicarías a tu abuelita."
+- Pone algo que no es IA (el microondas, el foco): no lo cuentes, pero explícale por qué con la pista "¿aprende o sigue instrucciones?". Si le queda 1 válido, pide correcciones para que busque otro.
+- Copió a ByteBot tal cual en el reto: no pasa nada, no se califica. Puedes comentarle: "Cuéntamelo como se lo explicarías a tu abuelita."
 - No tuvo con quién hacer la entrevista: acepta a un maestro, un vecino o un familiar por videollamada.''',
     quiz=[],
 ))
@@ -598,11 +558,11 @@ PIEZAS.append(dict(
     descripcion=('8 preguntas sobre datos, etiquetas, entrenamiento y lo que descubriste '
                  'con tu Detector de Caritas.'),
     url='', recurso='',
-    instrucciones='''Ya entrenaste tu propia IA. Veamos cuánto aprendiste TÚ. 🧠
+    instrucciones='''Ya entrenaste tu propia IA. ¡Ahora veamos cuánto aprendiste TÚ! 🧠
 
 Acuérdate de las palabras mágicas: DATOS, ETIQUETAS, ENTRENAR y PREDECIR. Y de lo que pasó con tus caritas de colores...
 
-Son 8 preguntas. Se aprueba con 6 de 8 y puedes volver a intentarlo.''',
+Son 8 preguntas. Pasas con 6, y puedes volver a intentarlo.''',
     checklist=[],
     notas_maestro='''OBJETIVO
 Comprobar el vocabulario de la pieza 4 y la lección de sesgo de la misión 2.
@@ -610,7 +570,7 @@ Comprobar el vocabulario de la pieza 4 y la lección de sesgo de la misión 2.
 SE CALIFICA SOLO. Aprueba con 70 (6 de 8). Se puede reintentar.
 
 LAS QUE MÁS DICEN
-- P5 (la carita feliz roja): si un niño la falla, probablemente no llegó a las pruebas C y D de la misión 2. Revisa su entrega.
+- P5 (la carita feliz roja): si un niño la falla, probablemente no llegó a la prueba secreta de la misión 2. Revisa su entrega.
 - P6 (ejemplos variados): es la idea que necesita para el proyecto final. Si la falla, recuérdasela cuando comentes el proyecto.''',
     quiz=[
         dict(tipo='opcion_multiple', texto='Los ejemplos que le das a una IA para que aprenda se llaman...', opciones=[
@@ -643,53 +603,50 @@ LAS QUE MÁS DICEN
 
 # ── 8 ─────────────────────────────────────────────────────────────────────
 PIEZAS.append(dict(
-    orden=8, tipo='material', dificultad='facil', minutos=20, xp=25,
+    orden=8, tipo='material', dificultad='facil', minutos=15, xp=25,
     titulo='Cuando la IA se equivoca',
     descripcion=('Tu Detector de Caritas se equivocó por algo que tiene nombre: sesgo. Hoy '
                  'descubres por qué importa en el mundo real y armas tus reglas de oro para '
                  'usar la IA con cuidado.'),
     url='', recurso='',
     instrucciones='''¿Te acuerdas de tu carita feliz ROJA? 😊🔴
-Tu IA pensó que estaba triste. No fue por mala: fue porque solo había visto caritas felices azules.
+Tu IA pensó que estaba triste. No fue por mala: solo había visto caritas felices azules.
 
 HOY VAS A PODER...
 ✔ Explicar qué es el sesgo y por qué pasa.
 ✔ Usar la IA con tus 5 reglas de oro.
 
-EL SESGO, EN FÁCIL
+PASO 1 · EL SESGO, EN FÁCIL
 Imagina que le enseñas a una IA a reconocer gatos, pero todas las fotos son de gatos NARANJAS. 🐈
 Un día le enseñas un gato negro... y dice "no es un gato".
 La IA no es tonta: aprendió exactamente lo que le enseñaron. El problema estaba en los EJEMPLOS.
 
-Eso es el sesgo: cuando una IA aprende algo chueco porque sus ejemplos no eran variados o no eran justos.
+Eso es el SESGO: cuando una IA aprende algo chueco porque sus ejemplos no eran variados o no eran justos.
 
-¿Y ESTO PASA DE VERDAD? SÍ.
+PASO 2 · ¿Y ESTO PASA DE VERDAD? ¡SÍ!
 ▸ Algunas IAs que reconocen caras funcionaban peor con ciertas personas, porque casi no las vieron en sus ejemplos.
-▸ Algunos traductores escribían "el doctor" y "la enfermera" aunque nadie dijera si era hombre o mujer, porque así venía en la mayoría de sus textos.
 ▸ Una IA que recomienda juguetes puede decidir que ciertos juguetes son "de niña" o "de niño" solo porque así se compraban antes.
 
-Por eso las personas que crean IAs tienen que revisar muy bien sus ejemplos. Justo lo que tú hiciste al arreglar tu Detector.
+Por eso quienes crean IAs tienen que revisar muy bien sus ejemplos. Justo lo que tú hiciste con tu Detector.
 
-PAUSA PARA PENSAR 🤔
-Si entrenaras una IA para reconocer PERROS solo con fotos de chihuahuas, ¿qué pasaría cuando vea un gran danés?
+Y ojo: una IA que platica, como yo, también puede INVENTAR. ¿Te acuerdas de tu pregunta trampa? No lo hago para engañarte: armo la respuesta que me parece más probable.
 
-LA IA TAMBIÉN PUEDE INVENTAR
-¿Te acuerdas de tu pregunta trampa en la entrevista? A veces una IA que platica, como yo, contesta algo que suena muy seguro pero no es cierto. No lo hace para engañarte: arma la respuesta que le parece más probable.
-
-MIS 5 REGLAS DE ORO CON LA IA ⭐
+PASO 3 · TUS 5 REGLAS DE ORO ⭐
 1. 🔒 MIS DATOS SON MÍOS. No comparto mi nombre completo, dirección, escuela, teléfono, contraseñas ni fotos.
-2. 🔍 REVISO. Si algo es importante, lo compruebo en otro lugar o con un adulto.
-3. 🧠 PIENSO YO PRIMERO. La IA me ayuda a aprender; no piensa ni hace la tarea por mí.
-4. ❤️ SOY AMABLE. No uso la IA para molestar, asustar ni burlarme de nadie.
+2. 🔍 REVISO. Si algo es importante, lo compruebo con un adulto o en otro lugar.
+3. 🧠 PIENSO YO PRIMERO. La IA me ayuda a aprender; no hace la tarea por mí.
+4. ❤️ SOY AMABLE. No uso la IA para molestar ni burlarme de nadie.
 5. 🗣️ SI ALGO ME INCOMODA, LE DIGO A UN ADULTO. Siempre.
 
-💬 ByteBot dice: "Pregúntame con el botón de ByteBot: ¿Qué información nunca debería compartir con una IA? Compara mi respuesta con tus 5 reglas. Si te digo algo que no está en tu lista, ¡agrégalo como regla número 6!"
-
-PARA CERRAR, PIENSA
-Una IA que decide qué niños reciben un premio de la escuela, ¿dónde podría tener sesgo? ¿Qué ejemplos le darías para que fuera justa?
+💬 ByteBot dice: "Pregúntame con el botón de ByteBot: ¿Qué información nunca debería compartir con una IA? Si te digo algo que no está en tus 5 reglas, ¡agrégalo como regla número 6!"
 
 LO QUE TE LLEVAS HOY
 Una IA es tan justa como sus ejemplos. Y quien la usa bien, revisa, cuida sus datos y piensa por sí mismo.
+
+⭐ RETO EXTRA (si quieres más)
+▸ Si entrenaras una IA para reconocer PERROS solo con fotos de chihuahuas, ¿qué pasaría cuando vea un gran danés?
+▸ Una IA que decide qué niños reciben un premio de la escuela, ¿dónde podría tener sesgo? ¿Qué ejemplos le darías para que fuera justa?
+No es obligatorio: es para los que se quedaron con ganas.
 
 ¿QUÉ SIGUE?
 ¡Tu proyecto final! Vas a inventar una IA que ayude a alguien. Y ya sabes lo más importante: pensar qué podría salir mal.''',
@@ -697,10 +654,10 @@ Una IA es tan justa como sus ejemplos. Y quien la usa bien, revisa, cuida sus da
     notas_maestro='''OBJETIVO
 Ponerle nombre a lo que el niño vivió en la misión 2 (sesgo), llevarlo al mundo real y cerrar el curso con hábitos de uso seguro.
 
-TIEMPO: 20 minutos. ES MATERIAL: no se califica, pero el proyecto final pide aplicarlo.
+TIEMPO: 15 minutos. ES MATERIAL: no se califica, pero el proyecto final pide aplicarlo.
 
 LOS EJEMPLOS DEL MUNDO REAL
-Están suavizados a propósito para niños de 8 a 12. Si una familia pide más, los casos reales son el reconocimiento facial con peor precisión en ciertos grupos y los traductores con sesgo de género. Los dos están bien documentados.
+Están suavizados a propósito para niños de 8 a 12. Si una familia pide más, los casos reales son el reconocimiento facial con peor precisión en ciertos grupos y los traductores con sesgo de género. Los dos están bien documentados. El de los traductores se quitó de la base para que la pieza fuera más corta.
 
 LAS REGLAS DE ORO
 Son el hilo de seguridad del curso: ya aparecieron en las misiones 1 y 2 y en la investigación. Si un niño comparte datos personales en cualquier entrega, lo correcto es recordarle la regla 1 con cariño, no reprobarlo.
@@ -712,7 +669,7 @@ ByteBot tiene reglas propias de protección para niños, así que su respuesta s
 
 # ── 9 ─────────────────────────────────────────────────────────────────────
 PIEZAS.append(dict(
-    orden=9, tipo='proyecto', dificultad='medio', minutos=90, xp=135,
+    orden=9, tipo='proyecto', dificultad='medio', minutos=45, xp=135,
     titulo='Proyecto final: Mi IA para ayudar',
     descripcion=('Tu gran proyecto: inventa una inteligencia artificial que ayude a alguien de '
                  'tu casa, tu escuela o tu comunidad. La diseñas, la presentas y, si te animas, '
@@ -720,105 +677,83 @@ PIEZAS.append(dict(
     url=ML4KIDS, recurso='enlace',
     instrucciones='''¡Llegaste al final! 🎉 Ahora tú eres el inventor.
 
-Vas a diseñar una inteligencia artificial que AYUDE a alguien. Al aprobar este proyecto te ganas tu certificado de ByteKids Academy. 🎓
+Vas a inventar una inteligencia artificial que AYUDE a alguien. Al aprobar este proyecto te ganas tu certificado de ByteKids Academy. 🎓
 
 HOY VAS A PODER...
 ✔ Usar todo lo que aprendiste para inventar tu propia IA.
-✔ Pensar como los verdaderos creadores de IA: qué necesita, qué puede salir mal y cómo mejorarla.
+✔ Pensar como los creadores de IA: qué necesita y qué puede salir mal.
 
-PASO 1 · ENCUENTRA UN PROBLEMA (el paso más importante)
-Piensa en alguien de tu casa, tu escuela o tu colonia. ¿Qué le cuesta trabajo? ¿Qué le ayudaría?
-Tu IA tiene que poder aprender con IMÁGENES, como tu Detector de Caritas.
+PASO 1 · ESCOGE UN PROBLEMA
+Piensa en alguien de tu casa, tu escuela o tu colonia. ¿Qué le ayudaría?
+Tu IA tiene que aprender con IMÁGENES, como tu Detector de Caritas.
 
-¿No se te ocurre nada? Escoge una de estas o úsalas de inspiración:
+¿No se te ocurre nada? Escoge una de estas:
 🗑️ La Separadora de Basura: ¿es papel, plástico u orgánico?
-🌱 La Cuidadora de Plantas: ¿esta hoja está sana o necesita agua?
+🌱 La Cuidadora de Plantas: ¿esta hoja está sana o seca?
 🐾 La Guardiana del Plato: ¿el plato de mi mascota está lleno o vacío?
-🎨 La Jueza de Dibujos: ¿qué animal dibujó mi hermanito?
 💡 ¡La tuya! La que tú inventes.
 
 PASO 2 · DALE VIDA
 ▸ Ponle un NOMBRE a tu IA.
-▸ Haz un DIBUJO de cómo se vería funcionando. Puede ser una app, un robot o una cámara. ¡Tú decides!
-▸ Escribe en una frase: "Mi IA ayuda a ____ a ____".
+▸ Dibújala en una hoja: puede ser una app, un robot o una cámara. ¡Tú decides!
 
 PASO 3 · ¿QUÉ TIENE QUE APRENDER?
-▸ Escribe sus ETIQUETAS: 2 o 3 grupos. Ejemplo: "sana" y "seca".
-▸ Para cada etiqueta, describe por lo menos 3 EJEMPLOS con los que la entrenarías.
-▸ ¡Acuérdate del Detector de Caritas! Tus ejemplos tienen que ser VARIADOS: distintos colores, tamaños, luces y lugares. Explica por qué escogiste esos.
+▸ Escribe sus ETIQUETAS: 2 grupos. Ejemplo: "sana" y "seca".
+▸ Para cada etiqueta, escribe 2 EJEMPLOS con los que la entrenarías.
+▸ ¡Acuérdate del Detector de Caritas! Tus ejemplos tienen que ser VARIADOS: distintos colores, tamaños y lugares.
 
 PASO 4 · ¿QUÉ PODRÍA SALIR MAL?
-Piensa como los científicos de IA:
-▸ ¿Dónde se podría equivocar tu IA? (¿Con poca luz? ¿Con algo que nunca vio?)
-▸ ¿Podría tener SESGO? ¿Por qué?
-▸ ¿Qué pasaría si se equivoca? ¿Es grave o no tanto?
-▸ ¿Cómo lo evitarías?
+Piensa como científico: ¿dónde se podría equivocar tu IA? ¿Con poca luz? ¿Con algo que nunca vio?
 
-PASO 5 · PÍDELE CONSEJO A BYTEBOT 💬
-Dale al botón de ByteBot y preséntame tu idea así:
-"Mi IA se llama ____ y sirve para ____. Sus etiquetas son ____. ¿Cómo la puedo mejorar?"
-Escoge UNO de mis consejos y cuenta si lo vas a usar o no, y POR QUÉ.
-(Está perfecto no hacerme caso si tienes una buena razón. ¡Tú eres el inventor!)
-
-PASO 6 · ENTREGA TU FICHA
-Escribe aquí tu ficha, con estos títulos:
+PASO 5 · ENTREGA TU FICHA
+Escribe aquí tu ficha, con estos títulos. Una o dos líneas en cada uno:
    NOMBRE DE MI IA:
    A QUIÉN AYUDA Y CÓMO:
-   MIS ETIQUETAS Y MIS EJEMPLOS:
-   QUÉ PODRÍA SALIR MAL Y CÓMO LO EVITO:
-   EL CONSEJO DE BYTEBOT Y QUÉ DECIDÍ:
-   MI DIBUJO: descríbelo en 2 o 3 renglones.
-
-DOS NIVELES: LOS DOS DAN CERTIFICADO
-🟢 EXPLORADOR: tu ficha completa. Con eso basta para tu certificado.
-🔵 CONSTRUCTOR (opcional, ¡para los valientes!): además, construye tu IA en Machine Learning for Kids (abre el enlace con el botón 🚀 de abajo), igual que tu Detector de Caritas. Mínimo 10 ejemplos por etiqueta, hechos con dibujos o fotos de OBJETOS, nunca de personas. Haz 5 pruebas y agrega a tu ficha:
-   MIS 5 PRUEBAS:  qué le enseñé | qué contestó | ¿le atinó?
-🔙 Cuando termines tus 5 pruebas, regresa a esta pestaña de ByteKids y agrégalas a tu ficha.
+   MIS ETIQUETAS Y 2 EJEMPLOS DE CADA UNA:
+   QUÉ PODRÍA SALIR MAL:
 
 ASÍ SE CALIFICA (sobre 10, se aprueba con 7)
-⭐ Un problema claro y real, y a quién ayuda: 2
-⭐ Etiquetas y ejemplos variados que sí le enseñan: 3
-⭐ Qué podría salir mal y cómo lo evitas: 2
-⭐ El consejo de ByteBot y tu decisión con un porqué: 2
-⭐ Nombre, dibujo y creatividad: 1
+⭐ Un problema claro y a quién ayuda: 3
+⭐ Etiquetas con ejemplos variados: 3
+⭐ Qué podría salir mal: 3
+⭐ Nombre y creatividad: 1
 
-No se califica que tu IA sea perfecta. Se califica que la pienses bien. Una IA que "a veces falla con poca luz, y así lo arreglaría" vale más que una que "funciona perfecto".
+No se califica que tu IA sea perfecta. Se califica que la pienses bien.
 
 💬 ByteBot dice: "Estoy muy orgulloso de ti. Empezaste sin saber qué era la IA y hoy estás inventando una. Eso es lo que hacen los creadores de tecnología."
 
-¡A INVENTAR! 🚀''',
-    checklist=[
-        'Encontré un problema real y escribí a quién ayuda mi IA',
-        'Le puse nombre y describí mi dibujo',
-        'Escribí mis etiquetas (2 o 3)',
-        'Describí al menos 3 ejemplos variados por etiqueta',
-        'Expliqué qué podría salir mal y cómo lo evitaría',
-        'Le presenté mi idea a ByteBot y conté qué consejo usé o no, y por qué',
-        'Entregué mi ficha con todos sus títulos',
-        '(Constructor) Construí mi IA en ML4Kids e hice 5 pruebas',
-    ],
-    notas_maestro='''OBJETIVO
-Que el niño aplique TODO el curso: problema real → etiquetas → ejemplos variados → riesgos y sesgo → mejora con ayuda de una IA → presentación.
+⭐ RETO EXTRA (para inventores valientes)
+▸ PÍDEME CONSEJO: dale al botón de ByteBot y escríbeme: "Mi IA se llama ____ y sirve para ____. ¿Cómo la puedo mejorar?" Agrega a tu ficha qué consejo usaste, o por qué no.
+▸ ¿CÓMO LO EVITARÍAS? Agrega a tu ficha cómo harías para que tu IA no se equivoque en lo que puede salir mal.
+▸ CONSTRUCTOR: construye tu IA en Machine Learning for Kids (abre el enlace con el botón 🚀 de abajo), igual que tu Detector de Caritas. Usa dibujos o fotos de OBJETOS, nunca de personas. Haz 5 pruebas y agrégalas a tu ficha.
+🔙 Cuando termines tus pruebas, regresa a esta pestaña de ByteKids y agrégalas a tu ficha.
+Nada del reto es obligatorio ni cambia tu calificación. Con tu ficha basta para tu certificado.
 
-TIEMPO: 60 a 90 minutos. Puede tomar varios días; no hay prisa.
+¡A INVENTAR! 🚀''',
+    checklist=[],
+    notas_maestro='''OBJETIVO
+Que el niño aplique TODO el curso: problema real → etiquetas → ejemplos variados → qué puede salir mal. El consejo de ByteBot y la construcción quedan en el ⭐ Reto extra.
+
+TIEMPO: 30 a 45 minutos. Puede tomar varios días; no hay prisa. Con el reto extra, hasta 90.
 
 ESTE PROYECTO DESTRABA EL CERTIFICADO
 Aprobarlo (7 o más) + los dos quizzes aprobados + las 9 piezas completas = certificado. Por eso: si un proyecto no llega, NO lo repruebes. Usa "Pedir correcciones" y dile exactamente qué falta. Queremos que TODOS lleguen al certificado; el estándar se sostiene con correcciones, no con rechazos.
 
 RÚBRICA DETALLADA (sobre 10)
-Problema y a quién ayuda (2)
-  2 = claro, real, dice quién se beneficia · 1 = vago ("ayuda a la gente") · 0 = no hay
+Problema y a quién ayuda (3)
+  3 = claro, real, dice quién se beneficia · 2 = escogió uno de la lista sin decir a quién ayuda · 1 = vago ("ayuda a la gente") · 0 = no hay
 Etiquetas y ejemplos (3)
-  3 = 2 o 3 etiquetas, 3+ ejemplos cada una, VARIADOS y lo justifica · 2 = ejemplos sin variedad · 1 = faltan etiquetas o ejemplos
-Qué puede salir mal (2)
-  2 = un riesgo concreto + cómo evitarlo · 1 = riesgo sin solución · 0 = "nada puede salir mal"
-ByteBot (2)
-  2 = consejo + decisión + porqué · 1 = solo copió el consejo · 0 = no consultó
+  3 = 2 etiquetas, 2 ejemplos cada una y VARIADOS · 2 = ejemplos sin variedad · 1 = faltan etiquetas o ejemplos
+Qué puede salir mal (3)
+  3 = un riesgo concreto (poca luz, algo que nunca vio) · 1 = riesgo vago · 0 = "nada puede salir mal"
 Creatividad (1)
-  1 = nombre y dibujo descritos con cariño
+  1 = nombre y una idea propia
 
-NIVEL CONSTRUCTOR
-No da puntos extra en la rúbrica, porque no queremos castigar a quien no tiene dispositivo o tiempo. Reconócelo en el comentario: "¡Además lo construiste! Eso ya es de nivel Principiante."
+QUÉ ESPERAR SEGÚN LA EDAD
+Un niño de 8 puede llenar cada título con una línea: eso es un 10 si las ideas están. No le bajes puntos por escribir poco.
+
+EL RETO EXTRA
+No da puntos, porque no queremos castigar a quien no tiene dispositivo, tiempo o 12 años. Reconócelo en el comentario: "¡Además lo construiste! Eso ya es de nivel Principiante."
 
 IDEAS DELICADAS
 Si un niño propone una IA que decide cosas importantes sobre personas (quién es buen alumno, quién miente) o que usa fotos de personas: no la rechaces. Úsala para enseñar: pídele en el comentario que piense en el sesgo y la privacidad, y que ajuste la idea para usar objetos o dibujos.
@@ -894,6 +829,8 @@ def validar():
                     assert len(q['opciones']) == 4, 'cuatro opciones: ' + q['texto']
         else:
             assert not p['quiz']
+            assert not p['checklist'], 'sin checklist: repite la entrega (%s)' % p['titulo']
+            assert 'RETO EXTRA' in p['instrucciones'], 'falta el reto extra en ' + p['titulo']
     # Cada logro atado a una pieza tiene que nombrar una pieza que exista:
     # un titulo mal escrito es un logro que nadie puede ganar, y no avisa.
     titulos = {p['titulo'] for p in PIEZAS}
