@@ -77,12 +77,17 @@ HOY VAS A PODER...
 ✔ Encontrar la IA que se esconde en cosas que usas todos los días.
 
 PRIMERO, UN RETO (5 minutos)
+Se abre en otra pestaña. Esta de ByteKids se queda abierta, esperándote.
 1. Abre el enlace de arriba. Se llama Quick, Draw!
 2. Dale a "¡Vamos a dibujar!". Te va a pedir que dibujes algo en 20 segundos.
 3. Mientras dibujas, la computadora intenta ADIVINAR qué es.
-4. Juega una ronda completa: son 6 dibujos.
+4. Juega UNA ronda completa: son 6 dibujos.
+5. 🏁 Cuando veas tus 6 dibujos al final, ¡reto cumplido!
 
-PAUSA PARA PENSAR 🤔
+🔙 REGRESA A BYTEKIDS
+Cierra la pestaña del juego y vuelve aquí. Lo mejor viene ahora: vas a descubrir CÓMO adivinó tus dibujos. (Después, si quieres, juegas otra ronda.)
+
+PAUSA PARA PENSAR 🤔 (ya de regreso)
 ¿Cómo supo la computadora que tu garabato era un gato? Nadie estaba viendo tu dibujo...
 Piénsalo un momento antes de seguir leyendo.
 
@@ -323,22 +328,34 @@ PAUSA PARA PENSAR 🤔
 Si le enseñaras una tarjeta nueva con una galleta, ¿en qué columna la pondría una IA que aprendió de tus tarjetas? ¿Y si le enseñas una piedra que parece pan? 😏
 
 AHORA, CON COMPUTADORA: IA PARA LOS OCÉANOS (15 min)
+Antes de abrir el enlace, lee hasta el final de esta parte. El juego se abre en otra pestaña, y esta de ByteKids se queda abierta esperándote.
 1. Abre el enlace de arriba. Si sale en inglés, busca el selector de idioma (casi siempre hasta abajo de la página) y escoge "Español".
 2. Mira el video corto del principio.
 3. Van a pasar peces y basura. Tu trabajo es decirle a la IA cuál es "pez" y cuál "no es pez". ¡Estás ETIQUETANDO DATOS!
 4. Cuando hayas etiquetado bastantes, dale a continuar y mira cómo TU IA limpia el océano sola.
-5. Haz por lo menos las dos primeras partes. Si te gusta, sigue: más adelante se pone más interesante.
+5. 🏁 TU META: cuando veas a TU IA limpiar el océano por primera vez, ¡lo lograste! Ahí termina tu misión en el océano.
 
-PAUSA PARA PENSAR 🤔
+⏰ Son 15 minutos. Pon una alarma o pídele a alguien de tu casa que te avise.
+
+🔙 REGRESA A BYTEKIDS
+Cuando tu IA limpie el océano, cierra esa pestaña y vuelve aquí. Te esperan tres cosas:
+▸ Dos preguntas de detective sobre lo que hizo tu IA.
+▸ ByteBot, que quiere saber cómo te fue.
+▸ Tus 25 XP: se ganan aquí, con el botón "Ya lo vi". En el océano no cuentan.
+
+PAUSA PARA PENSAR 🤔 (ya de regreso)
 ▸ Cuando le diste pocos ejemplos, ¿se equivocaba más o menos?
 ▸ ¿Tu IA sacó del agua algún pez por error? ¿Por qué crees que pasó?
 
-💬 ByteBot dice: "¿Quieres otra explicación? Dale al botón de ByteBot y escríbeme: ¿Qué son los datos de entrenamiento? Explícamelo como si tuviera 7 años. Luego compara: ¿me entendiste mejor a mí o a esta lectura?"
+💬 ByteBot dice: "¡Ya volviste! Dale al botón de ByteBot y cuéntame: ¿tu IA sacó algún pez del agua por error? Escríbeme qué pasó y lo investigamos juntos. Y si quieres otra explicación, pregúntame: ¿qué son los datos de entrenamiento? Explícamelo como si tuviera 7 años."
 
 LO QUE TE LLEVAS HOY
 Una IA es tan buena como sus ejemplos.
 Pocos ejemplos → aprende poco.
 Ejemplos variados → aprende mejor.
+
+¿QUIERES SEGUIR JUGANDO?
+¡Claro que sí! Ya que le diste "Ya lo vi", puedes regresar a IA para los Océanos y seguir con las siguientes partes. Más adelante se pone muy interesante: la IA tiene que aprender cosas que no son tan fáciles de decidir. 😏
 
 ¿QUÉ SIGUE?
 Vas a entrenar TU PROPIA IA desde cero, con dibujos tuyos. Ve preparando tus colores. 🖍️''',
@@ -390,6 +407,7 @@ Y guarda más hojas y tus colores: los vas a necesitar al final.
 ⚠️ IMPORTANTE: tu IA solo va a ver DIBUJOS. Nunca le enseñes tu cara ni la de otra persona.
 
 PARTE 2 · ARMA TU PROYECTO (5 min)
+Machine Learning for Kids se abre en otra pestaña. Vas a ir y venir: aquí lees el paso, allá lo haces. Esta pestaña de ByteKids no la cierres.
 1. Abre el enlace de arriba (Machine Learning for Kids).
 2. Escoge "Pruébalo ahora" para entrar sin registrarte. Si te pide usuario, pídeselo a tu maestra en Mensajes.
 3. Dale a "Añadir un nuevo proyecto". Nombre: Detector de caritas. Tipo: reconocer IMÁGENES. Créalo y ábrelo.
@@ -427,6 +445,9 @@ PARTE 5 · ARRÉGLALA (5 min)
 1. Dibuja 5 caritas felices en ROJO y 5 tristes en AZUL.
 2. Agrégalas a sus etiquetas y vuelve a darle a "Entrenar nuevo modelo".
 3. Repite las pruebas C y D. ¿Mejoró?
+
+🔙 REGRESA A BYTEKIDS
+Tu IA ya está entrenada, probada y arreglada. Ahora vuelve a esta pestaña: aquí escribes tu entrega y ganas tus 75 XP.
 
 TU ENTREGA
 Escribe aquí:
@@ -752,6 +773,7 @@ DOS NIVELES: LOS DOS DAN CERTIFICADO
 🟢 EXPLORADOR: tu ficha completa. Con eso basta para tu certificado.
 🔵 CONSTRUCTOR (opcional, ¡para los valientes!): además, construye tu IA en Machine Learning for Kids (el enlace de arriba), igual que tu Detector de Caritas. Mínimo 10 ejemplos por etiqueta, hechos con dibujos o fotos de OBJETOS, nunca de personas. Haz 5 pruebas y agrega a tu ficha:
    MIS 5 PRUEBAS:  qué le enseñé | qué contestó | ¿le atinó?
+🔙 Cuando termines tus 5 pruebas, regresa a esta pestaña de ByteKids y agrégalas a tu ficha.
 
 ASÍ SE CALIFICA (sobre 10, se aprueba con 7)
 ⭐ Un problema claro y real, y a quién ayuda: 2
