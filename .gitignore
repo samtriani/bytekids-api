@@ -24,3 +24,4 @@ src/main/resources/application-local.yml
 
 # Caché de Python de los generadores de sql/
 __pycache__/
+sql/mi_primera_ia/revision.html

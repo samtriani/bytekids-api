@@ -78,7 +78,7 @@ HOY VAS A PODER...
 
 PRIMERO, UN RETO (5 minutos)
 Se abre en otra pestaña. Esta de ByteKids se queda abierta, esperándote.
-1. Abre el enlace de arriba. Se llama Quick, Draw!
+1. Abre el enlace con el botón 🚀 que está al final de esta parte. Se llama Quick, Draw!
 2. Dale a "¡Vamos a dibujar!". Te va a pedir que dibujes algo en 20 segundos.
 3. Mientras dibujas, la computadora intenta ADIVINAR qué es.
 4. Juega UNA ronda completa: son 6 dibujos.
@@ -329,7 +329,7 @@ Si le enseñaras una tarjeta nueva con una galleta, ¿en qué columna la pondrí
 
 AHORA, CON COMPUTADORA: IA PARA LOS OCÉANOS (15 min)
 Antes de abrir el enlace, lee hasta el final de esta parte. El juego se abre en otra pestaña, y esta de ByteKids se queda abierta esperándote.
-1. Abre el enlace de arriba. Si sale en inglés, busca el selector de idioma (casi siempre hasta abajo de la página) y escoge "Español".
+1. Abre el enlace con el botón 🚀 que está al final de esta parte. Si sale en inglés, busca el selector de idioma (casi siempre hasta abajo de la página) y escoge "Español".
 2. Mira el video corto del principio.
 3. Van a pasar peces y basura. Tu trabajo es decirle a la IA cuál es "pez" y cuál "no es pez". ¡Estás ETIQUETANDO DATOS!
 4. Cuando hayas etiquetado bastantes, dale a continuar y mira cómo TU IA limpia el océano sola.
@@ -408,7 +408,7 @@ Y guarda más hojas y tus colores: los vas a necesitar al final.
 
 PARTE 2 · ARMA TU PROYECTO (5 min)
 Machine Learning for Kids se abre en otra pestaña. Vas a ir y venir: aquí lees el paso, allá lo haces. Esta pestaña de ByteKids no la cierres.
-1. Abre el enlace de arriba (Machine Learning for Kids).
+1. Abre el enlace con el botón 🚀 que está al final de esta parte (Machine Learning for Kids).
 2. Escoge "Pruébalo ahora" para entrar sin registrarte. Si te pide usuario, pídeselo a tu maestra en Mensajes.
 3. Dale a "Añadir un nuevo proyecto". Nombre: Detector de caritas. Tipo: reconocer IMÁGENES. Créalo y ábrelo.
 4. Entra a "Entrenar".
@@ -771,7 +771,7 @@ Escribe aquí tu ficha, con estos títulos:
 
 DOS NIVELES: LOS DOS DAN CERTIFICADO
 🟢 EXPLORADOR: tu ficha completa. Con eso basta para tu certificado.
-🔵 CONSTRUCTOR (opcional, ¡para los valientes!): además, construye tu IA en Machine Learning for Kids (el enlace de arriba), igual que tu Detector de Caritas. Mínimo 10 ejemplos por etiqueta, hechos con dibujos o fotos de OBJETOS, nunca de personas. Haz 5 pruebas y agrega a tu ficha:
+🔵 CONSTRUCTOR (opcional, ¡para los valientes!): además, construye tu IA en Machine Learning for Kids (abre el enlace con el botón 🚀 de abajo), igual que tu Detector de Caritas. Mínimo 10 ejemplos por etiqueta, hechos con dibujos o fotos de OBJETOS, nunca de personas. Haz 5 pruebas y agrega a tu ficha:
    MIS 5 PRUEBAS:  qué le enseñé | qué contestó | ¿le atinó?
 🔙 Cuando termines tus 5 pruebas, regresa a esta pestaña de ByteKids y agrégalas a tu ficha.
 
