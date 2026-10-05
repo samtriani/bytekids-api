@@ -176,9 +176,17 @@ public class ComunidadService {
         return true;
     }
 
-    private static String primerNombre(String nombre) {
+    /**
+     * "Prof. Laura Perez" → "Prof. Laura". Con la primera palabra a secas, la
+     * felicitacion decia "¡Prof. te felicitó!" y el nino no sabia de quien.
+     * Un titulo se queda pegado al nombre: asi es como el nino le dice.
+     */
+    static String primerNombre(String nombre) {
         if (nombre == null || nombre.isBlank()) return "Tu maestro";
-        return nombre.trim().split("\\s+")[0];
+        String[] partes = nombre.trim().split("\\s+");
+        boolean esTitulo = partes[0].toLowerCase()
+                .matches("(prof|profa|profe|mtro|mtra|maestro|maestra|miss|lic|dr|dra|ing)\\.?");
+        return esTitulo && partes.length > 1 ? partes[0] + " " + partes[1] : partes[0];
     }
 
     /**

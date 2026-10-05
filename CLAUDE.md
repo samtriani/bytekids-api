@@ -208,7 +208,7 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   lista negra y el JWT dura 7 días, así que quien tuviera una sesión abierta
   con la contraseña vieja sigue dentro hasta que ese token expire. Para
   echar a alguien de verdad hoy hay que desactivar la cuenta.
-- 43 pruebas en 10 clases, sobre todo reglas de acceso y de negocio
+- 44 pruebas en 10 clases, sobre todo reglas de acceso y de negocio
   (comunidad, desbloqueo, certificados, tope de ByteBot). No hay pruebas de
   integración contra la base.
 - **Todavía hay 13 tipos de entidad que salen crudos** (notificaciones,
