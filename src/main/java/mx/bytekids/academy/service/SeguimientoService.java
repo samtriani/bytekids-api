@@ -150,6 +150,18 @@ public class SeguimientoService {
                 }
             }
 
+            // Cuando hizo algo de ESTE salon: cada entrega y cada intento.
+            List<OffsetDateTime> actividad = new ArrayList<>();
+            for (Submission s : suyas) {
+                if (s.getContent() != null && porId.containsKey(s.getContent().getId())
+                        && s.getStatus() != SubmissionStatus.borrador && s.getSubmittedAt() != null
+                        && s.getContent().getType() != ContentType.quiz) actividad.add(s.getSubmittedAt());
+            }
+            for (QuizAttempt a : intentos) {
+                if (a.getContent() != null && porId.containsKey(a.getContent().getId())
+                        && a.getCompletedAt() != null) actividad.add(a.getCompletedAt());
+            }
+
             // Lo ultimo que hizo el nino, en cualquier materia.
             OffsetDateTime ultimaActividad = null;
             for (Submission s : suyas) ultimaActividad = masReciente(ultimaActividad, s.getSubmittedAt());
@@ -163,7 +175,7 @@ public class SeguimientoService {
             String nombre = alumno.getDisplayName() != null ? alumno.getDisplayName() : alumno.getUsername();
             alumnos.add(new SeguimientoResponse.Alumno(alumno.getId(), nombre, alumno.getInitials(),
                     alumno.getAvatarUrl(), ultima.size(), aprobadas, porCalificar, promedio,
-                    ultimaActividad, d.estado(), d.razon()));
+                    ultimaActividad, d.estado(), d.razon(), actividad));
         }
         alumnos.sort(Comparator.comparing(SeguimientoResponse.Alumno::nombre, String.CASE_INSENSITIVE_ORDER));
         return new SeguimientoResponse(salon.getId(), asignados.size(), alumnos);
