@@ -93,6 +93,16 @@ ajeno da 403. `ComunidadServiceTest` lo cuida.
 La felicitación ES la notificación (`referenceType = "felicitacion"`): para
 saber si ya se felicitó un logro se busca esa notificación, sin tabla nueva.
 
+### Quién necesita atención: `SeguimientoService`
+
+`GET /seguimiento/salones/{id}` le da al panel del maestro el avance de cada
+alumno y, aparte, una alerta con razón: sin empezar, atorado (corrección sin
+reenviar o quiz reprobado varias veces), sin actividad o calificaciones bajas.
+Antes se marcaba "Apoyo" a todo el que llevara menos de 40%: al inicio de un
+curso, todo el grupo en rojo. Las reglas y sus umbrales viven en
+`diagnosticar()` (pura, con pruebas). Ojo: un quiz reprobado queda `enviado`,
+no `rechazado`. El permiso por salón es el de `ComunidadService.exigirSalonVisible`.
+
 ### El orden de las actividades: `DesbloqueoService`
 
 Usa `mission_prerequisites`. Sin filas, todo abierto: los cursos de paga y
@@ -198,7 +208,7 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   lista negra y el JWT dura 7 días, así que quien tuviera una sesión abierta
   con la contraseña vieja sigue dentro hasta que ese token expire. Para
   echar a alguien de verdad hoy hay que desactivar la cuenta.
-- 37 pruebas en 9 clases, sobre todo reglas de acceso y de negocio
+- 43 pruebas en 10 clases, sobre todo reglas de acceso y de negocio
   (comunidad, desbloqueo, certificados, tope de ByteBot). No hay pruebas de
   integración contra la base.
 - **Todavía hay 13 tipos de entidad que salen crudos** (notificaciones,
