@@ -9,6 +9,7 @@ import mx.bytekids.academy.dto.submission.ReviewRequest;
 import mx.bytekids.academy.dto.submission.SubmissionRequest;
 import mx.bytekids.academy.dto.submission.SubmissionResponse;
 import mx.bytekids.academy.security.SecurityUtils;
+import mx.bytekids.academy.service.AccesoAlumnoService;
 import mx.bytekids.academy.service.SubmissionService;
 import mx.bytekids.academy.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class SubmissionController {
 
     private final SubmissionService submissionService;
     private final UserService userService;
+    private final AccesoAlumnoService accesoAlumnoService;
 
     @PostMapping
     @PreAuthorize("hasRole('STUDENT')")
@@ -48,6 +50,8 @@ public class SubmissionController {
     @PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
     @Operation(summary = "Entregas de un alumno específico")
     public ResponseEntity<ApiResponse<List<SubmissionResponse>>> byStudent(@PathVariable UUID studentId) {
+        // Un maestro, solo de los alumnos de sus salones (ver AccesoAlumnoService).
+        accesoAlumnoService.exigirPuedeVer(studentId);
         return ResponseEntity.ok(ApiResponse.ok(submissionService.findByStudentResumen(studentId)));
     }
 
