@@ -16,6 +16,8 @@ public class SubmissionResponse {
     private String studentInitials;
     private UUID contentId;
     private String contentTitle;
+    /** material | mision | tarea | quiz | proyecto: para pintar y nombrar bien la actividad. */
+    private String contentType;
     private String codeSubmitted;
     private SubmissionStatus status;
     private Short score;
@@ -66,6 +68,7 @@ public class SubmissionResponse {
                 .studentInitials(s.getStudent().getInitials())
                 .contentId(s.getContent().getId())
                 .contentTitle(s.getContent().getTitle())
+                .contentType(s.getContent().getType() != null ? s.getContent().getType().name() : null)
                 .codeSubmitted(s.getCodeSubmitted())
                 .status(s.getStatus())
                 .score(s.getScore())
