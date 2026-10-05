@@ -133,4 +133,13 @@ class ComunidadServiceTest {
         verify(notificationService, times(1)).avisar(eq(victoria), eq(laura), any(),
                 eq("👏 ¡Laura te felicitó!"), contains("Entrenador de IA"), eq(sa.getId()), eq("felicitacion"));
     }
+
+    @Test
+    void laFelicitacionDiceElNombreDelMaestroAunqueEmpieceConTitulo() {
+        assertThat(ComunidadService.primerNombre("Prof. Laura Perez")).isEqualTo("Prof. Laura");
+        assertThat(ComunidadService.primerNombre("Maestra Ana López")).isEqualTo("Maestra Ana");
+        assertThat(ComunidadService.primerNombre("Laura Perez")).isEqualTo("Laura");
+        assertThat(ComunidadService.primerNombre("Prof.")).isEqualTo("Prof.");
+        assertThat(ComunidadService.primerNombre(null)).isEqualTo("Tu maestro");
+    }
 }
