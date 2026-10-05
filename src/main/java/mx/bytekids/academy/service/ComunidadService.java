@@ -180,4 +180,13 @@ public class ComunidadService {
         if (nombre == null || nombre.isBlank()) return "Tu maestro";
         return nombre.trim().split("\\s+")[0];
     }
+
+    /**
+     * La misma regla de "que salones puedo ver" para otras pantallas del
+     * maestro (el seguimiento del panel). Una sola regla: si cada pantalla
+     * calculara la suya, alguna terminaria dejando pasar un salon ajeno.
+     */
+    public Classroom exigirSalonVisible(String username, UUID salonId) {
+        return salonVisible(userService.findByUsername(username), salonId);
+    }
 }
