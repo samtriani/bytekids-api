@@ -47,6 +47,19 @@ máquinas podría ejecutarse dos veces.
 Por eso la purga de notificaciones cuelga de la consulta del panel
 (`NotificationService.findByRecipient`) y no de una tarea programada.
 
+### Neon y Fly duermen: la base puede no responder
+
+Neon cierra las conexiones al dormirse y Fly congela la máquina. El pool
+(`spring.datasource.hikari` en `application.yml`) usa conexiones de vida corta,
+se rinde en 15 s y el fallo de conexión sale como **503**, que el front
+reintenta solo (`GlobalExceptionHandler.esBaseDespertando`). Las variables son
+`HIKARI_*`: en Fly hay secretos `POOL_*` viejos que ya no se leen.
+
+**Un fallo de la base nunca debe convertirse en 401.** Hasta el 6-oct,
+`JwtAuthFilter` se tragaba cualquier error al leer al usuario y la petición
+seguía sin sesión: 401 y el front sacaba al niño al login al enviar su quiz.
+`JwtAuthFilterTest` lo cuida.
+
 ---
 
 ## Decisiones que conviene respetar
@@ -208,7 +221,7 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   lista negra y el JWT dura 7 días, así que quien tuviera una sesión abierta
   con la contraseña vieja sigue dentro hasta que ese token expire. Para
   echar a alguien de verdad hoy hay que desactivar la cuenta.
-- 46 pruebas en 11 clases, sobre todo reglas de acceso y de negocio
+- 48 pruebas en 12 clases, sobre todo reglas de acceso y de negocio
   (comunidad, desbloqueo, certificados, tope de ByteBot). No hay pruebas de
   integración contra la base.
 - **Todavía hay 13 tipos de entidad que salen crudos** (notificaciones,

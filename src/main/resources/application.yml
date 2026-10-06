@@ -20,13 +20,25 @@ spring:
     url: ${BK_DB_URL}
     username: ${BK_DB_USER}
     password: ${BK_DB_PASSWORD}
+    # Neon cierra las conexiones cuando la base se duerme (~5 min sin uso) y
+    # Fly congela la maquina entera. Con conexiones de 30 min guardadas, al
+    # volver Hikari probaba una por una conexiones muertas (~10 s cada una)
+    # hasta rendirse a los 30 s: el quiz se quedaba "trabado". Ahora:
+    # conexiones de vida corta, que se descartan rapido si estan muertas, y
+    # se rinde en 15 s con 503, que el front reintenta solo.
+    # Variables HIKARI_* y no POOL_*: en Fly hay secretos POOL_* con los
+    # valores viejos que pisaban estos. Si ya no se usan, se pueden borrar.
     hikari:
-      minimum-idle: ${POOL_MINIMUM_IDLE:2}
-      maximum-pool-size: ${POOL_MAX_SIZE:10}
-      connection-timeout: ${POOL_CONNECTION_TIMEOUT:30000}
-      idle-timeout: ${POOL_IDLE_TIMEOUT:600000}
-      max-lifetime: ${POOL_LIFETIME:1800000}
+      minimum-idle: ${HIKARI_MINIMUM_IDLE:0}
+      maximum-pool-size: ${HIKARI_MAX_SIZE:10}
+      connection-timeout: ${HIKARI_CONNECTION_TIMEOUT:15000}
+      validation-timeout: ${HIKARI_VALIDATION_TIMEOUT:2000}
+      idle-timeout: ${HIKARI_IDLE_TIMEOUT:120000}
+      max-lifetime: ${HIKARI_LIFETIME:240000}
+      keepalive-time: ${HIKARI_KEEPALIVE:60000}
       pool-name: ByteKidsPool
+      data-source-properties:
+        tcpKeepAlive: true
 
   jpa:
     # Apagado en produccion: imprimir y formatear CADA consulta cuesta CPU y
