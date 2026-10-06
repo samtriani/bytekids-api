@@ -95,7 +95,7 @@ public class GlobalExceptionHandler {
      * error de SQL ni de datos). Se compara por nombre para no amarrarse a
      * Hikari ni a Hibernate.
      */
-    static boolean esBaseDespertando(Throwable ex) {
+    public static boolean esBaseDespertando(Throwable ex) {
         java.util.Set<String> conexion = java.util.Set.of(
                 "org.springframework.transaction.CannotCreateTransactionException",
                 "org.springframework.dao.DataAccessResourceFailureException",

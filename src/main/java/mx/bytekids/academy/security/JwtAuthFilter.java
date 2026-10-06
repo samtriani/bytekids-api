@@ -5,6 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import mx.bytekids.academy.exception.GlobalExceptionHandler;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -49,8 +52,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-        } catch (Exception ignored) {
-            // Token inválido o expirado — continúa sin autenticar
+        } catch (Exception e) {
+            // Si la base no respondio, la sesion NO es invalida: el token esta
+            // bien, lo que fallo fue leer al usuario. Antes esto caia en el
+            // "continua sin autenticar" de abajo -> 401 -> el front cerraba la
+            // sesion: un nino que enviaba su quiz con la base despertando
+            // terminaba en el login. 503 hace que el front reintente solo.
+            if (GlobalExceptionHandler.esBaseDespertando(e)) {
+                log.warn("La base no respondio al validar la sesion: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"message\":\""
+                        + GlobalExceptionHandler.DESPERTANDO + "\"}");
+                return;
+            }
+            // Token invalido o expirado: continua sin autenticar (401).
         }
 
         filterChain.doFilter(request, response);
