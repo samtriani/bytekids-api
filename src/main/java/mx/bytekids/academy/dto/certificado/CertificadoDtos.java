@@ -24,9 +24,11 @@ public final class CertificadoDtos {
     /**
      * Todo lo que se imprime. proyectos: misiones y proyectos aprobados, lo
      * que el nino construyo (los materiales y quizzes cuentan en actividades).
+     * logros: los que ha desbloqueado en ByteKids. Va en el certificado en vez
+     * de las horas: en un curso corto, "3.5 horas" se leia como poco.
      */
     public record Detalle(UUID id, String folio, String alumno, String avatarUrl, String iniciales,
-                          String materia, String color, int actividades, int minutos, int proyectos,
+                          String materia, String color, int actividades, int minutos, int proyectos, int logros,
                           OffsetDateTime solicitadoEn, OffsetDateTime entregadoEn,
                           String entregadoPor, boolean valido) {}
 
