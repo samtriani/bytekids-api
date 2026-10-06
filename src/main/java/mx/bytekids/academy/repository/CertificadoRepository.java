@@ -19,6 +19,8 @@ public interface CertificadoRepository extends JpaRepository<Certificado, UUID> 
 
     boolean existsByFolio(String folio);
 
+    java.util.Optional<Certificado> findByFolio(String folio);
+
     /** Los de estos alumnos, pendientes primero y luego los entregados mas recientes. */
     @Query("SELECT c FROM Certificado c JOIN FETCH c.student JOIN FETCH c.subject " +
            "WHERE c.student.id IN :alumnos ORDER BY c.entregadoEn DESC NULLS FIRST, c.solicitadoEn ASC")
