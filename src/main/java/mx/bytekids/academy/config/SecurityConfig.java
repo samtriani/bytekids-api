@@ -47,6 +47,8 @@ public class SecurityConfig {
     // publico sin que nadie tocara este archivo.
     private static final String[] PUBLIC_ENDPOINTS = {
             "/auth/login",
+            // El QR del certificado: solo nombre con inicial, curso y fecha.
+            "/certificados/verificar/**",
             "/actuator/health",
             "/actuator/health/**",
             "/api-docs/**",

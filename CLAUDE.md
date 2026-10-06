@@ -135,6 +135,12 @@ materia aprobadas; lo entrega un maestro de sus salones o coordinación, y
 entonces le llega al alumno y a su familia. El alumno y la familia no lo ven
 antes de entregarse. Tabla `certificados`, folio único sin 0/O/1/I/L.
 
+El QR del certificado abre `/verificar/:folio` en la UI, que pide
+`GET /certificados/verificar/{folio}`: **público**, sin sesión (está en
+`PUBLIC_ENDPOINTS`). Como es la página de un menor, solo da el nombre con la
+inicial del apellido ("Maria Z."), el curso y la fecha, y solo de certificados
+entregados. No le agregues datos sin pensarlo dos veces.
+
 ### ByteBot tiene tope diario para alumnos
 
 `LimiteByteBotService`: 25 mensajes al día (`app.ai.limite-diario-alumno`),
@@ -221,7 +227,7 @@ congelaba. Si agregas un endpoint que liste entregas de varios alumnos, usa
   lista negra y el JWT dura 7 días, así que quien tuviera una sesión abierta
   con la contraseña vieja sigue dentro hasta que ese token expire. Para
   echar a alguien de verdad hoy hay que desactivar la cuenta.
-- 48 pruebas en 12 clases, sobre todo reglas de acceso y de negocio
+- 51 pruebas en 12 clases, sobre todo reglas de acceso y de negocio
   (comunidad, desbloqueo, certificados, tope de ByteBot). No hay pruebas de
   integración contra la base.
 - **Todavía hay 13 tipos de entidad que salen crudos** (notificaciones,

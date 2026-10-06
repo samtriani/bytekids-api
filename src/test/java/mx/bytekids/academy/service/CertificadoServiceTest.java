@@ -135,4 +135,38 @@ class CertificadoServiceTest {
         assertThatThrownBy(() -> servicio.entregar("pedro", c.getId())).isInstanceOf(AccessDeniedException.class);
         assertThat(c.getEntregadoEn()).isNull();
     }
+
+    // ── El QR: verificacion publica ──
+
+    private Certificado cert(String folio, boolean entregado) {
+        Certificado c = new Certificado();
+        c.setFolio(folio); c.setStudent(victoria); c.setSubject(materia);
+        if (entregado) c.setEntregadoEn(OffsetDateTime.now());
+        return c;
+    }
+
+    @Test
+    void elQrMuestraSoloNombreConInicialCursoYFecha() {
+        when(certificados.findByFolio("BK-2026-CPX94")).thenReturn(Optional.of(cert("BK-2026-CPX94", true)));
+
+        var v = servicio.verificar(" bk-2026-cpx94 ");
+
+        assertThat(v.alumno()).isEqualTo("victoria A.");
+        assertThat(v.materia()).isEqualTo("Mi Primera IA");
+        assertThat(v.entregadoEn()).isNotNull();
+    }
+
+    @Test
+    void unCertificadoSinEntregarNoSeVerifica() {
+        when(certificados.findByFolio("BK-2026-AAAAA")).thenReturn(Optional.of(cert("BK-2026-AAAAA", false)));
+        assertThatThrownBy(() -> servicio.verificar("BK-2026-AAAAA"))
+                .isInstanceOf(mx.bytekids.academy.exception.ResourceNotFoundException.class);
+    }
+
+    @Test
+    void nombreConInicial() {
+        assertThat(CertificadoService.nombreConInicial("Maria Zavala Ruiz")).isEqualTo("Maria Z.");
+        assertThat(CertificadoService.nombreConInicial("Pedro")).isEqualTo("Pedro");
+        assertThat(CertificadoService.nombreConInicial(null)).isEqualTo("Alumno de ByteKids");
+    }
 }

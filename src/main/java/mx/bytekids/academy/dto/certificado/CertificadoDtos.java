@@ -21,9 +21,20 @@ public final class CertificadoDtos {
                        String iniciales, String materia, OffsetDateTime solicitadoEn,
                        OffsetDateTime entregadoEn) {}
 
-    /** Todo lo que se imprime. */
+    /**
+     * Todo lo que se imprime. proyectos: misiones y proyectos aprobados, lo
+     * que el nino construyo (los materiales y quizzes cuentan en actividades).
+     */
     public record Detalle(UUID id, String folio, String alumno, String avatarUrl, String iniciales,
-                          String materia, String color, int actividades, int minutos,
+                          String materia, String color, int actividades, int minutos, int proyectos,
                           OffsetDateTime solicitadoEn, OffsetDateTime entregadoEn,
                           String entregadoPor, boolean valido) {}
+
+    /**
+     * Lo que ve cualquiera que escanee el QR, sin iniciar sesion. Es la pagina
+     * publica de un menor: solo el nombre con la inicial del apellido
+     * ("Maria Z."), el curso y la fecha. Quien verifica ya tiene el
+     * certificado en la mano; esto solo confirma que es real.
+     */
+    public record Verificacion(String folio, String alumno, String materia, OffsetDateTime entregadoEn) {}
 }

@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import mx.bytekids.academy.dto.certificado.CertificadoDtos.Avance;
 import mx.bytekids.academy.dto.certificado.CertificadoDtos.Detalle;
 import mx.bytekids.academy.dto.certificado.CertificadoDtos.Fila;
+import mx.bytekids.academy.dto.certificado.CertificadoDtos.Verificacion;
 import mx.bytekids.academy.dto.content.ContentResponse;
 import mx.bytekids.academy.entity.*;
+import mx.bytekids.academy.entity.enums.ContentType;
 import mx.bytekids.academy.entity.enums.NotificationType;
 import mx.bytekids.academy.entity.enums.SubmissionStatus;
 import mx.bytekids.academy.entity.enums.UserRole;
@@ -199,11 +201,37 @@ public class CertificadoService {
         List<ContentResponse> piezas = contentService.findForStudent(alumno.getId()).stream()
                 .filter(p -> materiaId.equals(p.getSubjectId()) && aprobadas.contains(p.getId())).toList();
         int minutos = piezas.stream().mapToInt(p -> p.getEstimatedMinutes() == null ? 0 : p.getEstimatedMinutes()).sum();
+        int proyectos = (int) piezas.stream()
+                .filter(p -> p.getType() == ContentType.mision || p.getType() == ContentType.proyecto).count();
 
         return new Detalle(c.getId(), c.getFolio(), alumno.getDisplayName(), alumno.getAvatarUrl(),
                 alumno.getInitials(), c.getSubject().getName(), c.getSubject().getColor(),
-                piezas.size(), minutos, c.getSolicitadoEn(), c.getEntregadoEn(),
+                piezas.size(), minutos, proyectos, c.getSolicitadoEn(), c.getEntregadoEn(),
                 c.getEntregadoPor() != null ? c.getEntregadoPor().getDisplayName() : null, entregado);
+    }
+
+    // ── Verificarlo (publico) ────────────────────────────────────────────
+
+    /**
+     * Para el QR del certificado. Solo certificados ENTREGADOS: uno pedido y
+     * sin entregar no existe todavia para el mundo. Folio mal escrito o no
+     * entregado: el mismo "no encontrado", para no revelar cual de los dos.
+     */
+    @Transactional(readOnly = true)
+    public Verificacion verificar(String folio) {
+        String f = folio == null ? "" : folio.trim().toUpperCase();
+        Certificado c = certificadoRepository.findByFolio(f)
+                .filter(x -> x.getEntregadoEn() != null)
+                .orElseThrow(() -> new ResourceNotFoundException("Certificado", f));
+        return new Verificacion(c.getFolio(), nombreConInicial(c.getStudent().getDisplayName()),
+                c.getSubject().getName(), c.getEntregadoEn());
+    }
+
+    /** "Maria Zavala Ruiz" → "Maria Z." */
+    static String nombreConInicial(String nombre) {
+        if (nombre == null || nombre.isBlank()) return "Alumno de ByteKids";
+        String[] p = nombre.trim().split("\s+");
+        return p.length == 1 ? p[0] : p[0] + " " + p[1].charAt(0) + ".";
     }
 
     // ── Ayudantes ────────────────────────────────────────────────────────
