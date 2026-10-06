@@ -72,10 +72,41 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error(msg));
     }
 
+    /** Lo que se le dice a quien llega cuando la base todavia no despierta. */
+    public static final String DESPERTANDO =
+            "Estamos despertando el servidor. Vuelve a intentarlo en unos segundos, por favor.";
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex) {
+        // El primer acceso del dia despierta a Fly y a Neon. Si la base no
+        // alcanza a conectar, antes salia "Error interno del servidor" (500),
+        // que el front no reintenta. Es transitorio: 503, que si reintenta solo.
+        if (esBaseDespertando(ex)) {
+            log.warn("La base no respondio a tiempo (despertando): {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiResponse.error(DESPERTANDO));
+        }
         log.error("Error no controlado", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Error interno del servidor"));
+    }
+
+    /**
+     * Si en la cadena de causas hay un fallo de CONEXION a la base (no un
+     * error de SQL ni de datos). Se compara por nombre para no amarrarse a
+     * Hikari ni a Hibernate.
+     */
+    static boolean esBaseDespertando(Throwable ex) {
+        java.util.Set<String> conexion = java.util.Set.of(
+                "org.springframework.transaction.CannotCreateTransactionException",
+                "org.springframework.dao.DataAccessResourceFailureException",
+                "org.springframework.jdbc.CannotGetJdbcConnectionException",
+                "org.hibernate.exception.JDBCConnectionException",
+                "java.sql.SQLTransientConnectionException",
+                "java.net.ConnectException",
+                "java.net.SocketTimeoutException");
+        for (Throwable t = ex; t != null; t = t.getCause() == t ? null : t.getCause()) {
+            if (conexion.contains(t.getClass().getName())) return true;
+        }
+        return false;
     }
 }
