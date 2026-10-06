@@ -65,6 +65,7 @@ public class CertificadoService {
     private final ParentStudentRepository parentStudentRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final StudentAchievementRepository studentAchievementRepository;
 
     // ── El alumno ────────────────────────────────────────────────────────
 
@@ -206,7 +207,9 @@ public class CertificadoService {
 
         return new Detalle(c.getId(), c.getFolio(), alumno.getDisplayName(), alumno.getAvatarUrl(),
                 alumno.getInitials(), c.getSubject().getName(), c.getSubject().getColor(),
-                piezas.size(), minutos, proyectos, c.getSolicitadoEn(), c.getEntregadoEn(),
+                piezas.size(), minutos, proyectos,
+                studentAchievementRepository.findByStudentOrderByEarnedAtDesc(alumno).size(),
+                c.getSolicitadoEn(), c.getEntregadoEn(),
                 c.getEntregadoPor() != null ? c.getEntregadoPor().getDisplayName() : null, entregado);
     }
 

@@ -64,7 +64,7 @@ class CertificadoServiceTest {
         familias = mock(ParentStudentRepository.class);
         servicio = new CertificadoService(userService, contentService, mock(SubjectService.class), submissions,
                 certificados, salones, inscripciones, familias, mock(UserRepository.class),
-                mock(NotificationService.class));
+                mock(NotificationService.class), mock(StudentAchievementRepository.class));
 
         victoria = u("victoria", UserRole.student);
         papa = u("papa", UserRole.parent);
