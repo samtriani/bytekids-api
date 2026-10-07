@@ -80,7 +80,39 @@ public class AiTutorService {
           + "a tu manera (¡seguro te sale!) o escríbele a tu maestro o maestra en **Mensajes**. "
           + "¡Mañana seguimos! 🚀";
 
+    /**
+     * Largo maximo de UNA pregunta. Un alumno: 1000, de sobra para una
+     * pregunta de un nino o para pegar un parrafo de su tarea. El personal y
+     * las familias: 4000, porque pegan planes de clase o listas. La pantalla
+     * pone el mismo tope con un contador, pero se puede saltar: aqui manda.
+     */
+    static final int MAX_PREGUNTA_ALUMNO = 1000;
+    static final int MAX_PREGUNTA_OTROS = MAX_CARACTERES;
+
+    static int maxPregunta(User user) {
+        return user != null && user.getRole() == mx.bytekids.academy.entity.enums.UserRole.student
+                ? MAX_PREGUNTA_ALUMNO : MAX_PREGUNTA_OTROS;
+    }
+
+    /**
+     * Si la pregunta se pasa del largo, lo que contesta ByteBot; si no, null.
+     * Antes se cortaba en silencio y ByteBot contestaba media pregunta sin que
+     * el nino supiera por que.
+     */
+    static String siEsMuyLarga(User user, String message) {
+        int max = maxPregunta(user);
+        if (message == null || message.length() <= max) return null;
+        return "¡Uf, eso es muchísimo texto! 😅 Pregúntame por partes: máximo "
+                + String.format(java.util.Locale.ROOT, "%,d", max).replace(',', ' ')
+                + " letras por mensaje. Empieza por lo que más te importe saber y seguimos desde ahí 🚀";
+    }
+
     public String chat(User user, List<Map<String, String>> history, String message) {
+        // Muy larga: se le dice y no se llama al modelo ni se le gasta un
+        // mensaje del dia.
+        String muyLarga = siEsMuyLarga(user, message);
+        if (muyLarga != null) return muyLarga;
+
         // Antes de armar nada: si ya no le quedan mensajes hoy, no se llama al
         // modelo (que es justo lo que cuesta).
         if (!limite.puedeHablar(user)) return SIN_BATERIA;
